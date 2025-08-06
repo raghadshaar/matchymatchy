@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baby Boutique - Login & Create Account</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#008080',
+            secondary: '#F6C1C1',
+            'baby-powder': '#FEFEFA',
+            'jet': '#343434',
+            'teal': '#008080',
+            'champagne-pink': '#F6C1C1'
+          },
+          borderRadius: {
+            'none': '0px',
+            'sm': '4px',
+            DEFAULT: '8px',
+            'md': '12px',
+            'lg': '16px',
+            'xl': '20px',
+            '2xl': '24px',
+            '3xl': '32px',
+            'full': '9999px',
+            'button': '8px'
+          },
+          fontFamily: {
+            'quicksand': ['Quicksand', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :where([class^="ri-"])::before {
+      content: "\f3c2";
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .background-illustration {
+      position: absolute;
+      opacity: 0.03;
+      pointer-events: none;
+    }
+
+    .floating-cloud {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-onesie {
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .floating-rattle {
+      animation: float 7s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .auth-card {
+      background: rgba(254, 254, 250, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-button {
+      transition: all 0.3s ease;
+    }
+
+    .tab-button.active {
+      background: #008080;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .tab-button:not(.active) {
+      color: #343434;
+      background: transparent;
+    }
+
+    .tab-button:not(.active):hover {
+      background: rgba(246, 193, 193, 0.2);
+    }
+
+    .form-input {
+      transition: all 0.3s ease;
+      border: 2px solid #e5e5e5;
+    }
+
+    .form-input:focus {
+      border-color: #F6C1C1;
+      box-shadow: 0 0 0 3px rgba(246, 193, 193, 0.1);
+      outline: none;
+    }
+
+    .auth-button {
+      transition: all 0.3s ease;
+    }
+
+    .auth-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 128, 128, 0.3);
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .password-toggle {
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+      color: #008080;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-baby-powder font-quicksand relative overflow-hidden">
+<div class="background-illustration floating-cloud top-20 left-10">
+  <div class="w-16 h-16 flex items-center justify-center">
+    <i class="ri-cloud-line ri-3x text-champagne-pink"></i>
+  </div>
+</div>
+
+<div class="background-illustration floating-onesie top-40 right-20">
+  <div class="w-12 h-12 flex items-center justify-center">
+    <i class="ri-shirt-line ri-2x text-teal"></i>
+  </div>
+</div>
+
+<div class="background-illustration floating-rattle bottom-32 left-20">
+  <div class="w-14 h-14 flex items-center justify-center">
+    <i class="ri-gamepad-line ri-2x text-champagne-pink"></i>
+  </div>
+</div>
+
+<div class="background-illustration floating-cloud bottom-20 right-10">
+  <div class="w-20 h-20 flex items-center justify-center">
+    <i class="ri-heart-line ri-3x text-teal"></i>
+  </div>
+</div>
+
+<div class="background-illustration floating-onesie top-60 left-1/2">
+  <div class="w-10 h-10 flex items-center justify-center">
+    <i class="ri-star-line ri-xl text-champagne-pink"></i>
+  </div>
+</div>
+
+<div class="min-h-screen flex items-center justify-center p-4">
+  <div class="auth-card w-full max-w-md rounded-2xl p-8">
+    <div class="text-center mb-8">
+      <h1 class="font-['Pacifico'] text-3xl text-teal mb-2">logo</h1>
+      <p class="text-jet text-sm font-medium">Welcome to our baby boutique</p>
+    </div>
+
+    <div class="flex mb-8 bg-gray-100 rounded-xl p-1">
+      <button id="loginTab" class="tab-button flex-1 py-3 px-4 rounded-lg font-semibold text-sm !rounded-button whitespace-nowrap active">
+        Login
+      </button>
+      <button id="signupTab" class="tab-button flex-1 py-3 px-4 rounded-lg font-semibold text-sm !rounded-button whitespace-nowrap">
+        Create Account
+      </button>
+    </div>
+
+    <div id="loginForm" class="form-section active">
+      <form class="space-y-6">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-mail-line text-gray-400"></i>
+            </div>
+          </div>
+          <input type="email" class="form-input w-full pl-10 pr-4 py-3 rounded-md border-none bg-white text-jet placeholder-gray-400 text-sm" placeholder="Enter your email address" required>
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-lock-line text-gray-400"></i>
+            </div>
+          </div>
+          <input type="password" id="loginPassword" class="form-input w-full pl-10 pr-12 py-3 rounded-md border-none bg-white text-jet placeholder-gray-400 text-sm" placeholder="Enter your password" required>
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div class="w-5 h-5 flex items-center justify-center password-toggle" onclick="togglePassword('loginPassword', this)">
+              <i class="ri-eye-off-line text-gray-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-button w-full bg-teal text-white py-3 px-4 rounded-xl font-semibold text-sm !rounded-button whitespace-nowrap">
+          Login to Your Account
+        </button>
+
+        <div class="text-center">
+          <a href="#" class="text-jet text-sm hover:text-teal transition-colors duration-300">Forgot your password?</a>
+        </div>
+      </form>
+    </div>
+
+    <div id="signupForm" class="form-section">
+      <form class="space-y-6">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-user-line text-gray-400"></i>
+            </div>
+          </div>
+          <input type="text" class="form-input w-full pl-10 pr-4 py-3 rounded-md border-none bg-white text-jet placeholder-gray-400 text-sm" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-mail-line text-gray-400"></i>
+            </div>
+          </div>
+          <input type="email" class="form-input w-full pl-10 pr-4 py-3 rounded-md border-none bg-white text-jet placeholder-gray-400 text-sm" placeholder="Enter your email address" required>
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-lock-line text-gray-400"></i>
+            </div>
+          </div>
+          <input type="password" id="signupPassword" class="form-input w-full pl-10 pr-12 py-3 rounded-md border-none bg-white text-jet placeholder-gray-400 text-sm" placeholder="Create a password" required>
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div class="w-5 h-5 flex items-center justify-center password-toggle" onclick="togglePassword('signupPassword', this)">
+              <i class="ri-eye-off-line text-gray-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-lock-line text-gray-400"></i>
+            </div>
+          </div>
+          <input type="password" id="confirmPassword" class="form-input w-full pl-10 pr-12 py-3 rounded-md border-none bg-white text-jet placeholder-gray-400 text-sm" placeholder="Confirm your password" required>
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div class="w-5 h-5 flex items-center justify-center password-toggle" onclick="togglePassword('confirmPassword', this)">
+              <i class="ri-eye-off-line text-gray-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-button w-full bg-teal text-white py-3 px-4 rounded-xl font-semibold text-sm !rounded-button whitespace-nowrap">
+          Create Your Account
+        </button>
+      </form>
+    </div>
+
+    <div class="mt-8 text-center">
+      <p class="text-xs text-gray-500">
+        By continuing, you agree to our
+        <a href="#" class="text-teal hover:underline">Terms of Service</a>
+        and
+        <a href="#" class="text-teal hover:underline">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script id="tab-switching">
+  document.addEventListener('DOMContentLoaded', function() {
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    loginTab.addEventListener('click', function() {
+      loginTab.classList.add('active');
+      signupTab.classList.remove('active');
+      loginForm.classList.add('active');
+      signupForm.classList.remove('active');
+    });
+
+    signupTab.addEventListener('click', function() {
+      signupTab.classList.add('active');
+      loginTab.classList.remove('active');
+      signupForm.classList.add('active');
+      loginForm.classList.remove('active');
+    });
+  });
+</script>
+
+<script id="password-toggle">
+  function togglePassword(inputId, toggleElement) {
+    const input = document.getElementById(inputId);
+    const icon = toggleElement.querySelector('i');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'ri-eye-line text-gray-400';
+    } else {
+      input.type = 'password';
+      icon.className = 'ri-eye-off-line text-gray-400';
+    }
+  }
+</script>
+
+<script id="form-validation">
+  document.addEventListener('DOMContentLoaded', function() {
+    const signupForm = document.querySelector('#signupForm form');
+
+    signupForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match. Please try again.');
+        return;
+      }
+
+      alert('Account created successfully! Welcome to Baby Boutique!');
+    });
+
+    const loginForm = document.querySelector('#loginForm form');
+
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Welcome back to Baby Boutique!');
+    });
+  });
+</script>
+</body>
+</html>
