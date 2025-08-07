@@ -1,4 +1,5 @@
-// ========== SLIDER FUNCTIONALITY ==========
+
+// SLIDER
 let currentSlide = 0;
 const slides = document.querySelectorAll('.slide');
 const dots = document.querySelectorAll('.dot');
@@ -32,28 +33,30 @@ function goToSlide(index) {
 
 setInterval(nextSlide, 5000);
 
-// ========== DROPDOWN MENU FUNCTIONALITY ==========
-window.toggleDropdown = function (id) {
-    window.closeAllDropdowns();
-
+// ✅ DROPDOWN FUNCTIONS - مكتوبة بشكل عادي
+window.toggleDropdown = function(id) {
+    closeAllDropdowns();
     const element = document.getElementById(id);
-    const backdrop = document.getElementById("backdrop");
-
-    if (element && backdrop) {
+    if (element) {
         element.style.display = 'block';
-        backdrop.style.display = 'block';
     }
-};
+}
 
-window.closeAllDropdowns = function () {
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers after DOM is fully loaded
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const dropdownId = this.textContent.toLowerCase() + 'Dropdown';
+            toggleDropdown(dropdownId);
+        });
+    });
+});
+
+function closeAllDropdowns() {
     const dropdowns = document.querySelectorAll('.dropdown-panel, .mega-menu');
     dropdowns.forEach(el => el.style.display = 'none');
-
-    const backdrop = document.getElementById("backdrop");
-    if (backdrop) {
-        backdrop.style.display = 'none';
-    }
-};
+}
 
 document.addEventListener("click", function (e) {
     const isMenuItem = e.target.closest('.menu-item');
@@ -63,13 +66,3 @@ document.addEventListener("click", function (e) {
         closeAllDropdowns();
     }
 });
-
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', function () {
-            const dropdownId = this.textContent.toLowerCase() + 'Dropdown';
-            toggleDropdown(dropdownId);
-        });
-    });
-});
-
