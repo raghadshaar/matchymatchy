@@ -5,28 +5,76 @@
     <title>Title</title>
     <link rel="stylesheet" href="styles/productStyle.css" />
     <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="script.js"></script>
+<script>
 
+        function toggleFavorite(btn) {
+        btn.classList.toggle('active');
+        const icon = btn.querySelector('i');
+        if (btn.classList.contains('active')) {
+        icon.classList.remove('fa-regular');
+        icon.classList.add('fa-solid');
+    } else {
+        icon.classList.remove('fa-solid');
+        icon.classList.add('fa-regular');
+    }
+    }
+
+
+    function changeImage(src, element) {
+        // Update main image
+        document.getElementById('main-product-image').src = src;
+
+        // Update active thumbnail
+        const thumbnails = document.querySelectorAll('.image-thumbnail');
+        thumbnails.forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+        element.classList.add('active');
+    }
+</script>
 </head>
 <body>
 <div data-include="header.html"></div>
 <section class="product-detail">
     <div class="container">
         <div class="product-wrapper">
-            <!-- Product image on the left -->
-            <div class="product-image">
-                <img src="images/product1.jpg" alt="Floral Summer Dress">
+            <!-- Enhanced product image gallery on the left -->
+            <div class="product-gallery">
+                <div class="main-image-container">
+                    <img src="images/product1.jpg" alt="Floral Summer Dress" class="main-image" id="main-product-image">
+
+                    <!-- Thumbnails moved below the main image -->
+                    <div class="image-thumbnails">
+                        <div class="image-thumbnail active" onclick="changeImage('images/product1.jpg', this)">
+                            <img src="images/product1.jpg" alt="Front View">
+                        </div>
+                        <div class="image-thumbnail" onclick="changeImage('images/product2.jpg', this)">
+                            <img src="images/product2.jpg" alt="Back View">
+                        </div>
+                        <div class="image-thumbnail" onclick="changeImage('images/product3.jpg', this)">
+                            <img src="images/product3.jpg" alt="Side View">
+                        </div>
+                        <div class="image-thumbnail" onclick="changeImage('images/product4.jpg', this)">
+                            <img src="images/product4.jpg" alt="Detail View">
+                        </div>
+                    </div>
+                </div>
             </div>
+
 
             <!-- Product details on the right -->
             <div class="product-info">
                 <h1>Floral Pattern Summer Dress for Girls</h1>
-                <p class="description">Beautiful summer dress made from soft natural cotton, adorned with lovely floral patterns in gentle colors.</p>
+                <p class="description">Beautiful summer dress made from soft natural cotton, adorned with lovely floral patterns in gentle colors. Perfect for warm days and outdoor activities.</p>
 
                 <div class="price-section">
-                    <span class="old-price">$120</span>
+                    <span class="old-price">₪120</span>
                     <span class="discount">OFF 26%</span>
-                    <span class="new-price">$89</span>
+                    <span class="new-price">₪89</span>
                 </div>
 
                 <div class="rating">
@@ -53,57 +101,83 @@
                 </div>
 
                 <button class="add-to-cart">Add to Cart</button>
+                <button class="icon-btn favorite-btn" onclick="toggleFavorite(this)">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
             </div>
         </div>
 
-        <!-- Product Features Section -->
+        <!-- Enhanced Product Features Section -->
         <div class="product-features">
             <h2>Product Features</h2>
             <ul class="features-list">
-                <li>Made from 100% natural cotton</li>
-                <li>Machine washable</li>
-                <li>Suitable for sensitive skin</li>
+                <li>Made from 100% natural cotton for ultimate comfort</li>
+                <li>Machine washable for easy care</li>
+                <li>Hypoallergenic and suitable for sensitive skin</li>
+                <li>Breathable fabric keeps kids cool in summer</li>
+                <li>Durable stitching for long-lasting wear</li>
+                <li>Colorfast material that resists fading</li>
             </ul>
             <div class="free-shipping">
-                Free shipping for orders over $200
+                Free shipping for orders over ₪200
             </div>
         </div>
 
-        <!-- Similar Products Section -->
+        <section class="product-reviews">
+            <h2>Customer Reviews</h2>
+            <div class="review-list">
+                <div class="review">
+                    <strong>Fatima A.</strong>
+                    <p>Loved the quality and fast shipping!</p>
+                </div>
+                <div class="review">
+                    <strong>Sara M.</strong>
+                    <p>Nice colors and soft material. Will buy again.</p>
+                </div>
+            </div>
+
+            <form class="review-form">
+                <h3>Leave a Comment</h3>
+                <textarea placeholder="Write your review..."></textarea>
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+
+        <!-- Enhanced Similar Products Section -->
         <div class="similar-products">
-            <h2>Similar Products</h2>
+            <h2>You May Also Like</h2>
             <div class="similar-products-grid">
                 <div class="similar-product-card">
-                    <img src="images/similar1.jpg" alt="Square Summer Dress" class="similar-product-image">
-                    <h3 class="similar-product-title">Square Summer Dress</h3>
-                    <div class="similar-product-price">$52</div>
+                    <img src="images/similar1.jpg" alt="Sleeveless Summer Dress" class="similar-product-image">
+                    <h3 class="similar-product-title">Sleeveless Summer Dress</h3>
+                    <div class="similar-product-price">₪59</div>
                     <div class="similar-product-rating">
                         <span class="heart-icon">❤</span> 42
                         <span>⭐ 4.2</span>
                     </div>
                 </div>
                 <div class="similar-product-card">
-                    <img src="images/similar2.jpg" alt="Soft Floral Dress" class="similar-product-image">
-                    <h3 class="similar-product-title">Soft Floral Dress</h3>
-                    <div class="similar-product-price">$45</div>
+                    <img src="images/similar2.jpg" alt="Cartoon Print Skirt" class="similar-product-image">
+                    <h3 class="similar-product-title">Cartoon Print Skirt</h3>
+                    <div class="similar-product-price">₪49</div>
                     <div class="similar-product-rating">
                         <span class="heart-icon">❤</span> 45
                         <span>⭐ 4.5</span>
                     </div>
                 </div>
                 <div class="similar-product-card">
-                    <img src="images/similar3.jpg" alt="Elegant Summer Dress" class="similar-product-image">
-                    <h3 class="similar-product-title">Elegant Summer Dress</h3>
-                    <div class="similar-product-price">$78</div>
+                    <img src="images/similar3.jpg" alt="Elegant Summer Cardigan" class="similar-product-image">
+                    <h3 class="similar-product-title">Elegant Summer Cardigan</h3>
+                    <div class="similar-product-price">₪79</div>
                     <div class="similar-product-rating">
                         <span class="heart-icon">❤</span> 47
                         <span>⭐ 4.6</span>
                     </div>
                 </div>
                 <div class="similar-product-card">
-                    <img src="images/similar4.jpg" alt="Casual Summer Dress" class="similar-product-image">
-                    <h3 class="similar-product-title">Casual Summer Dress</h3>
-                    <div class="similar-product-price">$65</div>
+                    <img src="images/similar4.jpg" alt="Light Summer Shorts" class="similar-product-image">
+                    <h3 class="similar-product-title">Light Summer Shorts</h3>
+                    <div class="similar-product-price">₪69</div>
                     <div class="similar-product-rating">
                         <span class="heart-icon">❤</span> 43
                         <span>⭐ 4.7</span>
