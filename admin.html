@@ -9,41 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Styles -->
     <link rel="stylesheet" href="styles/admin.css" />
+
 </head>
 <body>
-
 <!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="brand">
-        <span class="logo">Matchy Matchy</span>
-    </div>
+<div id="sidebar-container"></div>
 
-    <nav class="menu">
-        <a class="menu-item active" href="#">
-            <i class="fa-solid fa-chart-line"></i> Dashboard
-        </a>
-        <a class="menu-item" href="#">
-            <i class="fa-solid fa-shirt"></i> Products
-        </a>
-        <a class="menu-item" href="#">
-            <i class="fa-solid fa-receipt"></i> Orders
-        </a>
-        <a class="menu-item" href="#">
-            <i class="fa-solid fa-user-group"></i> Users
-        </a>
-        <a class="menu-item" href="#">
-            <i class="fa-regular fa-star"></i> Reviews
-        </a>
-        <a class="menu-item" href="#">
-            <i class="fa-solid fa-tags"></i> Categories
-        </a>
-
-        <div class="menu-title">System</div>
-        <a class="menu-item" href="#">
-            <i class="fa-solid fa-gear"></i> Settings
-        </a>
-    </nav>
-</aside>
 
 <!-- MAIN -->
 <main class="main">
@@ -56,29 +27,67 @@
         </form>
 
         <div class="top-actions">
-            <button class="icon-btn"><i class="fa-regular fa-bell"></i></button>
-            <div class="user-list">
-            <div class="user">
-                <div class="meta">
-                    <strong>Raghad Shaar</strong>
-                    <span>Administrator</span>
+            <!-- Notifications  -->
+            <button class="icon-btn notify-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notify-menu">
+                <i class="fa-regular fa-bell"></i>
+                <span class="badge-dot" aria-hidden="true"></span>
+            </button>
+
+            <!-- Profile trigger -->
+            <button class="profile-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu">
+    <span class="pf-avatar">
+      <img src="images/raghad.jpg" alt="Raghad Shaar">
+    </span>
+                <span class="pf-meta">
+      <strong>Raghad Shaar</strong>
+      <small>Administrator</small>
+    </span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+            <!-- Profile popover -->
+            <div id="profile-menu" class="popover profile-popover" role="menu" aria-label="Profile menu">
+                <div class="pf-sec pf-signed">
+                    <span class="pf-sec-title">Signed in as</span>
+                    <a href="mailto:raghadshaar20@gmail.com" class="pf-email">raghadshaar20@gmail.com</a>
                 </div>
-            </div>
-            <div class="user">
-                <div class="meta">
-                    <strong>Afnan Hasan</strong>
-                    <span>Administrator</span>
+
+                <div class="pf-divider"></div>
+
+                <div class="pf-sec">
+                    <span class="pf-sec-title">Switch account</span>
+
+                    <button class="pf-account" data-email="afnan.hasan@company.com">
+                        <span class="pf-acc-avatar"><img src="https://i.pravatar.cc/80?img=31" alt="Afnan Hasan"></span>
+                        <span class="pf-acc-meta">
+    <strong>Afnan Hasan</strong>
+    <small>Administrator</small>
+  </span>
+                    </button>
                 </div>
-            </div>
+
+                <div class="pf-divider"></div>
+
+                <div class="pf-sec pf-actions">
+                    <button class="pf-action">
+                        <i class="fa-solid fa-gear"></i>  <!-- Changed to fa-solid -->
+                        <span>Settings</span>
+                    </button>
+                    <button class="pf-action">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>  <!-- Changed to fa-solid -->
+                        <span>Sign out</span>
+                    </button>
+                </div>
             </div>
         </div>
+
     </header>
 
     <!-- CONTENT -->
     <section class="content">
 
         <h1 class="page-title">Dashboard Overview</h1>
-
+        <p class="page-info">Welcome back! Here's what's happening with your store today. </p>
         <!-- STATS -->
         <div class="stats">
             <div class="stat-card">
@@ -95,7 +104,7 @@
                     <span>Revenue</span>
                     <i class="fa-solid fa-coins"></i>
                 </div>
-                <div class="stat-val">$48,392</div>
+                <div class="stat-val">₪48,392</div>
                 <div class="stat-sub">+8.2% from last month</div>
             </div>
 
@@ -136,7 +145,7 @@
                         <span>#ORD-2847</span>
                         <span>Emma Wilson</span>
                         <span><span class="badge badge-teal">Shipped</span></span>
-                        <span>$127.50</span>
+                        <span>₪127.50</span>
                         <span><button class="row-btn"><i class="fa-regular fa-eye"></i></button></span>
                     </div>
 
@@ -144,7 +153,7 @@
                         <span>#ORD-2846</span>
                         <span>Michael Chen</span>
                         <span><span class="badge badge-amber">Pending</span></span>
-                        <span>$89.99</span>
+                        <span>₪89.99</span>
                         <span><button class="row-btn"><i class="fa-regular fa-eye"></i></button></span>
                     </div>
 
@@ -175,29 +184,29 @@
 
                 <ul class="product-list">
                     <li class="product-item">
-                        <img src="https://images.unsplash.com/photo-1582582429416-2a9d9fefb84b?q=80&w=400" alt="">
+                        <img src="images/yellowdress.jpg" alt="">
                         <div class="info">
-                            <strong>Organic Cotton Onesie</strong>
-                            <small>Baby Collection</small>
-                            <div class="meta"><span class="price">$34.99</span> <span class="dot">•</span> <span>247 sold</span></div>
+                            <strong>Sunny Yellow Ruffle Dress</strong>
+                            <small>kids Collection</small>
+                            <div class="meta"><span class="price">₪34.99</span> <span class="dot">•</span> <span>247 sold</span></div>
                         </div>
                         <button class="ghost"><i class="fa-regular fa-chart-bar"></i></button>
                     </li>
 
                     <li class="product-item">
-                        <img src="https://images.unsplash.com/photo-1605721911519-3dfeb3be25e1?q=80&w=400" alt="">
+                        <img src="images/summerdess.jpg" alt="">
                         <div class="info">
                             <strong>Summer Play Dress</strong>
                             <small>Toddler Collection</small>
-                            <div class="meta"><span class="price">$42.50</span> <span class="dot">•</span> <span>189 sold</span></div>
+                            <div class="meta"><span class="price">₪42.50</span> <span class="dot">•</span> <span>189 sold</span></div>
                         </div>
                         <button class="ghost"><i class="fa-regular fa-chart-bar"></i></button>
                     </li>
 
                     <li class="product-item">
-                        <img src="https://images.unsplash.com/photo-1503342217505-b0a15cf70489?q=80&w=400" alt="">
+                        <img src="images/matching.jpg" alt="">
                         <div class="info">
-                            <strong>Matching Pajama Set</strong>
+                            <strong>Matching family Set</strong>
                             <small>Kids Collection</small>
                             <div class="meta"><span class="price">$28.99</span> <span class="dot">•</span> <span>156 sold</span></div>
                         </div>
@@ -208,6 +217,6 @@
         </div>
     </section>
 </main>
-
+<script src="js/admin.js"> </script>
 </body>
 </html>

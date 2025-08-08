@@ -1,0 +1,77 @@
+:root{
+    --baby:#F9F8F3; --jet:#383838; --teal:#008080; --pink:#E4CFC3;
+    --umber:#715E51; --white:#fff; --line:#e9e6e1;
+    --ink:#2b2b2b; --ink-soft:#6b6b6b; --shadow:0 6px 18px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--baby);color:var(--ink);font-family:Poppins,system-ui,Arial}
+.wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+h1{margin:6px 0 12px;font-size:1.6rem;color:var(--umber)}
+.help{color:var(--ink-soft);margin-bottom:16px}
+
+.toolbar{
+    display:flex;gap:10px;align-items:center;background:var(--white);
+    border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow)
+}
+.search{display:flex;align-items:center;gap:8px;background:var(--baby);
+    border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:260px;flex:1}
+.search input{border:0;outline:0;background:transparent;width:100%}
+.filter{display:flex;align-items:center;gap:6px;background:var(--white);
+    border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.add-btn{
+    margin-left:auto;background:var(--teal);color:#fff;border:0;border-radius:12px;
+    padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer
+}
+.table{
+    margin-top:14px;background:var(--white);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)
+}
+.row,.head{
+    display:grid;grid-template-columns: 44px 1.2fr .9fr .7fr .7fr .7fr .6fr;
+    gap:10px;align-items:center;padding:12px 14px
+}
+.head{color:var(--ink-soft);border-bottom:1px dashed var(--line)}
+.row{border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.thumb{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--baby);object-fit:cover}
+.badge{padding:4px 8px;border-radius:999px;font-size:.78rem;border:1px solid rgba(0,0,0,.06);background:#eef6f6;color:#0a6}
+.kebab{background:var(--baby);border:1px solid var(--line);border-radius:10px;width:36px;height:36px;cursor:pointer}
+.actions{display:flex;gap:8px}
+.btn-sm{border:1px solid var(--line);background:var(--baby);border-radius:10px;padding:8px 10px;cursor:pointer}
+.btn-sm.teal{background:var(--teal);color:#fff;border-color:transparent}
+
+/* Drawer / modal */
+.drawer{
+    position:fixed;inset:0;background:rgba(0,0,0,.25);backdrop-filter:saturate(120%) blur(2px);
+    display:none;align-items:flex-end;justify-content:center;z-index:10
+}
+.drawer.show{display:flex}
+.panel{
+    width:min(960px,96vw);background:var(--white);border-radius:16px 16px 0 0;
+    border:1px solid var(--line);box-shadow:var(--shadow);max-height:92vh;overflow:auto
+}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px dashed var(--line)}
+.panel h2{margin:0;font-size:1.2rem}
+.form{display:grid;grid-template-columns: 1.2fr .8fr;gap:16px;padding:14px}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--baby)}
+.card h3{margin:0 0 10px;font-size:1rem;color:var(--jet)}
+label{display:block;font-size:.9rem;color:var(--ink-soft);margin-bottom:6px}
+input[type="text"], input[type="number"], textarea, select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit
+}
+textarea{min-height:112px;resize:vertical}
+.hint{font-size:.8rem;color:var(--ink-soft);margin-top:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.footer{
+    position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--line);
+    padding:12px;display:flex;gap:10px;justify-content:flex-end
+}
+.link{background:transparent;border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
+.primary{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+
+/* Tag pills for sizes */
+.tagbox{display:flex;flex-wrap:wrap;gap:8px}
+.tag{background:#fff;border:1px solid var(--line);padding:6px 10px;border-radius:999px;cursor:pointer}
+.tag.active{background:var(--teal);color:#fff;border-color:transparent}
+
+/* Empty state */
+.empty{padding:28px;text-align:center;color:var(--ink-soft)}

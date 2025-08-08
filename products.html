@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Matchy Matchy — Products</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/admin.css" />
+    <link rel="stylesheet" href="styles/products.css" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar-container"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('sidebar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('sidebar-container').innerHTML = data;
+                const currentPage = window.location.pathname.split('/').pop();
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === currentPage) {
+                        item.classList.add('active');
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading sidebar:', error));
+    });
+</script>
+<!-- MAIN -->
+<main class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <form class="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Search orders, products, customers..." />
+        </form>
+
+        <div class="top-actions">
+            <button class="icon-btn notify-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notify-menu">
+                <i class="fa-regular fa-bell"></i>
+                <span class="badge-dot" aria-hidden="true"></span>
+            </button>
+
+            <button class="profile-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu">
+                <span class="pf-avatar">
+                    <img src="images/raghad.jpg" alt="Raghad Shaar">
+                </span>
+                <span class="pf-meta">
+                    <strong>Raghad Shaar</strong>
+                    <small>Administrator</small>
+                </span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+            <div id="profile-menu" class="popover profile-popover" role="menu" aria-label="Profile menu">
+                <div class="pf-sec pf-signed">
+                    <span class="pf-sec-title">Signed in as</span>
+                    <a href="mailto:raghadshaar20@gmail.com" class="pf-email">raghadshaar20@gmail.com</a>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-sec">
+                    <span class="pf-sec-title">Switch account</span>
+                    <button class="pf-account" data-email="afnan.hasan@company.com">
+                        <span class="pf-acc-avatar"><img src="https://i.pravatar.cc/80?img=31" alt="Afnan Hasan"></span>
+                        <span class="pf-acc-meta">
+                            <strong>Afnan Hasan</strong>
+                            <small>Administrator</small>
+                        </span>
+                    </button>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-sec pf-actions">
+                    <button class="pf-action">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Settings</span>
+                    </button>
+                    <button class="pf-action">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>Sign out</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="wrap">
+        <h1>Products</h1>
+        <p class="help">Manage your product catalog and inventory. Prices are shown in <strong>ILS (₪)</strong>.</p>
+
+        <div class="toolbar">
+            <div class="search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="q" type="text" placeholder="Search title, SKU..." />
+            </div>
+            <div class="filter"><i class="fa-regular fa-folder"></i> <select id="f-collection"><option value="">All collections</option></select></div>
+            <div class="filter"><i class="fa-regular fa-eye"></i>
+                <select id="f-status">
+                    <option value="">Any status</option>
+                    <option value="Active">Active</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
+            <button class="add-btn" id="addBtn"><i class="fa-solid fa-plus"></i> Add Product</button>
+        </div>
+
+        <div id="table" class="table">
+            <div class="head">
+                <div></div><div>Product</div><div>Collection</div><div>Price</div><div>Stock</div><div>Status</div><div>Actions</div>
+            </div>
+            <div id="rows"></div>
+        </div>
+
+        <div id="empty" class="empty" style="display:none">
+            No products yet. Click <b>Add Product</b> to create your first item.
+        </div>
+    </div>
+</main>
+
+
+
+    <script src="js/adminproducts.js"></script>
+<script src="js/admin.js"> </script>
+</body>
+
+
+</html>
