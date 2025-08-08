@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Kids Fashion Store</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        :root {
+            --baby: #F9F8F3;
+            --jet: #383838;
+            --teal: #008080;
+            --pink: #E4CFC3;
+            --umber: #715E51;
+            --white: #ffffff;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--baby);
+            color: var(--jet);
+        }
+        .font-pacifico {
+            font-family: 'Pacifico', cursive;
+        }
+        .bg-baby { background-color: var(--baby); }
+        .bg-jet { background-color: var(--jet); }
+        .bg-teal { background-color: var(--teal); }
+        .bg-pink { background-color: var(--pink); }
+        .bg-umber { background-color: var(--umber); }
+        .text-baby { color: var(--baby); }
+        .text-jet { color: var(--jet); }
+        .text-teal { color: var(--teal); }
+        .text-pink { color: var(--pink); }
+        .text-umber { color: var(--umber); }
+        .border-teal { border-color: var(--teal); }
+        .border-pink { border-color: var(--pink); }
+        .hover\:bg-teal:hover { background-color: var(--teal); }
+        .hover\:bg-pink:hover { background-color: var(--pink); }
+        .hover\:text-teal:hover { color: var(--teal); }
+        .hover\:text-pink:hover { color: var(--pink); }
+        .hover\:border-teal:hover { border-color: var(--teal); }
+        .hover\:border-pink:hover { border-color: var(--pink); }
+        .rounded-button { border-radius: 8px !important; }
+
+        .quantity-btn {
+            transition: all 0.2s ease;
+        }
+        .quantity-btn:hover {
+            transform: scale(1.05);
+        }
+        .cart-item {
+            transition: all 0.3s ease;
+        }
+        .cart-item.removing {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.hide {
+            opacity: 0;
+            transform: translateY(-2rem);
+        }
+
+        @media (max-width: 768px) {
+            .cart-summary {
+                position: static !important;
+            }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#008080',
+                        secondary: '#E4CFC3'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-baby min-h-screen">
+<header class="bg-white shadow-sm border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex items-center">
+                <h1 class="font-pacifico text-2xl text-teal">MatchyMatchy</h1>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#" class="text-jet hover:text-teal transition-colors">Shop</a>
+                <a href="#" class="text-jet hover:text-teal transition-colors">Categories</a>
+                <a href="#" class="text-jet hover:text-teal transition-colors">About</a>
+                <a href="#" class="text-jet hover:text-teal transition-colors">Contact</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <div class="w-8 h-8 flex items-center justify-center">
+                    <i class="ri-search-line text-xl text-jet hover:text-teal cursor-pointer transition-colors"></i>
+                </div>
+                <div class="w-8 h-8 flex items-center justify-center">
+                    <i class="ri-user-line text-xl text-jet hover:text-teal cursor-pointer transition-colors"></i>
+                </div>
+                <div class="w-8 h-8 flex items-center justify-center relative">
+                    <i class="ri-shopping-cart-line text-xl text-teal"></i>
+                    <span class="absolute -top-2 -right-2 bg-pink text-jet text-xs rounded-full w-5 h-5 flex items-center justify-center" id="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="font-pacifico text-3xl text-jet mb-2">Shopping Cart</h1>
+        <p class="text-umber">Review your items before checkout</p>
+    </div>
+
+    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
+        <div class="lg:col-span-2">
+            <div id="cart-items" class="space-y-4">
+                <!-- Cart items will be populated here -->
+            </div>
+
+            <div id="empty-cart" class="hidden text-center py-16">
+                <div class="w-32 h-32 mx-auto mb-6 bg-pink rounded-full flex items-center justify-center">
+                    <i class="ri-shopping-cart-line text-4xl text-umber"></i>
+                </div>
+                <h2 class="font-pacifico text-2xl text-jet mb-4">Your cart is empty</h2>
+                <p class="text-umber mb-8">Looks like you haven't added any adorable outfits yet!</p>
+                <button class="bg-teal text-white px-8 py-3 !rounded-button hover:bg-opacity-90 transition-all whitespace-nowrap">
+                    Shop Now
+                </button>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 mt-8 lg:mt-0">
+            <div class="cart-summary bg-white rounded-lg shadow-lg p-6 lg:sticky lg:top-8">
+                <h2 class="font-pacifico text-xl text-jet mb-6">Cart Summary</h2>
+
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between">
+                        <span class="text-umber">Subtotal</span>
+                        <span class="text-jet font-medium" id="subtotal">₪0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-umber">Shipping</span>
+                        <span class="text-jet font-medium" id="shipping">₪15.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-umber">Tax</span>
+                        <span class="text-jet font-medium" id="tax">₪0.00</span>
+                    </div>
+                    <hr class="border-gray-200">
+                    <div class="flex justify-between text-lg font-semibold">
+                        <span class="text-jet">Total</span>
+                        <span class="text-jet" id="total">₪15.00</span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-umber mb-2">Coupon Code</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="coupon-input" placeholder="Enter code" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-teal text-sm">
+                        <button id="apply-coupon" class="bg-pink text-jet px-4 py-2 !rounded-button hover:bg-opacity-80 transition-all whitespace-nowrap text-sm">
+                            Apply
+                        </button>
+                    </div>
+                    <div id="coupon-message" class="mt-2 text-sm hidden"></div>
+                </div>
+
+                <div class="space-y-3">
+                    <button id="checkout-btn" class="w-full bg-teal text-white py-3 !rounded-button hover:bg-opacity-90 transition-all font-medium whitespace-nowrap">
+                        Proceed to Checkout
+                    </button>
+                    <a href="#" class="block text-center text-pink hover:text-umber transition-colors">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<div id="toast" class="toast hide bg-white border-l-4 border-teal rounded-md shadow-lg p-4 max-w-sm">
+    <div class="flex items-center">
+        <div class="w-6 h-6 flex items-center justify-center">
+            <i class="ri-check-line text-teal"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-jet" id="toast-message">Item removed from cart</p>
+        </div>
+    </div>
+</div>
+
+<script id="cart-functionality">
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    const sampleProducts = [
+        {
+            id: 1,
+            name: "Rainbow Unicorn Dress",
+            description: "Magical dress with sparkly unicorn print",
+            size: "Age 4-5",
+            price: 89.99,
+            image: "https://readdy.ai/api/search-image?query=adorable%20rainbow%20unicorn%20dress%20for%20little%20girl%20with%20sparkles%20and%20magical%20details%20on%20clean%20white%20background%2C%20product%20photography%20style%2C%20soft%20lighting%2C%20pastel%20colors&width=120&height=120&seq=1&orientation=squarish",
+            quantity: 2
+        },
+        {
+            id: 2,
+            name: "Dinosaur Adventure T-Shirt",
+            description: "Cool dinosaur print on soft cotton",
+            size: "Age 6-7",
+            price: 45.50,
+            image: "https://readdy.ai/api/search-image?query=cute%20dinosaur%20print%20t-shirt%20for%20kids%20with%20colorful%20cartoon%20dinosaurs%20on%20clean%20white%20background%2C%20product%20photography%20style%2C%20bright%20colors%2C%20playful%20design&width=120&height=120&seq=2&orientation=squarish",
+            quantity: 1
+        },
+        {
+            id: 3,
+            name: "Princess Tutu Skirt",
+            description: "Fluffy tulle skirt in pink and gold",
+            size: "Age 3-4",
+            price: 67.00,
+            image: "https://readdy.ai/api/search-image?query=beautiful%20pink%20and%20gold%20princess%20tutu%20skirt%20for%20little%20girl%20with%20layers%20of%20soft%20tulle%20on%20clean%20white%20background%2C%20product%20photography%20style%2C%20elegant%20and%20dreamy&width=120&height=120&seq=3&orientation=squarish",
+            quantity: 1
+        }
+    ];
+
+    if (cart.length === 0) {
+        cart = sampleProducts;
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function renderCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const emptyCartContainer = document.getElementById('empty-cart');
+
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '';
+            emptyCartContainer.classList.remove('hidden');
+            updateCartSummary();
+            return;
+        }
+
+        emptyCartContainer.classList.add('hidden');
+
+        cartItemsContainer.innerHTML = cart.map(item => `
+                <div class="cart-item bg-white rounded-lg shadow-sm p-4 md:p-6" data-id="${item.id}">
+                    <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                        <div class="flex-shrink-0">
+                            <img src="${item.image}" alt="${item.name}" class="w-24 h-24 md:w-30 md:h-30 object-cover rounded-lg">
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-pacifico text-lg text-jet mb-1">${item.name}</h3>
+                            <p class="text-umber text-sm mb-2">${item.description}</p>
+                            <p class="text-xs text-umber bg-pink px-2 py-1 rounded-full inline-block">${item.size}</p>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                            <div class="text-center">
+                                <p class="text-sm text-umber">Price</p>
+                                <p class="font-medium text-jet">₪${item.price.toFixed(2)}</p>
+                            </div>
+
+                            <div class="flex items-center justify-center space-x-3">
+                                <button class="quantity-btn w-8 h-8 rounded-full border-2 border-teal flex items-center justify-center hover:bg-teal hover:text-white transition-all" onclick="updateQuantity(${item.id}, ${item.quantity - 1})">
+                                    <i class="ri-subtract-line text-sm"></i>
+                                </button>
+                                <span class="w-12 text-center font-medium text-jet">${item.quantity}</span>
+                                <button class="quantity-btn w-8 h-8 rounded-full border-2 border-teal flex items-center justify-center hover:bg-teal hover:text-white transition-all" onclick="updateQuantity(${item.id}, ${item.quantity + 1})">
+                                    <i class="ri-add-line text-sm"></i>
+                                </button>
+                            </div>
+
+                            <div class="text-center">
+                                <p class="text-sm text-umber">Total</p>
+                                <p class="font-semibold text-jet">₪${(item.price * item.quantity).toFixed(2)}</p>
+                            </div>
+
+                            <button class="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full transition-all" onclick="removeItem(${item.id})">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+        updateCartSummary();
+    }
+
+    function updateQuantity(id, newQuantity) {
+        if (newQuantity <= 0) {
+            removeItem(id);
+            return;
+        }
+
+        const itemIndex = cart.findIndex(item => item.id === id);
+        if (itemIndex !== -1) {
+            cart[itemIndex].quantity = newQuantity;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+    }
+
+    function removeItem(id) {
+        const itemElement = document.querySelector(`[data-id="${id}"]`);
+        itemElement.classList.add('removing');
+
+        setTimeout(() => {
+            cart = cart.filter(item => item.id !== id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+            showToast('Item removed from cart');
+        }, 300);
+    }
+
+    function updateCartSummary() {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const shipping = cart.length > 0 ? 15.00 : 0;
+        const tax = subtotal * 0.17;
+        const total = subtotal + shipping + tax;
+
+        document.getElementById('subtotal').textContent = `₪${subtotal.toFixed(2)}`;
+        document.getElementById('shipping').textContent = `₪${shipping.toFixed(2)}`;
+        document.getElementById('tax').textContent = `₪${tax.toFixed(2)}`;
+        document.getElementById('total').textContent = `₪${total.toFixed(2)}`;
+        document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        toastMessage.textContent = message;
+        toast.classList.remove('hide');
+        toast.classList.add('show');
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+        }, 3000);
+    }
+
+    renderCart();
+</script>
+
+<script id="coupon-functionality">
+    const validCoupons = {
+        'KIDS10': { discount: 0.10, type: 'percentage', description: '10% off' },
+        'SAVE20': { discount: 20, type: 'fixed', description: '₪20 off' },
+        'WELCOME15': { discount: 0.15, type: 'percentage', description: '15% off' }
+    };
+
+    document.getElementById('apply-coupon').addEventListener('click', function() {
+        const couponInput = document.getElementById('coupon-input');
+        const couponMessage = document.getElementById('coupon-message');
+        const couponCode = couponInput.value.trim().toUpperCase();
+
+        if (!couponCode) {
+            showCouponMessage('Please enter a coupon code', 'error');
+            return;
+        }
+
+        if (validCoupons[couponCode]) {
+            const coupon = validCoupons[couponCode];
+            showCouponMessage(`Coupon applied! ${coupon.description}`, 'success');
+            applyCouponDiscount(coupon);
+        } else {
+            showCouponMessage('Invalid coupon code', 'error');
+        }
+    });
+
+    function showCouponMessage(message, type) {
+        const couponMessage = document.getElementById('coupon-message');
+        couponMessage.textContent = message;
+        couponMessage.className = `mt-2 text-sm ${type === 'success' ? 'text-teal' : 'text-red-500'}`;
+        couponMessage.classList.remove('hidden');
+    }
+
+    function applyCouponDiscount(coupon) {
+        const subtotalElement = document.getElementById('subtotal');
+        const totalElement = document.getElementById('total');
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        let discount = 0;
+
+        if (coupon.type === 'percentage') {
+            discount = subtotal * coupon.discount;
+        } else {
+            discount = coupon.discount;
+        }
+
+        const shipping = cart.length > 0 ? 15.00 : 0;
+        const tax = (subtotal - discount) * 0.17;
+        const total = subtotal - discount + shipping + tax;
+
+        totalElement.textContent = `₪${Math.max(0, total).toFixed(2)}`;
+    }
+</script>
+
+<script id="checkout-functionality">
+    document.getElementById('checkout-btn').addEventListener('click', function() {
+        if (cart.length === 0) {
+            showToast('Your cart is empty');
+            return;
+        }
+
+        showToast('Redirecting to checkout...');
+        setTimeout(() => {
+            window.location.href = '#checkout';
+        }, 1000);
+    });
+</script>
+<div id="foot">
+
+</div>
+<script>
+
+    fetch('footer.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('foot').innerHTML = data;
+        });
+</script>
+
+</body>
+
+</html>
