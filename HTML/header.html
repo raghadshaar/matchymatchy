@@ -1,0 +1,81 @@
+<!-- header.html -->
+<link rel="stylesheet" href="../style.css" />
+
+<header class="main-header">
+    <div class="backdrop" id="backdrop" onclick="closeAllDropdowns()"></div>
+    <div class="top-header">
+        <div class="logo">Matchy Matchy</div>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Find your product" />
+        </div>
+        <div class="icons">
+            <span class="icon login"><i class="fa-regular fa-user"></i> Login</span>
+            <span class="icon"><i class="fa-regular fa-heart"></i></span>
+            <span class="icon cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="badge">3</span>
+      </span>
+        </div>
+    </div>
+
+    <nav class="nav-menu">
+        <ul>
+            <li class="menu-item" onclick="toggleDropdown('babyDropdown')">Baby</li>
+            <li class="menu-item" onclick="toggleDropdown('toddlerDropdown')">Toddler</li>
+            <li class="menu-item" onclick="toggleDropdown('kidsDropdown')">Kids</li>
+            <li class="menu-item" onclick="toggleDropdown('dealsDropdown')">Deals</li>
+            <li class="menu-item">Shop All</li>
+        </ul>
+    </nav>
+
+    <div class="dropdown-panel" id="babyDropdown">
+        <div class="dropdown-header">
+            <strong>Baby</strong>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul>
+            <li>Baby Girl</li>
+            <li>Baby Boy</li>
+            <li>Baby Neutral</li>
+            <li>Baby Gear</li>
+            <li>Baby Gifts</li>
+        </ul>
+    </div>
+
+    <div class="dropdown-panel" id="toddlerDropdown">
+        <div class="dropdown-header">
+            <strong>Toddler</strong>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul>
+            <li>Toddler Girl</li>
+            <li>Toddler Boy</li>
+            <li>Toddler Gear</li>
+        </ul>
+    </div>
+
+    <div class="dropdown-panel" id="kidsDropdown">
+        <div class="dropdown-header">
+            <strong>Kids</strong>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul>
+            <li>Girls</li>
+            <li>Boys</li>
+        </ul>
+    </div>
+
+    <div class="dropdown-panel" id="dealsDropdown">
+        <div class="dropdown-header">
+            <h3>Deals</h3>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul class="mega-menu-list">
+            <li>Flash Sale <span>&#8250;</span></li>
+            <li>Clearance <span>&#8250;</span></li>
+            <li>Bundle Offers <span>&#8250;</span></li>
+            <li>Weekly Specials <span>&#8250;</span></li>
+        </ul>
+    </div>
+</header>
