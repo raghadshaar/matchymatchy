@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matchy Matchy</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+</head>
+
+
+
+<body>
+
+<!-- HEADER -->
+<header class="main-header">
+    <div class="backdrop" id="backdrop" onclick="closeAllDropdowns()"></div>
+    <div class="top-header">
+        <div class="logo">Matchy Matchy</div>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Find your product" />
+        </div>
+        <div class="icons">
+            <span class="icon login"><i class="fa-regular fa-user"></i> Login</span>
+            <span class="icon"><i class="fa-regular fa-heart"></i></span>
+            <span class="icon cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="badge">3</span>
+      </span>
+        </div>
+    </div>
+
+    <nav class="nav-menu">
+        <ul>
+            <li class="menu-item" onclick="toggleDropdown('babyDropdown')">Baby</li>
+            <li class="menu-item" onclick="toggleDropdown('toddlerDropdown')">Toddler</li>
+            <li class="menu-item" onclick="toggleDropdown('kidsDropdown')">Kids</li>
+            <li class="menu-item" onclick="toggleDropdown('dealsDropdown')">Deals</li>
+            <li class="menu-item">Shop All</li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar Menus -->
+    <div class="dropdown-panel" id="babyDropdown">
+        <div class="dropdown-header">
+            <strong>Baby</strong>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul>
+            <li>Baby Girl</li>
+            <li>Baby Boy</li>
+            <li>Baby Neutral</li>
+            <li>Baby Gear</li>
+            <li>Baby Gifts</li>
+        </ul>
+    </div>
+
+    <div class="dropdown-panel" id="toddlerDropdown">
+        <div class="dropdown-header">
+            <strong>Toddler</strong>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul>
+            <li>Toddler Girl</li>
+            <li>Toddler Boy</li>
+            <li>Toddler Gear</li>
+        </ul>
+    </div>
+
+    <div class="dropdown-panel" id="kidsDropdown">
+        <div class="dropdown-header">
+            <strong>Kids</strong>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul>
+            <li>Girls</li>
+            <li>Boys</li>
+        </ul>
+    </div>
+
+
+    <div class="dropdown-panel" id="dealsDropdown">
+        <div class="dropdown-header">
+            <h3>Deals</h3>
+            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
+        </div>
+        <ul class="mega-menu-list">
+            <li>Flash Sale <span>&#8250;</span></li>
+            <li>Clearance <span>&#8250;</span></li>
+            <li>Bundle Offers <span>&#8250;</span></li>
+            <li>Weekly Specials <span>&#8250;</span></li>
+        </ul>
+    </div>
+</header>
+
+<!-- HERO SLIDER -->
+<section class="slider">
+    <!-- Slide 1 -->
+    <div class="slide active">
+        <img src="images/hero2.jpg" alt="Slide 1" />
+        <div class="overlay">
+            <h1>Baby Essentials</h1>
+            <p>Everything your baby needs in one place</p>
+            <a href="#" class="button">Shop Baby</a>
+        </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide">
+        <img src="images/hero6.jpg" alt="Slide 2" />
+        <div class="overlay">
+            <h1>Fun & Learning</h1>
+            <p>Educational toys for happy minds</p>
+            <a href="#" class="button">Explore Toys</a>
+        </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="slide">
+        <img src="images/hero1.jpg" alt="Slide 3" />
+        <div class="overlay">
+            <h1>New Arrivals</h1>
+            <p>Fresh picks for your little stars</p>
+            <a href="#" class="button">Discover More</a>
+        </div>
+    </div>
+
+    <!-- Arrows -->
+    <button class="arrow left" onclick="prevSlide()">&#10094;</button>
+    <button class="arrow right" onclick="nextSlide()">&#10095;</button>
+</section>
+<section class="category-section">
+    <div class="container">
+        <h2 class="section-title">Shop by Category</h2>
+        <p class="title-info"> Discover everything your little ones need, from baby essentials to school supplies</p>
+        <div class="category-grid">
+
+            <div class="category-card">
+                <img src="images/babyessentials.jpg" alt="Baby Essentials" class="category-image">
+                <div class="category-info">
+                    <h3>Baby Essentials</h3>
+                    <p>x Items</p>
+                </div>
+            </div>
+
+            <div class="category-card">
+                <img src="images/toys.jpg" alt="Toddler Toys" class="category-image">
+                <div class="category-info">
+                    <h3>Toddler Toys</h3>
+                    <p>x Items</p>
+                </div>
+            </div>
+
+            <div class="category-card">
+                <img src="images/kidsfashion.jpg" alt="Kids Fashion" class="category-image">
+                <div class="category-info">
+                    <h3>Kids Fashion</h3>
+                    <p>x Items</p>
+                </div>
+            </div>
+
+            <div class="category-card">
+                <img src="images/schoolsuppliers.jpg" alt="School Supplies" class="category-image">
+                <div class="category-info">
+                    <h3>School Supplies</h3>
+                    <p>x Items</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- SUBSCRIBE SECTION -->
+<section class="subscribe-section">
+    <div class="subscribe-container">
+        <h2>Stay Updated with <span class="logo">Matchy Matchy</span></h2>
+        <p>Subscribe to our newsletter and be the first to know about new arrivals, exclusive deals, and parenting tips!</p>
+        <form class="subscribe-form">
+            <input type="email" placeholder="Enter your email" required />
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+</section>
+<!-- ========== FOOTER ========== -->
+<footer class="main-footer">
+    <div class="footer-content">
+        <div class="footer-section logo-section">
+            <h2 class="logo">Matchy Matchy</h2>
+            <p>Your trusted destination for quality kids products. Making parenting easier, one match at a time.</p>
+            <div class="social-icons">
+                <i class="fab fa-facebook-f"></i>
+                <i class="fab fa-instagram"></i>
+                <i class="fab fa-twitter"></i>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Size Guide</a></li>
+                <li><a href="#">Return Policy</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Categories</h4>
+            <ul>
+                <li><a href="#">Baby</a></li>
+                <li><a href="#">Toddler</a></li>
+                <li><a href="#">Kids</a></li>
+                <li><a href="#">Deals</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Customer Service</h4>
+            <ul>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Track Order</a></li>
+                <li><a href="#">Shipping Info</a></li>
+                <li><a href="#">Returns</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2024 Matchy Matchy. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+    </div>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+<script src="script.js"></script>
+</body>
+</html>
