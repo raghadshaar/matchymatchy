@@ -1,0 +1,53 @@
+/* ===================== SIDEBAR ===================== */
+.sidebar{
+    background:var(--baby);
+    border-right:1px solid var(--line);
+    padding:16px 12px;
+    position:sticky; top:0; height:100dvh;
+}
+.brand{
+    padding:6px 8px 14px;
+    border-bottom:1px dashed rgba(0,0,0,.07);
+    margin-bottom:10px;
+}
+.menu{ display:flex; flex-direction:column; gap:4px; margin-top:8px }
+.menu-title{
+    display:block;
+    color:var(--umber);
+    font-size:.8rem; font-weight:600;
+    margin:12px 8px 6px;
+    text-transform:uppercase; letter-spacing:.08em;
+}
+.menu-item{
+    display:flex; align-items:center; gap:8px;
+    padding:9px 10px; border-radius:10px;
+    color:var(--ink); text-decoration:none; transition:.2s;
+}
+.menu-item i{ width:16px; text-align:center; color:var(--umber) }
+.menu-item:hover{ background:rgba(228,207,195,.25) }
+.menu-item.active{ background:var(--teal); color:#fff }
+.menu-item.active i{ color:#fff }
+
+/* ========== RESPONSIVE لل sidebar ========== */
+@media (max-width:1100px){
+    .menu-title{ display:none }
+    .menu .menu-item{ justify-content:center; gap:0 }
+    .menu .menu-item i{ margin:0 }
+}
+@font-face{
+    font-family:'Pacifico';
+    src:url('../fonts/Pacifico-Regular.ttf') format('truetype');
+    font-weight:normal; font-style:normal;
+}
+.logo{
+    font-family:'Pacifico', cursive;
+    font-size:1.8rem; font-weight:600; color:var(--teal);
+}
+
+
+.logo {
+    font-family: 'Pacifico', cursive;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--teal);
+}

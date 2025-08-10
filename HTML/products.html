@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Matchy Matchy — Admin • Products</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/sidebar.css" />
+    <link rel="stylesheet" href="../styles/products.css" />
+    <link rel="stylesheet" href="../styles/topbarAdmin.css" />
+
+</head>
+<body>
+
+<div class="layout">
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main -->
+    <main class="main">
+        <!-- Topbar -->
+        <div data-include="topBarAdmin.html"></div>
+
+        <!-- Page header -->
+        <section class="content"> </section>
+        <div class="page-head">
+            <div class="title-wrap">
+                <h1>Products</h1>
+                <p>Manage your Matchy Matchy catalog—kids & baby fashion, toys, essentials, and family matching sets. Prices shown in ILS (₪).</p>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="field">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="searchInput" type="search" placeholder="Search products by name or SKU…">
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-layer-group"></i>
+                <select id="collectionFilter" aria-label="Filter by collection">
+                    <option value="">All Collections</option>
+                </select>
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-signal"></i>
+                <select id="statusFilter" aria-label="Filter by status">
+                    <option value="">All Status</option>
+                    <option value="In Stock">In Stock</option>
+                    <option value="Low Stock">Low Stock</option>
+                    <option value="Out of Stock">Out of Stock</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
+            <button class="btn btn-ghost" id="clearFilters"><i class="fa-solid fa-rotate-left"></i> Clear</button>
+            <div style="flex:1"></div>
+            <button class="btn btn-teal" id="addProductBtn"><i class="fa-solid fa-plus"></i> Add Product</button>
+        </div>
+
+        <!-- Table -->
+        <section class="card">
+            <!-- Product Grid -->
+            <div id="productGrid" class="product-grid"></div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty" style="display:none">
+                <div class="emoji">🧸</div>
+                <h3 style="margin:0 0 6px;color:var(--umber)">No products yet</h3>
+                <p style="margin:0 0 14px">Add your first Matchy Matchy item and start building your family-friendly catalog.</p>
+                <button class="btn btn-teal" id="emptyAddBtn"><i class="fa-solid fa-plus"></i> Add Product</button>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pager">
+                <div class="pager-info" id="pagerInfo"></div>
+                <button class="page-btn" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
+                <div id="pageNums" style="display:flex;gap:6px"></div>
+                <button class="page-btn" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="drawer" id="drawer">
+    <h3 id="drawerTitle">Add Product</h3>
+    <div class="form-grid">
+        <div class="form-item">
+            <label for="pName">Name</label>
+            <input class="input" id="pName" placeholder="e.g., Family Matching Pajama Set"/>
+        </div>
+        <div class="form-item">
+            <label for="pSKU">SKU</label>
+            <input class="input" id="pSKU" placeholder="e.g., PJ-FAM-001"/>
+        </div>
+        <div class="form-item">
+            <label for="pPrice">Price (₪)</label>
+            <input class="input" id="pPrice" type="number" step="0.01" min="0" placeholder="e.g., 149.90"/>
+        </div>
+        <div class="form-item">
+            <label for="pStock">Stock</label>
+            <input class="input" id="pStock" type="number" min="0" placeholder="e.g., 100"/>
+        </div>
+        <div class="form-item">
+            <label for="pCollection">Collection</label>
+            <select class="select" id="pCollection">
+                <option>Baby</option>
+                <option>Toddler</option>
+                <option>Kids</option>
+                <option>Family Matching</option>
+                <option>Toys</option>
+                <option>Essentials</option>
+                <option>Accessories</option>
+                <option>Brands</option>
+                <option>Deals</option>
+            </select>
+        </div>
+        <div class="form-item">
+            <label for="pStatus">Status</label>
+            <select class="select" id="pStatus">
+                <option>Auto (by stock)</option>
+                <option>In Stock</option>
+                <option>Low Stock</option>
+                <option>Out of Stock</option>
+                <option>Draft</option>
+                <option>Archived</option>
+            </select>
+        </div>
+        <div class="form-item" style="grid-column:1/-1">
+            <label for="pDesc">Description</label>
+            <textarea class="textarea" id="pDesc" placeholder="Short description…"></textarea>
+        </div>
+        <div class="form-item">
+            <label>Sizes</label>
+            <div class="size-chips" id="sizeChips"></div>
+            <input class="input" id="customSize" placeholder="Add custom size and press Enter" style="margin-top:8px"/>
+        </div>
+        <div class="form-item">
+            <label for="pImage">Image URL</label>
+            <input class="input" id="pImage" placeholder="https://…"/>
+        </div>
+    </div>
+    <div class="drawer-actions">
+        <button class="btn btn-ghost" id="cancelDrawer">Cancel</button>
+        <button class="btn btn-teal" id="saveProduct">Save</button>
+    </div>
+</div>
+
+<script>
+    <!-- ... بداية الصفحة و HTML و CSS نفس ما هو ... -->
+
+        const LS_KEY = 'mm_products_v1';
+        const PAGE_SIZE = 8;
+        const $ = (sel, ctx=document)=>ctx.querySelector(sel);
+        const $$ = (sel, ctx=document)=>Array.from(ctx.querySelectorAll(sel));
+        const currencyILS = (n)=>`₪${Number(n).toFixed(2)}`;
+
+        /* === Load Sidebar === */
+        document.addEventListener('DOMContentLoaded', () => {
+        fetch('sidebar.html').then(r=>r.text()).then(html=>{
+            const el = $('#sidebar-container');
+            el.innerHTML = html;
+            $$('a', el).forEach(a=>{
+                if(a.textContent.trim().toLowerCase()==='products') a.classList.add('active');
+            });
+        });
+    });
+
+        /* === Load Products === */
+        const seed = [/* نفس الـ seed اللي عندك */];
+        function loadProducts(){
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw){ localStorage.setItem(LS_KEY, JSON.stringify(seed)); return [...seed]; }
+        try { return JSON.parse(raw) || []; } catch { return []; }
+    }
+        function saveProducts(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+        let products = loadProducts();
+
+        /* === Filters State === */
+        let state = { q:'', collection:'', status:'', page:1 };
+        function refreshCollections(){
+        const cols = Array.from(new Set(products.map(p=>p.collection))).sort();
+        $('#collectionFilter').innerHTML = `<option value="">All Collections</option>` + cols.map(c=>`<option>${c}</option>`).join('');
+    }
+        refreshCollections();
+
+        /* === Render Table === */
+        function statusChipClass(st) {
+        if(st==='In Stock') return 'green';
+        if(st==='Low Stock') return 'amber';
+        if(st==='Out of Stock') return 'red';
+        return 'amber';
+    }
+        function autoStatusByStock(stock){
+        if(stock <= 0) return 'Out of Stock';
+        if(stock < 20) return 'Low Stock';
+        return 'In Stock';
+    }
+        function applyFilters(){
+        let list = [...products];
+        const q = state.q.trim().toLowerCase();
+        if(q) list = list.filter(p => p.name.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q));
+        if(state.collection) list = list.filter(p => p.collection === state.collection);
+        if(state.status) list = list.filter(p => p.status === state.status);
+        return list;
+    }
+        function paginate(list){
+        const total = list.length;
+        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if(state.page > pages) state.page = pages;
+        const start = (state.page - 1) * PAGE_SIZE;
+        return {slice: list.slice(start, start + PAGE_SIZE), total, pages};
+    }
+    function render(){
+        const filtered = applyFilters();
+        const {slice,total,pages} = paginate(filtered);
+
+        $('#productGrid').innerHTML = slice.map(p=>`
+  <div class="product-card">
+    <div class="product-media">
+      <img src="${p.image || '../images/placeholder.jpg'}" alt="${p.name}">
+    </div>
+
+    <div class="product-info">
+      <h4 class="product-title">${p.name}</h4>
+      <div class="product-sku">SKU: ${p.sku || '-'}</div>
+
+      <div class="product-price">${currencyILS(p.price || 0)}</div>
+
+      <div class="product-meta">
+        <div>Collection: ${p.collection || '-'}</div>
+        <div>Stock: ${p.stock ?? 0}</div>
+      </div>
+
+      <div class="product-status">
+        <span class="chip ${statusChipClass(p.status)}">${p.status}</span>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button class="btn btn-ghost" data-edit="${p.id}">
+        <i class="fa-regular fa-pen-to-square"></i>
+      </button>
+      <button class="btn btn-ghost" data-del="${p.id}">
+        <i class="fa-regular fa-trash-can"></i>
+      </button>
+    </div>
+  </div>
+`).join('');
+
+        $('#emptyState').style.display = filtered.length ? 'none' : 'block';
+        $('#pagerInfo').textContent = filtered.length
+            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1, total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} products`
+            : 'No results';
+
+        $('#pageNums').innerHTML = '';
+        for(let i=1;i<=pages;i++){
+            const b = document.createElement('button');
+            b.className = 'page-btn' + (i===state.page?' active':'');
+            b.textContent = i;
+            b.onclick = ()=>{state.page=i; render();};
+            $('#pageNums').appendChild(b);
+        }
+        $('#prevPage').disabled = state.page<=1;
+        $('#nextPage').disabled = state.page>=pages;
+
+        $$('[data-edit]').forEach(btn=>btn.onclick=()=>openDrawerForEdit(+btn.dataset.edit));
+        $$('[data-del]').forEach(btn=>btn.onclick=()=>deleteProduct(+btn.dataset.del));
+    }
+
+    render();
+
+        /* === Search & Filters === */
+        function bindSearchAndFilters(){
+        $('#searchInput').oninput = e=>{ state.q = e.target.value; state.page = 1; render(); };
+        $('#collectionFilter').onchange = e=>{ state.collection = e.target.value; state.page = 1; render(); };
+        $('#statusFilter').onchange = e=>{ state.status = e.target.value; state.page = 1; render(); };
+        $('#clearFilters').onclick = ()=>{ state = { q:'', collection:'', status:'', page:1 }; $('#searchInput').value=''; $('#collectionFilter').value=''; $('#statusFilter').value=''; render(); };
+    }
+        bindSearchAndFilters();
+
+        /* === Drawer & Form === */
+        const drawer = $('#drawer');
+        const backdrop = $('#drawerBackdrop');
+        const drawerTitle = $('#drawerTitle');
+        const defaultSizes = ['NB','0-3M','3-6M','6-9M','9-12M','12-18M','18-24M','2T','3T','4T','5-6Y','7-8Y','Mom S','Mom M','Mom L','Dad M','Dad L','One Size'];
+        const sizeChips = $('#sizeChips');
+        let selectedSizes = new Set();
+        const formEls = {
+        name: $('#pName'), sku: $('#pSKU'), price: $('#pPrice'), stock: $('#pStock'),
+        collection: $('#pCollection'), status: $('#pStatus'), desc: $('#pDesc'), image: $('#pImage')
+    };
+        let editingId = null;
+
+        function renderSizeChips(){
+        sizeChips.innerHTML = '';
+        defaultSizes.forEach(s=>{
+        const b = document.createElement('button');
+        b.type='button';
+        b.className='chip-toggle' + (selectedSizes.has(s)?' active':'');
+        b.textContent = s;
+        b.onclick = ()=>{ selectedSizes.has(s) ? selectedSizes.delete(s) : selectedSizes.add(s); renderSizeChips(); };
+        sizeChips.appendChild(b);
+    });
+    }
+        $('#customSize').onkeydown = e=>{
+        if(e.key==='Enter' && e.target.value.trim()){
+        selectedSizes.add(e.target.value.trim());
+        e.target.value=''; renderSizeChips();
+    }
+    };
+
+        function resetForm(){
+        editingId = null;
+        drawerTitle.textContent = 'Add Product';
+        Object.values(formEls).forEach(el=>el.value='');
+        selectedSizes = new Set(['One Size']);
+        renderSizeChips();
+        $('#pStatus').value='Auto (by stock)';
+    }
+        function openDrawer(){ drawer.classList.add('open'); backdrop.classList.add('show'); }
+        function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); resetForm(); }
+        function openDrawerForAdd(){ resetForm(); openDrawer(); }
+        function openDrawerForEdit(id){
+        const p = products.find(x=>x.id===id); if(!p) return;
+        editingId = id;
+        drawerTitle.textContent = 'Edit Product';
+        Object.entries(formEls).forEach(([k,el])=>el.value = p[k] || '');
+        formEls.price.value = p.price || 0;
+        formEls.stock.value = p.stock || 0;
+        selectedSizes = new Set(p.sizes||[]);
+        renderSizeChips();
+        openDrawer();
+    }
+
+        function persistFromForm(){
+        const name = formEls.name.value.trim();
+        const sku = formEls.sku.value.trim();
+        const price = Number(formEls.price.value||0);
+        const stock = Math.max(0, Number(formEls.stock.value||0));
+        const collection = formEls.collection.value;
+        let status = formEls.status.value;
+        const desc = formEls.desc.value.trim();
+        const image = formEls.image.value.trim();
+        const sizes = Array.from(selectedSizes);
+        if(!name || !sku) { alert('Please enter product name and SKU'); return null; }
+        if(price<0) { alert('Price cannot be negative'); return null; }
+        if(status==='Auto (by stock)') status = autoStatusByStock(stock);
+        return {name, sku, price, stock, collection, status, desc, image, sizes};
+    }
+
+        $('#saveProduct').onclick = ()=>{
+        const payload = persistFromForm(); if(!payload) return;
+        if(editingId){ products = products.map(p=>p.id===editingId ? {...p, ...payload} : p); }
+        else { const nextId = (products.reduce((m,p)=>Math.max(m,p.id),0) || 0) + 1; products.push({id: nextId, ...payload}); }
+        saveProducts(products); refreshCollections(); closeDrawer(); render();
+    };
+        $('#addProductBtn').onclick = openDrawerForAdd;
+        $('#emptyAddBtn').onclick = openDrawerForAdd;
+        backdrop.onclick = closeDrawer;
+        $('#cancelDrawer').onclick = closeDrawer;
+
+        function deleteProduct(id){
+        const p = products.find(x=>x.id===id);
+        if(p && confirm(`Delete "${p.name}"?`)){
+        products = products.filter(x=>x.id!==id);
+        saveProducts(products); refreshCollections(); render();
+    }
+    }
+        $('#checkAll').onchange = e=>$$('tbody input[type="checkbox"]').forEach(cb=>cb.checked=e.target.checked);
+
+
+
+
+
+</script>
+<script src="../js/adminbar.js" defer></script>
+<script src="../js/includeadminBar.js" defer></script>
+
+
+</body>
+</html>

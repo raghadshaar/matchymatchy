@@ -1,3 +1,4 @@
+/* ===================== 1) VARIABLES ===================== */
 :root{
     --baby:#F9F8F3;
     --jet:#383838;
@@ -13,8 +14,9 @@
     --shadow:0 4px 14px rgba(0,0,0,.05);
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
+/* ===================== 2) BASE ===================== */
+*{ box-sizing:border-box }
+html,body{ height:100% }
 body{
     margin:0;
     font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -22,11 +24,11 @@ body{
     color:var(--ink);
     background:var(--baby);
     display:grid;
-    grid-template-columns: 260px 1fr;
-    grid-template-rows: 1fr;
+    grid-template-columns:260px 1fr;
 }
+img{ max-width:100%; height:auto; display:block } /* يسمح بحجم صور أكبر بأمان */
 
-/* Sidebar */
+/* ===================== 3) SIDEBAR ===================== */
 .sidebar{
     background:var(--baby);
     border-right:1px solid var(--line);
@@ -38,107 +40,176 @@ body{
     border-bottom:1px dashed rgba(0,0,0,.07);
     margin-bottom:10px;
 }
-.menu{display:flex; flex-direction:column; gap:4px; margin-top:8px}
+.menu{ display:flex; flex-direction:column; gap:4px; margin-top:8px }
 .menu-title{
     display:block;
     color:var(--umber);
-    font-size:.8rem;
-    font-weight:600;
+    font-size:.8rem; font-weight:600;
     margin:12px 8px 6px;
-    text-transform:uppercase;
-    letter-spacing:.08em;
+    text-transform:uppercase; letter-spacing:.08em;
 }
 .menu-item{
     display:flex; align-items:center; gap:8px;
     padding:9px 10px; border-radius:10px;
-    color:var(--ink); text-decoration:none;
-    transition:.2s ease;
+    color:var(--ink); text-decoration:none; transition:.2s;
 }
-.menu-item i{width:16px; text-align:center; color:var(--umber)}
-.menu-item:hover{background:rgba(228,207,195,.25)}
-.menu-item.active{
-    background:var(--teal);
-    color:#fff;
-}
-.menu-item.active i{color:#fff}
+.menu-item i{ width:16px; text-align:center; color:var(--umber) }
+.menu-item:hover{ background:rgba(228,207,195,.25) }
+.menu-item.active{ background:var(--teal); color:#fff }
+.menu-item.active i{ color:#fff }
 
-/* Main wrapper */
-.main{display:flex; flex-direction:column; min-width:0}
+/* ===================== 4) TOPBAR ===================== */
+
+
+
+
+
+.main{ padding:24px; }
 
 /* Topbar */
 .topbar{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
+}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.search {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    border:1px solid var(--border);
+    padding:10px 12px;
+    border-radius:999px;
+    min-width:260px; width:45vw; max-width:680px;
+    box-shadow:var(--shadow);
+}
+
+
+.search input{ border:0;outline:0;width:100%;font:inherit;color:var(--jet); }
+.topbar-right{display:flex;align-items:center;gap:12px}
+/*
+.topbar{
     position:sticky; top:0; z-index:9;
     display:flex; align-items:center; justify-content:space-between;
-    padding:10px 16px; background:var(--white);
+    padding:20px 16px;
+    background:var(--baby);
     border-bottom:1px solid var(--line);
 }
 .search{
     display:flex; align-items:center; gap:8px;
-    background:var(--baby); padding:8px 12px; border-radius:12px;
-    border:1px solid var(--line); min-width:260px; width:45vw; max-width:680px;
+    background:var(--baby);
+    padding:15px 12px; border-radius:12px;
+    border:1px solid var(--line);
+    min-width:260px; width:45vw; max-width:680px;
 }
-.search i{color:var(--ink-soft)}
+.search i{ color:var(--ink-soft) }
 .search input{
     border:0; outline:0; background:transparent; width:100%;
-    font-size:.9rem; color:var(--ink);
-}
-.top-actions{display:flex; align-items:center; gap:10px}
+    font-size:1rem; color:var(--ink);
+}*/
+
+/* --- top-right controls (مُنعّمة) --- */
+.top-actions{ display:flex; align-items:center; gap:10px; position:relative }
 .icon-btn{
-    border:1px solid var(--line); background:var(--baby);
-    width:36px; height:36px; border-radius:10px; cursor:pointer;
+    display:grid; place-items:center;
+    width:40px; height:40px;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:12px; cursor:pointer;
+    box-shadow:var(--shadow);
 }
-.icon-btn i{color:var(--ink-soft)}
-.user{display:flex; align-items:center; gap:8px; padding:2px 6px}
-.user img{width:36px; height:36px; border-radius:10px; object-fit:cover}
-.user .meta{line-height:1}
-.user .meta strong{font-size:.9rem}
-.user .meta span{font-size:.75rem; color:var(--ink-soft)}
-.user-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px; /* مسافة بين الأسماء */
-}
-
-.user-list .meta {
-    line-height: 1.2;
+.icon-btn i{ color:var(--ink-soft); font-size:1.05rem }
+.badge-dot{
+    position:absolute; top:6px; right:6px;
+    width:8px; height:8px; border-radius:50%;
+    background:var(--teal); box-shadow:0 0 0 2px var(--white);
 }
 
-.user-list .meta strong {
-    font-size: .9rem;
-    display: block;
+/* ===== profile chip ===== */
+.profile-btn{
+    display:flex; align-items:center; gap:12px;
+    height:52px; padding:8px 16px 8px 2rem;
+    background:var(--white); border:1px solid var(--line);
+    border-radius:16px; cursor:pointer; box-shadow:var(--shadow);
 }
-
-.user-list .meta span {
-    font-size: .75rem;
-    color: var(--ink-soft);
+.pf-avatar{
+    width:52px; height:52px; border-radius:50%;
+    overflow:hidden; border:2px solid var(--white); box-shadow:0 0 0 1px var(--line);
 }
-/* Content */
-.content{padding:20px}
-.page-title{margin:6px 0 14px; font-size:1.45rem; color:var(--jet)}
+.pf-avatar img{ width:100%; height:100%; object-fit:cover }
+.pf-meta{ display:flex; flex-direction:column; line-height:1 }
+.pf-meta strong{ font-size:.92rem; color:var(--ink) }
+.pf-meta small{ font-size:.78rem; color:var(--ink-soft); margin-top:2px }
+.profile-btn .fa-chevron-down{ color:var(--ink-soft); font-size:.9rem }
+.profile-btn{
+    height: 64px;
+    padding: 8px 20px;
+    border-radius: 18px;
+}
+/* ===== popover (مشترك) ===== */
+.popover{
+    position:absolute; right:16px; top:56px;
+    width:340px; max-height:70vh; overflow:auto;
+    background:var(--white); border:1px solid var(--line);
+    border-radius:16px; box-shadow:var(--shadow);
+    display:none; z-index:1000;
+}
+.popover.show{ display:block }
+.pf-sec{ padding:12px }
+.pf-sec-title{ display:block; color:var(--ink-soft); font-size:.78rem; margin-bottom:6px }
+.pf-email{ display:block; font-weight:600; color:var(--ink); text-decoration:none; padding:10px 0 6px }
+.pf-email:hover{ color:var(--teal) }
+.pf-divider{ height:1px; background:var(--line) }
 
-/* Stats */
+/* Switch account item */
+.pf-account{
+    width:100%; display:flex; align-items:center; gap:10px;
+    padding:10px; border-radius:12px; border:0; background:transparent; cursor:pointer;
+}
+.pf-account:hover{ background:rgba(228,207,195,.25) }
+.pf-acc-avatar{  width: 44px;height: 44px; border-radius:50%; overflow:hidden; border:2px solid var(--white); box-shadow:0 0 0 1px var(--line) }
+.pf-acc-avatar img{ width:100%; height:100%; object-fit:cover }
+.pf-acc-meta{ display:flex; flex-direction:column; line-height:1.15 }
+.pf-acc-meta strong{ font-size:.92rem; color:var(--ink) }
+.pf-acc-meta small{ font-size:.78rem; color:var(--ink-soft) }
+
+
+.pf-actions{ display:flex; flex-direction:column; gap:4px }
+.pf-action{
+    width:100%; display:flex; align-items:center; gap:10px;
+    padding:10px; border-radius:12px; border:0; background:transparent; cursor:pointer;
+}
+.pf-action i{ color:var(--ink-soft) }
+.pf-action:hover{ background:rgba(228,207,195,.25) }
+
+/* ===================== 5) CONTENT / TITLES ===================== */
+.content{ padding:20px }
+.page-title{
+    margin:6px 0 8px; font-size:1.45rem; color:var(--umber); font-weight:600;
+}
+.page-info{ color:var(--umber) }
+
+/* ===================== 6) STATS ===================== */
 .stats{
-    display:grid; gap:14px; grid-template-columns: repeat(4, minmax(210px,1fr));
+    display:grid; gap:14px;
+    grid-template-columns:repeat(4, minmax(210px,1fr));
     margin-bottom:18px;
 }
 .stat-card{
-    background:var(--white); border:1px solid var(--line); border-radius:14px;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:14px;
     padding:14px; box-shadow:var(--shadow);
 }
-.stat-head{display:flex; align-items:center; justify-content:space-between; color:var(--ink-soft)}
+.stat-head{ display:flex; align-items:center; justify-content:space-between; color:var(--ink-soft) }
 .stat-head i{
     background:var(--baby); color:var(--teal);
     width:30px; height:30px; display:grid; place-items:center; border-radius:8px;
 }
-.stat-val{font-size:1.4rem; font-weight:600; margin:8px 0 2px; color:var(--ink)}
-.stat-sub{color:var(--umber); font-size:.83rem}
+.stat-val{ font-size:1.4rem; font-weight:600; margin:8px 0 2px; color:var(--ink) }
+.stat-sub{ color:var(--umber); font-size:.83rem }
 
-/* Panels Grid */
-.panels{
-    display:grid; grid-template-columns: 1.2fr .8fr; gap:16px;
-}
-
-/* Panel */
+/* ===================== 7) PANELS ===================== */
+.panels{ display:grid; grid-template-columns:1.2fr .8fr; gap:16px }
 .panel{
     background:var(--white); border:1px solid var(--line);
     border-radius:14px; box-shadow:var(--shadow);
@@ -148,78 +219,84 @@ body{
     display:flex; align-items:center; justify-content:space-between;
     padding:2px 4px 10px; border-bottom:1px dashed var(--line);
 }
-.panel h2{font-size:1rem; margin:0}
-.view-all{color:var(--teal); text-decoration:none; font-weight:600; font-size:.88rem}
+.panel h2{ font-size:1rem; margin:0 }
+.view-all{ color:var(--teal); text-decoration:none; font-weight:600; font-size:.88rem }
 
-/* Table (Recent Orders) */
-.table{width:100%; padding:4px}
+/* ===================== 8) TABLE (Recent Orders) ===================== */
+.table{ width:100%; padding:4px }
 .t-head,.t-row{
-    display:grid; grid-template-columns: 1.1fr 1.2fr .9fr .7fr .6fr; gap:8px;
-    align-items:center;
+    display:grid; grid-template-columns:1.1fr 1.2fr .9fr .7fr .6fr; gap:8px; align-items:center;
 }
-.t-head{
-    color:var(--ink-soft); font-size:.83rem; padding:8px 4px;
-}
-.t-row{
-    padding:10px 4px; border-bottom:1px solid var(--line);
-}
-.t-row:last-child{border-bottom:0}
+.t-head{ color:var(--ink-soft); font-size:.83rem; padding:8px 4px }
+.t-row{ padding:10px 4px; border-bottom:1px solid var(--line) }
+.t-row:last-child{ border-bottom:0 }
+
 .badge{
-    display:inline-flex; align-items:center; padding:5px 9px; border-radius:999px;
+    display:inline-flex; align-items:center;
+    padding:5px 9px; border-radius:999px;
     font-size:.76rem; font-weight:600; border:1px solid transparent;
+    background:rgba(0,0,0,.03); /* أنعم */
 }
-.badge-teal{color:#0b6; background:rgba(0,128,128,.08); border-color:rgba(0,128,128,.15)}
-.badge-amber{color:#a36a00; background:#fff3d6; border-color:#ffe6ad}
-.badge-pink{color:#8b4d46; background:#fde7df; border-color:#f7cfc3}
+.badge-teal{ color:#0b6; background:rgba(0,128,128,.08); border-color:rgba(0,128,128,.15) }
+.badge-amber{ color:#a36a00; background:#fff3d6; border-color:#ffe6ad }
+.badge-pink{ color:#8b4d46; background:#fde7df; border-color:#f7cfc3 }
 
 .row-btn{
-    width:32px; height:32px; border-radius:9px; border:1px solid var(--line);
-    background:var(--baby); cursor:pointer; color:var(--ink-soft);
+    width:32px; height:32px;
+    border-radius:9px; border:1px solid var(--line);
+    background:var(--white); color:var(--ink-soft); cursor:pointer;
 }
 
-/* Top Selling list */
-.product-list{list-style:none; margin:0; padding:6px}
+/* ===================== 9) TOP SELLING LIST ===================== */
+/* زودنا حجم الصور + نعّمنا العناصر الثانوية */
+.product-list{ list-style:none; margin:0; padding:8px }
 .product-item{
-    display:grid; grid-template-columns: 52px 1fr 32px; gap:10px; align-items:center;
-    padding:8px 4px; border-bottom:1px solid var(--line);
+    display:grid; grid-template-columns:72px 1fr 34px; /* كان 52px -> صار 72px */
+    gap:12px; align-items:center;
+    padding:10px 4px; border-bottom:1px solid var(--line);
 }
-.product-item:last-child{border-bottom:0}
+.product-item:last-child{ border-bottom:0 }
 .product-item img{
-    width:52px; height:52px; object-fit:cover; border-radius:10px; border:1px solid var(--line);
-    background:var(--baby);
+    width:72px; height:72px; object-fit:cover;  /* سماح بحجم أكبر */
+    border-radius:12px; border:1px solid var(--line); background:var(--baby);
 }
-.product-item .info strong{display:block; font-size:.95rem}
-.product-item .info small{color:var(--ink-soft); font-size:.82rem}
-.product-item .meta{color:var(--umber); font-size:.86rem; margin-top:4px}
-.product-item .meta .price{color:var(--teal); font-weight:600}
-.product-item .meta .dot{padding:0 6px; color:#c8c3bc}
+@media (min-width:1200px){
+    .product-item{ grid-template-columns:84px 1fr 36px }
+    .product-item img{ width:84px; height:84px } /* أكبر على الشاشات الواسعة */
+}
+.product-item .info strong{ display:block; font-size:1rem; color:var(--ink) }
+.product-item .info small{ color:var(--ink-soft); font-size:.84rem }
+.product-item .meta{ color:var(--umber); font-size:.88rem; margin-top:4px }
+.product-item .meta .price{ color:var(--teal); font-weight:600 }
+.product-item .meta .dot{ padding:0 6px; color:#c8c3bc }
 .ghost{
-    width:32px; height:32px; border-radius:9px; border:1px solid var(--line);
-    background:var(--baby); color:var(--ink-soft); cursor:pointer;
+    width:34px; height:34px; border-radius:10px;
+    border:1px solid var(--line); background:var(--white);
+    color:var(--ink-soft); cursor:pointer;
 }
 
-/* Responsive */
-@media (max-width: 1100px){
-    body{grid-template-columns: 72px 1fr}
-    .menu-title{display:none}
-    .menu .menu-item{justify-content:center; gap:0}
-    .menu .menu-item i{margin:0}
+/* ===================== 10) RESPONSIVE ===================== */
+@media (max-width:1100px){
+    body{ grid-template-columns:72px 1fr }
+    .menu-title{ display:none }
+    .menu .menu-item{ justify-content:center; gap:0 }
+    .menu .menu-item i{ margin:0 }
 }
-@media (max-width: 900px){
-    .stats{grid-template-columns: repeat(2, 1fr)}
-    .panels{grid-template-columns:1fr}
+@media (max-width:900px){
+    .stats{ grid-template-columns:repeat(2, 1fr) }
+    .panels{ grid-template-columns:1fr }
 }
-
-@font-face {
-    font-family: 'Pacifico';
-    src: url('fonts/Pacifico-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
+@media (max-width:720px){
+    .popover{ width:90vw; right:10px }
 }
 
-.logo {
-    font-family: 'Pacifico', cursive;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: var(--teal);
+/* ===================== 11) BRAND LOGO ===================== */
+@font-face{
+    font-family:'Pacifico';
+    src:url('fonts/Pacifico-Regular.ttf') format('truetype');
+    font-weight:normal; font-style:normal;
+}
+.logo{
+    font-family:'Pacifico', cursive;
+    font-size:1.8rem; font-weight:600; color:var(--teal);
 }

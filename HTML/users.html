@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Matchy Matchy — Admin • Users</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="../styles/sidebar.css"/>
+    <link rel="stylesheet" href="../styles/products.css"/>
+    <link rel="stylesheet" href="../styles/topbarAdmin.css"/>
+
+    <style>
+        /* =======================
+        USERS — base + compact
+        ======================= */
+
+        /* متغيرات عامة */
+        :root{
+            --row-h: 52px;          /* كان 56px */
+            --cell-py: 8px;         /* كان 10px */
+            --chip-h: 26px;         /* ارتفاع البادج */
+            --chip-fw: .78rem;      /* حجم خط البادج */
+            --grid-gap: 12px;       /* مسافات الكروت */
+        }
+
+        /* Toolbar */
+        .toolbar{ gap:8px }
+        .toolbar .field{ min-width:220px }
+        .toolbar .view-toggle{ display:flex; gap:8px }
+        .toolbar .view-toggle .btn{ display:flex; align-items:center; gap:8px }
+
+        /* Table (رؤوس وخلايا أكثر تماسكاً) */
+        .table thead th, thead th{ padding:var(--cell-py) 10px !important }
+        tbody td{ padding:var(--cell-py) 10px !important }
+        tbody tr{ height:var(--row-h) }
+
+        /* خلايا اليوزر */
+        .avatar{
+            width:32px;height:32px;border-radius:50%;
+            object-fit:cover;border:1px solid var(--border);
+        }
+        .user-cell{ display:flex; align-items:center; gap:10px }
+        .user-meta{ display:flex; flex-direction:column }
+        .user-meta small{ color:var(--muted); font-size:.82rem }
+
+        /* Badges (ألوان من البالِت + أحجام أصغر) */
+        .badge{
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:88px; height:var(--chip-h); /* ثابت للجدول */
+            padding:0 10px; border-radius:999px; border:1px solid transparent;
+            font-weight:600; font-size:var(--chip-fw); line-height:1;
+        }
+        .badge.st-active{ background:#e9f8f1; border-color:#cfeadf; color:#1b8e57 }
+        .badge.st-pending{ background:#fff6e6; border-color:#ffe1ad; color:#ad8100 }
+        .badge.st-suspended{ background:#ffecec; border-color:#ffc9c9; color:#b23535 }
+
+        .badge.role-admin{ background:var(--teal); border-color:var(--teal); color:#fff }
+        .badge.role-customer{ background:#fdeedb; border-color:#ffd8a8; color:#8a6400 }
+        .badge.role-guest{ background:#eee; border-color:#ddd; color:#555 }
+
+        /* أعمدة أضيق قليلاً لتفادي التزاحم */
+        table th:nth-child(2){ width:26% }  /* User  (كان 28%) */
+        table th:nth-child(3){ width:14% }  /* Username */
+        table th:nth-child(4){ width:24% }  /* Email */
+        table th:nth-child(5){ width:12% }  /* Role */
+        table th:nth-child(6){ width:12% }  /* Status */
+        table th:nth-child(7){ width:12% }  /* Date */
+
+        /* Actions */
+        td.actions{ white-space:nowrap }
+        td.actions .icon-link{ width:32px; height:32px; border-radius:10px }
+
+        /* Pagination أصغر */
+        .pager{ padding:10px }
+        .page-btn{ min-width:32px; height:32px }
+
+        /* =======================
+           Cards view — like Products
+           ======================= */
+        .grid{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:var(--grid-gap);                 /* كان 16px */
+        }
+        @media (max-width:1200px){ .grid{ grid-template-columns:repeat(3,1fr) } }
+        @media (max-width:900px){  .grid{ grid-template-columns:repeat(2,1fr) } }
+        @media (max-width:600px){  .grid{ grid-template-columns:1fr } }
+
+        .user-card{
+            background:#fff;border:1px solid var(--border);
+            border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+            display:flex;flex-direction:column;min-height:240px; /* كان 260px */
+        }
+        .user-card .top{ display:flex; gap:12px; padding:12px }
+        .user-card .top strong{ font-size:1rem }
+        .user-card .body{ padding:0 12px 10px; flex:1 }
+        .user-card .foot{
+            display:flex; gap:8px; border-top:1px solid var(--border);
+            padding:8px 10px; justify-content:flex-end
+        }
+        .user-card .icon-link{ width:32px; height:32px; border-radius:10px }
+
+        /* محتوى الكرت (Email & Role) عمودي مع سطر Role مضغوط */
+        .user-card .meta{ display:flex; flex-direction:column; gap:8px }
+        .user-card .meta div{ display:flex; flex-direction:column }
+
+        /* سطر الـRole ما يتمدد بعرض البطاقة */
+        .user-card .meta .role-row,
+        .user-card .meta div.role-row{
+            display:inline-flex; align-items:center; gap:8px; width:auto;
+        }
+
+        /* Badge داخل الكرت على قد النص */
+        .user-card .meta .role-row .badge,
+        .user-card .meta .badge.role-admin,
+        .user-card .meta .badge.role-customer,
+        .user-card .meta .badge.role-guest{
+            min-width:auto; width:fit-content; height:24px;
+            padding:0 10px; font-size:.78rem; line-height:1; align-self:flex-start;
+        }
+
+        .user-card .meta > div:last-child{
+            display:inline-flex; align-items:flex-start; gap:8px; width:auto;
+        }
+        .user-card .meta > div:last-child .badge{
+            min-width:auto; width:fit-content;
+        }
+
+        table th:nth-child(2) { width: 22%; }  /* User */
+        table th:nth-child(3) { width: 12%; }  /* Username */
+        table th:nth-child(4) { width: 20%; }  /* Email */
+        table th:nth-child(5) { width: 10%; }  /* Role */
+        table th:nth-child(6) { width: 10%; }  /* Status */
+        table th:nth-child(7) { width: 12%; }  /* Date */
+        table th:nth-child(8) { width: 14%; }  /* Actions - أكبر شوي */
+        table thead th.actions,
+        table th:nth-child(8){ width:170px; }   /* عدّل 8 إذا ترتيب العمود مختلف */
+
+        td.actions,
+        table td:nth-child(8){                   /* دعم لو ما عندك class */
+            display:flex;
+            justify-content:flex-end;
+            align-items:center;
+            gap:10px;
+            white-space:nowrap;                    /* يمنع النزول لسطر جديد */
+            padding-right:16px;
+        }
+
+        .action-btn{
+            width:42px; height:42px;
+            display:grid; place-items:center;
+            border:1px solid var(--border);
+            border-radius:12px;
+            background:#fff;
+            box-shadow:var(--shadow);
+            cursor:pointer;
+            transition:.15s ease;
+        }
+        .action-btn i{ font-size:16px; }
+
+        /* Hover/Focus */
+        .action-btn:hover{
+            border-color:var(--teal);
+            color:var(--teal);
+            box-shadow:0 4px 12px rgba(0,0,0,.06);
+        }
+
+        @media (max-width:1100px){
+            table thead th.actions,
+            table th:nth-child(8){ width:140px; }
+            .action-btn{ width:36px; height:36px; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main -->
+    <main class="main">
+        <!-- Topbar -->
+        <div data-include="topBarAdmin.html"></div>
+
+        <!-- Header -->
+        <div class="page-head">
+            <div class="title-wrap">
+                <h1>Users</h1>
+                <p class="muted">Manage customer accounts, view details, and take actions.</p>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="field" style="flex:1">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="searchInput" type="search" placeholder="Search by Name, Username, or Email…">
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-user-shield"></i>
+                <select id="roleFilter">
+                    <option value="">All Roles</option>
+                    <option>Administrator</option>
+                    <option>Customer</option>
+                    <option>Guest</option>
+                </select>
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-signal"></i>
+                <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option>Active</option>
+                    <option>Pending</option>
+                    <option>Suspended</option>
+                </select>
+            </div>
+            <div class="view-toggle">
+                <button class="btn btn-ghost" id="btnTable"><i class="fa-solid fa-table"></i> Table</button>
+                <button class="btn btn-ghost" id="btnCards"><i class="fa-solid fa-grid-2"></i> Cards</button>
+            </div>
+            <button class="btn btn-ghost" id="clearFilters"><i class="fa-solid fa-rotate-left"></i> Clear</button>
+            <div style="flex:1"></div>
+            <button class="btn btn-teal" id="addUser"><i class="fa-solid fa-user-plus"></i> Add User</button>
+        </div>
+
+        <!-- Table view -->
+        <section class="card" id="tableWrap">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width:40px;"><input type="checkbox" id="checkAll"/></th>
+                    <th>User</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Date Joined</th>
+                    <th style="width:120px;">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+
+            <div id="emptyState" class="empty" style="display:none">
+                <div class="emoji">👤</div>
+                <h3 style="margin:0 0 6px;color:var(--umber)">No users found</h3>
+                <p class="muted" style="margin:0 0 14px">Invite or add your first user to get started.</p>
+                <button class="btn btn-teal" id="emptyAddBtn"><i class="fa-solid fa-user-plus"></i> Add User</button>
+            </div>
+
+            <div class="pager">
+                <div class="pager-info" id="pagerInfo"></div>
+                <button class="page-btn" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
+                <div id="pageNums" style="display:flex;gap:6px"></div>
+                <button class="page-btn" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <!-- Card view -->
+        <section class="card" id="cardsWrap" style="display:none">
+            <div class="grid" id="cardsGrid"></div>
+            <div class="pager">
+                <div class="pager-info" id="pagerInfoC"></div>
+                <button class="page-btn" id="prevPageC"><i class="fa-solid fa-chevron-left"></i></button>
+                <div id="pageNumsC" style="display:flex;gap:6px"></div>
+                <button class="page-btn" id="nextPageC"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="drawer" id="drawer">
+    <h3 id="drawerTitle">User Details</h3>
+    <div class="form-grid">
+        <div class="form-item">
+            <label>Name</label>
+            <input class="input" id="uName"/>
+        </div>
+        <div class="form-item">
+            <label>Username</label>
+            <input class="input" id="uHandle" placeholder="@username"/>
+        </div>
+        <div class="form-item">
+            <label>Email</label>
+            <input class="input" id="uEmail"/>
+        </div>
+        <div class="form-item">
+            <label>Phone</label>
+            <input class="input" id="uPhone"/>
+        </div>
+        <div class="form-item">
+            <label>Role</label>
+            <select class="select" id="uRole"><option>Administrator</option><option>Customer</option><option>Guest</option></select>
+        </div>
+        <div class="form-item">
+            <label>Status</label>
+            <select class="select" id="uStatus"><option>Active</option><option>Pending</option><option>Suspended</option></select>
+        </div>
+        <div class="form-item" style="grid-column:1/-1">
+            <label>Notes</label>
+            <textarea class="textarea" id="uNotes" placeholder="Internal notes…"></textarea>
+        </div>
+    </div>
+    <div class="drawer-actions">
+        <button class="btn btn-ghost" id="cancelDrawer">Cancel</button>
+        <button class="btn btn-teal" id="saveUser">Save</button>
+    </div>
+</div>
+
+<script>
+    /* ===== Helpers ===== */
+    const LS_KEY = 'mm_users_v1';
+    const PAGE_SIZE = 8;
+    let view = 'table'; // 'table' | 'cards'
+    const $ = (s,c=document)=>c.querySelector(s);
+    const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));
+    const fmtDate = d => new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+    /* ===== Sidebar include & active link ===== */
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const html = await fetch('sidebar.html').then(r=>r.text());
+            $('#sidebar-container').innerHTML = html;
+            $$('a', $('#sidebar-container')).forEach(a=>{
+                if((a.textContent||'').trim().toLowerCase()==='users') a.classList.add('active');
+            });
+        } catch {}
+    });
+
+    /* ===== Seed data ===== */
+    const seed = [
+        {id:1, name:'Sarah Johnson', handle:'@sarahj', email:'sarah.johnson@email.com', phone:'+972-50-111-1111',
+            avatar:'https://i.pravatar.cc/100?img=47', role:'Administrator', status:'Active', joined:'2024-01-15', notes:''},
+        {id:2, name:'Michael Chen', handle:'@mchen', email:'michael.chen@email.com', phone:'+972-50-222-2222',
+            avatar:'https://i.pravatar.cc/100?img=12', role:'Customer', status:'Active', joined:'2024-02-03', notes:''},
+        {id:3, name:'Emma Davis', handle:'@emmad', email:'emma.davis@email.com', phone:'+972-50-333-3333',
+            avatar:'https://i.pravatar.cc/100?img=5', role:'Customer', status:'Pending', joined:'2024-03-12', notes:''},
+        {id:4, name:'James Wilson', handle:'@jameswilson', email:'james.wilson@email.com', phone:'+972-50-444-4444',
+            avatar:'https://i.pravatar.cc/100?img=66', role:'Guest', status:'Suspended', joined:'2024-04-08', notes:''},
+        {id:5, name:'Olivia Martinez', handle:'@oliviam', email:'olivia.martinez@email.com', phone:'+972-50-555-5555',
+            avatar:'https://i.pravatar.cc/100?img=32', role:'Customer', status:'Active', joined:'2024-05-22', notes:''},
+    ];
+    function load(){const raw=localStorage.getItem(LS_KEY); if(!raw){localStorage.setItem(LS_KEY,JSON.stringify(seed)); return [...seed];}
+        try{return JSON.parse(raw)||[]}catch{return [...seed]}}
+    function save(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+    let users = load();
+
+    /* ===== Filters & pagination state ===== */
+    let state = { q:'', role:'', status:'', page:1 };
+
+    const roleClass = r => r==='Administrator'?'role-admin':(r==='Customer'?'role-customer':'role-guest');
+    const statusClass = s => s==='Active'?'st-active':(s==='Pending'?'st-pending':'st-suspended');
+
+    function applyFilters(){
+        let list=[...users];
+        const q=state.q.trim().toLowerCase();
+        if(q){
+            list=list.filter(u =>
+                u.name.toLowerCase().includes(q) ||
+                u.handle.toLowerCase().includes(q) ||
+                u.email.toLowerCase().includes(q)
+            );
+        }
+        if(state.role) list=list.filter(u=>u.role===state.role);
+        if(state.status) list=list.filter(u=>u.status===state.status);
+        return list;
+    }
+    function paginate(list){
+        const total=list.length;
+        const pages=Math.max(1, Math.ceil(total/PAGE_SIZE));
+        if(state.page>pages) state.page=pages;
+        const start=(state.page-1)*PAGE_SIZE;
+        return {slice:list.slice(start,start+PAGE_SIZE), total, pages};
+    }
+
+    /* ===== Render (table & cards) ===== */
+    function renderTable(){
+        const filtered=applyFilters();
+        const {slice,total,pages}=paginate(filtered);
+        $('#tbody').innerHTML = slice.map(u=>`
+      <tr>
+        <td><input type="checkbox" data-id="${u.id}"></td>
+        <td>
+          <div class="user-cell">
+            <img class="avatar" src="${u.avatar}" alt="">
+            <div class="user-meta">
+              <strong>${u.name}</strong>
+              <small>${u.email}</small>
+            </div>
+          </div>
+        </td>
+        <td>${u.handle}</td>
+        <td>${u.email}</td>
+        <td><span class="badge ${'role-'+roleClass(u.role)} ${roleClass(u.role)}">${u.role}</span></td>
+        <td><span class="badge ${statusClass(u.status)}">${u.status}</span></td>
+        <td>${fmtDate(u.joined)}</td>
+        <td class="actions">
+          <button class="icon-link" title="View" data-view="${u.id}"><i class="fa-regular fa-eye"></i></button>
+          <button class="icon-link" title="Edit" data-edit="${u.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+          <button class="icon-link" title="Delete" data-del="${u.id}"><i class="fa-regular fa-trash-can"></i></button>
+        </td>
+      </tr>`).join('');
+
+        $('#emptyState').style.display = filtered.length ? 'none' : 'block';
+        $('#pagerInfo').textContent = filtered.length
+            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1,total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} users`
+            : 'No results';
+
+        // pager buttons
+        const pageNums = $('#pageNums'); pageNums.innerHTML='';
+        for(let i=1;i<=pages;i++){
+            const b=document.createElement('button'); b.className='page-btn'+(i===state.page?' active':'');
+            b.textContent=i; b.onclick=()=>{state.page=i; render();}; pageNums.appendChild(b);
+        }
+        $('#prevPage').disabled=state.page<=1; $('#nextPage').disabled=state.page>=pages;
+
+        // row actions
+        $$('[data-view]').forEach(b=>b.onclick=()=>openDrawer(+b.dataset.view,false));
+        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawer(+b.dataset.edit,true));
+        $$('[data-del]').forEach(b=>b.onclick=()=>removeUser(+b.dataset.del));
+    }
+
+    function renderCards(){
+        const filtered=applyFilters();
+        const {slice,total,pages}=paginate(filtered);
+        $('#cardsGrid').innerHTML = slice.map(u=>`
+      <div class="user-card">
+        <div class="top">
+          <img class="avatar" src="${u.avatar}" alt="">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <strong>${u.name}</strong>
+              <span class="badge ${statusClass(u.status)}">${u.status}</span>
+            </div>
+            <div class="muted" style="font-size:.9rem">${u.handle} • ${fmtDate(u.joined)}</div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="meta">
+            <div><small class="muted">Email</small><div>${u.email}</div></div>
+            <div><small class="muted">Role</small><div><span class="badge ${roleClass(u.role)}">${u.role}</span></div></div>
+          </div>
+        </div>
+        <div class="foot">
+          <button class="icon-link" title="View" data-view="${u.id}"><i class="fa-regular fa-eye"></i></button>
+          <button class="icon-link" title="Edit" data-edit="${u.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+          <button class="icon-link" title="Delete" data-del="${u.id}"><i class="fa-regular fa-trash-can"></i></button>
+        </div>
+      </div>`).join('');
+
+        $('#pagerInfoC').textContent = filtered.length
+            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1,total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} users`
+            : 'No results';
+
+        const pageNums = $('#pageNumsC'); pageNums.innerHTML='';
+        for(let i=1;i<=pages;i++){
+            const b=document.createElement('button'); b.className='page-btn'+(i===state.page?' active':'');
+            b.textContent=i; b.onclick=()=>{state.page=i; render();}; pageNums.appendChild(b);
+        }
+        $('#prevPageC').disabled=state.page<=1; $('#nextPageC').disabled=state.page>=pages;
+
+        $$('[data-view]').forEach(b=>b.onclick=()=>openDrawer(+b.dataset.view,false));
+        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawer(+b.dataset.edit,true));
+        $$('[data-del]').forEach(b=>b.onclick=()=>removeUser(+b.dataset.del));
+    }
+
+    function render(){
+        if(view==='table'){ $('#tableWrap').style.display='block'; $('#cardsWrap').style.display='none'; renderTable(); }
+        else { $('#tableWrap').style.display='none'; $('#cardsWrap').style.display='block'; renderCards(); }
+    }
+    render();
+
+    /* ===== Filters, search, view toggle ===== */
+    $('#searchInput').oninput = e=>{ state.q=e.target.value; state.page=1; render(); };
+    $('#roleFilter').onchange = e=>{ state.role=e.target.value; state.page=1; render(); };
+    $('#statusFilter').onchange = e=>{ state.status=e.target.value; state.page=1; render(); };
+    $('#clearFilters').onclick = ()=>{ state={q:'',role:'',status:'',page:1};
+        $('#searchInput').value=''; $('#roleFilter').value=''; $('#statusFilter').value=''; render(); };
+    $('#prevPage').onclick=()=>{ if(state.page>1){state.page--; render();} };
+    $('#nextPage').onclick=()=>{ state.page++; render(); };
+    $('#prevPageC').onclick=()=>{ if(state.page>1){state.page--; render();} };
+    $('#nextPageC').onclick=()=>{ state.page++; render(); };
+
+    $('#btnTable').onclick=()=>{ view='table'; render(); };
+    $('#btnCards').onclick=()=>{ view='cards'; render(); };
+
+    /* ===== Drawer (view/edit) ===== */
+    const drawer=$('#drawer'), backdrop=$('#drawerBackdrop');
+    const els={name:$('#uName'), handle:$('#uHandle'), email:$('#uEmail'),
+        phone:$('#uPhone'), role:$('#uRole'), status:$('#uStatus'), notes:$('#uNotes')};
+    let currentId=null, editMode=false;
+
+    function openDrawer(id, editable){
+        const u=users.find(x=>x.id===id); if(!u) return;
+        currentId=id; editMode=editable;
+        $('#drawerTitle').textContent = editable ? 'Edit User' : 'User Details';
+        els.name.value=u.name; els.handle.value=u.handle; els.email.value=u.email;
+        els.phone.value=u.phone||''; els.role.value=u.role; els.status.value=u.status; els.notes.value=u.notes||'';
+        [els.name,els.handle,els.email,els.phone,els.role,els.status,els.notes].forEach(el=>el.disabled=!editable);
+        $('#saveUser').style.display = editable ? '' : 'none';
+        drawer.classList.add('open'); backdrop.classList.add('show');
+    }
+    function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); currentId=null; }
+    backdrop.onclick=closeDrawer; $('#cancelDrawer').onclick=closeDrawer;
+
+    $('#saveUser').onclick=()=>{
+        const idx=users.findIndex(u=>u.id===currentId); if(idx<0) return;
+        const u={...users[idx],
+            name:els.name.value.trim(), handle:els.handle.value.trim(), email:els.email.value.trim(),
+            phone:els.phone.value.trim(), role:els.role.value, status:els.status.value, notes:els.notes.value.trim()
+        };
+        users[idx]=u; save(users); render(); closeDrawer();
+    };
+
+    function removeUser(id){
+        const u=users.find(x=>x.id===id); if(!u) return;
+        if(confirm(`Delete user "${u.name}"?`)){
+            users=users.filter(x=>x.id!==id); save(users); render();
+        }
+    }
+
+    /* Add user quick dummy */
+    const addDummy = () => {
+        const nextId = (users.reduce((m,u)=>Math.max(m,u.id),0) || 0) + 1;
+        const u = {...seed[1], id:nextId, name:'New User', handle:'@newuser', email:`user${nextId}@email.com`,
+            status:'Pending', role:'Customer', joined:new Date().toISOString()};
+        users.unshift(u); save(users); render();
+    };
+    $('#addUser').onclick=addDummy;
+    $('#emptyAddBtn').onclick=addDummy;
+
+    /* Check-all demo */
+    $('#checkAll').onchange = e => $$('tbody input[type="checkbox"]').forEach(cb=>cb.checked=e.target.checked);
+</script>
+
+<script src="../js/adminbar.js" defer></script>
+<script src="../js/includeadminBar.js" defer></script>
+</body>
+</html>

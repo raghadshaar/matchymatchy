@@ -191,8 +191,7 @@
 }
 
 .similar-product-title {
-    font-size: 20px;
-    padding:15px;
+    font-size: 0.9rem;
     margin-bottom: 5px;
     color: var(--jet);
 }
