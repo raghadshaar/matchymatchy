@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Matchy Matchy — Admin • Orders</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Your existing styles -->
+    <link rel="stylesheet" href="../styles/sidebar.css"/>
+    <link rel="stylesheet" href="../styles/products.css"/>
+    <link rel="stylesheet" href="../styles/topbarAdmin.css"/>
+
+    <style>
+        :root{
+            --badge-w: 96px;      /* عرض موحّد للبادج */
+            --badge-h: 32px;      /* ارتفاع موحّد */
+            /* تدرجات قريبة من الباليت */
+            --teal-ink:#006d6d;   --teal-bg:#e5f4f4;   --teal-br:#cdeaea;   /* success */
+            --amber-ink:#8a6000;  --amber-bg:#fff3d9;  --amber-br:#ffe2a6;  /* pending */
+            --rose-ink:#a23c3c;   --rose-bg:#ffe7e7;   --rose-br:#ffd1d1;   /* error */
+        }
+
+        /* نفس الكلاس الموجود عندك، بس بمقاس ثابت وتوسيط */
+        .chip{
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:var(--badge-w); height:var(--badge-h);
+            padding:0 10px; border-radius:999px; font-weight:600; font-size:.85rem;
+            border:1px solid transparent; white-space:nowrap;
+        }
+
+        /* قلّلنا الألوان: الأخضر والأزرق نفس الشكل (Teal) */
+        .chip.green, .chip.blue { background:var(--teal-bg); color:var(--teal-ink); border-color:var(--teal-br); }
+        .chip.amber { background:var(--amber-bg); color:var(--amber-ink); border-color:var(--amber-br); }
+        .chip.red   { background:var(--rose-bg); color:var(--rose-ink);  border-color:var(--rose-br); }
+
+        /* تمنع تكسّر في الخلايا اللي فيها البادج */
+        td:nth-child(6), td:nth-child(7){ white-space:nowrap; }
+        /* small tweaks on top of your theme */
+        .toolbar .field { min-width: 260px; }
+        .chip{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-weight:600;font-size:.8rem;border:1px solid transparent}
+        .chip.green{background:#e9f8f1;color:#1b8e57;border-color:#cdeedd}
+        .chip.amber{background:#fff6e6;color:#ad8100;border-color:#ffe1ad}
+        .chip.red{background:#ffecec;color:#b23535;border-color:#ffc9c9}
+        .chip.blue{background:#eaf3ff;color:#1b63c7;border-color:#cfe3ff}
+        .muted{color:#6b7280}
+        .drawer .section-title{margin:18px 0 6px;font-weight:600;color:#715E51}
+        .order-items{width:100%;border-collapse:separate;border-spacing:0}
+        .order-items th,.order-items td{padding:10px;border-bottom:1px solid var(--border)}
+        .order-items th{text-align:left;color:#6b7280;background:#faf9f7}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        @media (max-width:900px){.grid-2{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main -->
+    <main class="main">
+        <!-- Topbar -->
+        <div data-include="topBarAdmin.html"></div>
+
+        <!-- Page header -->
+        <div class="page-head">
+            <div class="title-wrap">
+                <h1>Orders</h1>
+                <p class="muted">Track and manage all customer orders from your store.</p>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="field" style="flex:1">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="searchInput" type="search" placeholder="Search by Order ID, Customer Name, or Email…">
+            </div>
+            <div class="field">
+                <i class="fa-solid fa-signal"></i>
+                <select id="statusFilter" aria-label="Filter by status">
+                    <option value="">All Status</option>
+                    <option>Pending</option>
+                    <option>Processing</option>
+                    <option>Shipped</option>
+                    <option>Delivered</option>
+                    <option>Cancelled</option>
+                </select>
+            </div>
+            <div class="field">
+                <i class="fa-regular fa-credit-card"></i>
+                <select id="paymentFilter" aria-label="Filter by payment">
+                    <option value="">All Payments</option>
+                    <option>Paid</option>
+                    <option>Pending</option>
+                    <option>Failed</option>
+                    <option>Refunded</option>
+                    <option>COD</option>
+                </select>
+            </div>
+            <button class="btn btn-ghost" id="clearFilters"><i class="fa-solid fa-rotate-left"></i> Clear Filters</button>
+        </div>
+
+        <!-- Table -->
+        <section class="card">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width:40px;"><input type="checkbox" id="checkAll"/></th>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th style="width:120px;">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+
+            <div id="emptyState" class="empty" style="display:none">
+                <div class="emoji">📦</div>
+                <h3 style="margin:0 0 6px;color:var(--umber)">No orders yet</h3>
+                <p style="margin:0 0 14px" class="muted">Start selling to see orders here.</p>
+                <button class="btn btn-teal" id="emptyAddBtn"><i class="fa-solid fa-plus"></i> Add Order</button>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pager">
+                <div class="pager-info" id="pagerInfo"></div>
+                <button class="page-btn" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
+                <div id="pageNums" style="display:flex;gap:6px"></div>
+                <button class="page-btn" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Drawer: Order Details -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="drawer" id="drawer">
+    <h3 id="drawerTitle">Order Details</h3>
+
+    <div class="section-title">Customer</div>
+    <div class="grid-2">
+        <div><label class="muted">Name</label><input class="input" id="cName"/></div>
+        <div><label class="muted">Email</label><input class="input" id="cEmail"/></div>
+        <div><label class="muted">Phone</label><input class="input" id="cPhone"/></div>
+        <div><label class="muted">Order ID</label><input class="input" id="oId" disabled/></div>
+    </div>
+
+    <div class="section-title">Shipping Address</div>
+    <textarea class="textarea" id="cAddress" placeholder="Street, City, ZIP, Country"></textarea>
+
+    <div class="section-title">Items</div>
+    <table class="order-items" id="itemsTable">
+        <thead><tr><th>Product</th><th>Price (₪)</th><th>Qty</th><th>Subtotal (₪)</th></tr></thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="grid-2" style="margin-top:10px">
+        <div>
+            <label class="muted">Payment Status</label>
+            <select class="select" id="paymentStatus">
+                <option>Paid</option><option>Pending</option><option>Failed</option><option>Refunded</option><option>COD</option>
+            </select>
+        </div>
+        <div>
+            <label class="muted">Order Status</label>
+            <select class="select" id="orderStatus">
+                <option>Pending</option><option>Processing</option><option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section-title">Summary</div>
+    <div class="grid-2">
+        <div><label class="muted">Subtotal</label><input class="input" id="sumSubtotal" disabled/></div>
+        <div><label class="muted">Shipping</label><input class="input" id="sumShipping"/></div>
+        <div><label class="muted">Tax</label><input class="input" id="sumTax"/></div>
+        <div><label class="muted">Total</label><input class="input" id="sumTotal" disabled/></div>
+    </div>
+
+    <div class="drawer-actions">
+        <button class="btn btn-ghost" id="cancelDrawer">Cancel</button>
+        <button class="btn btn-teal" id="saveOrder">Save</button>
+    </div>
+</div>
+
+<script>
+    /* ===== helpers ===== */
+    const LS_KEY = 'mm_orders_v1';
+    const PAGE_SIZE = 8;
+    const $ = (s,c=document)=>c.querySelector(s);
+    const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));
+    const money = n => `₪${Number(n).toFixed(2)}`;
+
+    /* ===== sidebar include & active link ===== */
+    document.addEventListener('DOMContentLoaded', async () => {
+        try{
+            const html = await fetch('sidebar.html').then(r=>r.text());
+            $('#sidebar-container').innerHTML = html;
+            $$('a', $('#sidebar-container')).forEach(a=>{
+                if((a.textContent||'').trim().toLowerCase()==='orders') a.classList.add('active');
+            });
+        }catch{}
+    });
+
+    /* ===== seed data ===== */
+    const seed = [
+        { id:'ORD-2024-001', date:'2024-01-15', total:245.00, payment:'Paid', status:'Shipped',
+            customer:{name:'Sarah Johnson', email:'sarah.johnson@email.com', phone:'+972-50-111-1111', address:'12 Herzl St, Tel Aviv'},
+            items:[{name:'Family Matching Pajama Set', price:129.90, qty:1},{name:'Pastel Hair Bow Set (4 pcs)', price:34.90, qty:1},{name:'Kids Sleeveless Summer Jumpsuit', price:80.20, qty:1}],
+            shipping:15, tax:0 },
+        { id:'ORD-2024-002', date:'2024-01-14', total:189.50, payment:'Pending', status:'Processing',
+            customer:{name:'Michael Chen', email:'michael.chen@email.com', phone:'+972-50-222-2222', address:'3 Rothschild Blvd, Tel Aviv'},
+            items:[{name:'Girls Summer Floral Dress', price:99.00, qty:1},{name:'USB-C Cable 3ft', price:19.99, qty:2}], shipping:15, tax:0 },
+        { id:'ORD-2024-003', date:'2024-01-13', total:320.75, payment:'Paid', status:'Delivered',
+            customer:{name:'Emma Rodriguez', email:'emma.rodriguez@email.com', phone:'+972-50-333-3333', address:'HaYarkon 50, Tel Aviv'},
+            items:[{name:'Baby Girl Ruffle Dress', price:79.90, qty:1},{name:'Yellow Ruffle Party Dress', price:89.90, qty:2}], shipping:25, tax:35.05 },
+        { id:'ORD-2024-004', date:'2024-01-12', total:156.25, payment:'Failed', status:'Cancelled',
+            customer:{name:'David Kim', email:'david.kim@email.com', phone:'+972-50-444-4444', address:'Dizengoff 10, Tel Aviv'},
+            items:[{name:'Portable Bluetooth Speaker', price:79.99, qty:1},{name:'Premium Phone Case', price:29.99, qty:2}], shipping:16.28, tax:0 },
+        { id:'ORD-2024-005', date:'2024-01-11', total:278.90, payment:'Paid', status:'Pending',
+            customer:{name:'Lisa Thompson', email:'lisa.thompson@email.com', phone:'+972-50-555-5555', address:'King George 7, Tel Aviv'},
+            items:[{name:'Classic Baby Girl Dress – White Lace', price:84.90, qty:1},{name:'Girls Party Dress – Pink Satin', price:119.90, qty:1}], shipping:20, tax:54.10 },
+        { id:'ORD-2024-006', date:'2024-01-10', total:412.30, payment:'Paid', status:'Shipped',
+            customer:{name:'Alexander Cohen', email:'alex.cohen@email.com', phone:'+972-50-666-6666', address:'Jabotinsky 4, Ramat Gan'},
+            items:[{name:'Adjustable Laptop Stand', price:89.99, qty:2},{name:'Wireless Ergonomic Mouse', price:39.99, qty:2}], shipping:29.34, tax:123 },
+        { id:'ORD-2024-007', date:'2024-01-09', total:167.45, payment:'Pending', status:'Processing',
+            customer:{name:'Sophia Martinez', email:'sophia.m@email.com', phone:'+972-50-777-7777', address:'Arlozorov 18, Tel Aviv'},
+            items:[{name:'USB-C Cable 3ft', price:19.99, qty:1},{name:'Pastel Hair Bow Set (4 pcs)', price:34.90, qty:1}], shipping:12.56, tax:0 },
+        { id:'ORD-2024-008', date:'2024-01-08', total:298.60, payment:'Paid', status:'Delivered',
+            customer:{name:'Daniel Levy', email:'daniel.levy@email.com', phone:'+972-50-888-8888', address:'Ibn Gabirol 90, Tel Aviv'},
+            items:[{name:'Family Matching Pajama Set', price:129.90, qty:1},{name:'Girls Summer Floral Dress', price:99.00, qty:1}], shipping:19.7, tax:50 }
+    ];
+    function load(){ const raw=localStorage.getItem(LS_KEY); if(!raw){ localStorage.setItem(LS_KEY,JSON.stringify(seed)); return [...seed]; } try{return JSON.parse(raw)||[]}catch{return [...seed]}}
+    function save(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+    let orders = load();
+
+    /* ===== filters & pagination ===== */
+    let state = { q:'', status:'', payment:'', page:1 };
+
+    function chipClass(kind,val){
+        const v=(val||'').toLowerCase();
+        if(kind==='payment'){ if(v==='paid') return 'green'; if(v==='pending'||v==='cod') return 'amber'; if(v==='failed'||v==='refunded') return 'red'; }
+        if(kind==='status'){ if(v==='delivered') return 'green'; if(v==='shipped') return 'blue'; if(v==='processing'||v==='pending') return 'amber'; if(v==='cancelled') return 'red'; }
+        return 'amber';
+    }
+
+    function applyFilters(){
+        let list=[...orders];
+        const q=state.q.trim().toLowerCase();
+        if(q){
+            list=list.filter(o =>
+                o.id.toLowerCase().includes(q) ||
+                o.customer.name.toLowerCase().includes(q) ||
+                o.customer.email.toLowerCase().includes(q)
+            );
+        }
+        if(state.status) list=list.filter(o=>o.status===state.status);
+        if(state.payment) list=list.filter(o=>o.payment===state.payment);
+        return list;
+    }
+    function paginate(list){
+        const total=list.length;
+        const pages=Math.max(1, Math.ceil(total/PAGE_SIZE));
+        if(state.page>pages) state.page=pages;
+        const start=(state.page-1)*PAGE_SIZE;
+        return {slice:list.slice(start,start+PAGE_SIZE), total, pages};
+    }
+
+    /* ===== render table ===== */
+    function render(){
+        const filtered=applyFilters();
+        const {slice,total,pages}=paginate(filtered);
+
+        $('#tbody').innerHTML = slice.map(o=>`
+    <tr>
+      <td><input type="checkbox" data-id="${o.id}"></td>
+      <td><span class="muted">#</span>${o.id}</td>
+      <td>
+        <div style="display:flex;flex-direction:column">
+          <strong>${o.customer.name}</strong>
+          <span class="muted" style="font-size:.9rem">${o.customer.email}</span>
+        </div>
+      </td>
+      <td>${new Date(o.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td>${money(o.total)}</td>
+      <td><span class="chip ${chipClass('payment',o.payment)}">${o.payment}</span></td>
+      <td><span class="chip ${chipClass('status',o.status)}">${o.status}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-link" title="View" data-view="${o.id}"><i class="fa-regular fa-eye"></i></button>
+          <button class="icon-link" title="Edit" data-edit="${o.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+          <button class="icon-link" title="Delete" data-del="${o.id}"><i class="fa-regular fa-trash-can"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+        $('#emptyState').style.display = filtered.length ? 'none' : 'block';
+        $('#pagerInfo').textContent = filtered.length
+            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1,total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} orders`
+            : 'No results';
+
+        // page buttons
+        $('#pageNums').innerHTML='';
+        for(let i=1;i<=pages;i++){
+            const b=document.createElement('button');
+            b.className='page-btn'+(i===state.page?' active':'');
+            b.textContent=i;
+            b.onclick=()=>{ state.page=i; render(); };
+            $('#pageNums').appendChild(b);
+        }
+        $('#prevPage').disabled=state.page<=1;
+        $('#nextPage').disabled=state.page>=pages;
+
+        // row actions
+        $$('[data-view]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.view,false));
+        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.edit,true));
+        $$('[data-del]').forEach(b=>b.onclick=()=>removeOrder(b.dataset.del));
+    }
+    render();
+
+    /* ===== search & filters wiring ===== */
+    $('#searchInput').oninput = e=>{ state.q=e.target.value; state.page=1; render(); };
+    $('#statusFilter').onchange = e=>{ state.status=e.target.value; state.page=1; render(); };
+    $('#paymentFilter').onchange = e=>{ state.payment=e.target.value; state.page=1; render(); };
+    $('#clearFilters').onclick = ()=>{ state={q:'',status:'',payment:'',page:1}; $('#searchInput').value=''; $('#statusFilter').value=''; $('#paymentFilter').value=''; render(); };
+    $('#prevPage').onclick=()=>{ if(state.page>1){state.page--; render();} };
+    $('#nextPage').onclick=()=>{ state.page++; render(); };
+
+    /* ===== drawer (view/edit) ===== */
+    const drawer=$('#drawer'), backdrop=$('#drawerBackdrop');
+    const els={
+        oId:$('#oId'), cName:$('#cName'), cEmail:$('#cEmail'), cPhone:$('#cPhone'), cAddress:$('#cAddress'),
+        pStat:$('#paymentStatus'), oStat:$('#orderStatus'),
+        tBody:$('#itemsTable tbody'),
+        sub:$('#sumSubtotal'), ship:$('#sumShipping'), tax:$('#sumTax'), total:$('#sumTotal')
+    };
+    let currentId=null, editMode=false;
+
+    function openDrawer(id, editable){
+        const o=orders.find(x=>x.id===id); if(!o) return;
+        currentId=id; editMode=editable;
+        $('#drawerTitle').textContent = editable ? 'Edit Order' : 'Order Details';
+
+        els.oId.value=o.id;
+        els.cName.value=o.customer.name;
+        els.cEmail.value=o.customer.email;
+        els.cPhone.value=o.customer.phone||'';
+        els.cAddress.value=o.customer.address||'';
+        els.pStat.value=o.payment;
+        els.oStat.value=o.status;
+
+        els.tBody.innerHTML=o.items.map(it=>{
+            const sub=it.price*it.qty;
+            return `<tr><td>${it.name}</td><td>${Number(it.price).toFixed(2)}</td><td>${it.qty}</td><td>${sub.toFixed(2)}</td></tr>`;
+        }).join('');
+
+        const subtotal=o.items.reduce((s,i)=>s+i.price*i.qty,0);
+        els.sub.value=money(subtotal);
+        els.ship.value=o.shipping ?? 0;
+        els.tax.value=o.tax ?? 0;
+        els.total.value=money(subtotal + Number(o.shipping||0) + Number(o.tax||0));
+
+        // enable/disable
+        [els.cName,els.cEmail,els.cPhone,els.cAddress,els.pStat,els.oStat,els.ship,els.tax].forEach(el=>el.disabled=!editable);
+        $('#saveOrder').style.display = editable ? '' : 'none';
+
+        drawer.classList.add('open'); backdrop.classList.add('show');
+    }
+    function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); currentId=null; }
+    backdrop.onclick=closeDrawer; $('#cancelDrawer').onclick=closeDrawer;
+
+    $('#saveOrder').onclick=()=>{
+        const idx=orders.findIndex(o=>o.id===currentId); if(idx<0) return;
+        const o={...orders[idx]};
+        o.customer={name:els.cName.value.trim(), email:els.cEmail.value.trim(), phone:els.cPhone.value.trim(), address:els.cAddress.value.trim()};
+        o.payment=els.pStat.value; o.status=els.oStat.value;
+        o.shipping=Number(els.ship.value||0); o.tax=Number(els.tax.value||0);
+        const subtotal=o.items.reduce((s,i)=>s+i.price*i.qty,0);
+        o.total=Number((subtotal + o.shipping + o.tax).toFixed(2));
+        orders[idx]=o; save(orders); render(); closeDrawer();
+    };
+
+    function removeOrder(id){
+        const o=orders.find(x=>x.id===id); if(!o) return;
+        if(confirm(`Delete order ${o.id}? This cannot be undone.`)){
+            orders=orders.filter(x=>x.id!==id); save(orders); render();
+        }
+    }
+
+    /* add order (quick dummy) */
+    $('#emptyAddBtn').onclick = ()=> {
+        const n = orders.length+1;
+        const od = { ...seed[0], id:`ORD-2024-${String(100+n).slice(1)}` };
+        orders.unshift(od); save(orders); render();
+    };
+
+    /* check-all */
+    $('#checkAll').onchange = e => $$('tbody input[type="checkbox"]').forEach(cb=>cb.checked=e.target.checked);
+</script>
+
+<!-- keep your existing includes -->
+<script src="../js/adminbar.js" defer></script>
+<script src="../js/includeadminBar.js" defer></script>
+</body>
+</html>

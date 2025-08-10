@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // العناصر المشتركة بين الصفحات
     const profileBtn = document.querySelector('.profile-btn');
     const profileMenu = document.getElementById('profile-menu');
     const notifyBtn = document.querySelector('.notify-btn');

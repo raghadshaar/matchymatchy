@@ -59,6 +59,34 @@ img{ max-width:100%; height:auto; display:block } /* يسمح بحجم صور أ
 .menu-item.active i{ color:#fff }
 
 /* ===================== 4) TOPBAR ===================== */
+
+
+
+
+
+.main{ padding:24px; }
+
+/* Topbar */
+.topbar{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
+}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.search {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    border:1px solid var(--border);
+    padding:10px 12px;
+    border-radius:999px;
+    min-width:260px; width:45vw; max-width:680px;
+    box-shadow:var(--shadow);
+}
+
+
+.search input{ border:0;outline:0;width:100%;font:inherit;color:var(--jet); }
+.topbar-right{display:flex;align-items:center;gap:12px}
+/*
 .topbar{
     position:sticky; top:0; z-index:9;
     display:flex; align-items:center; justify-content:space-between;
@@ -77,7 +105,7 @@ img{ max-width:100%; height:auto; display:block } /* يسمح بحجم صور أ
 .search input{
     border:0; outline:0; background:transparent; width:100%;
     font-size:1rem; color:var(--ink);
-}
+}*/
 
 /* --- top-right controls (مُنعّمة) --- */
 .top-actions{ display:flex; align-items:center; gap:10px; position:relative }
