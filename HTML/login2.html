@@ -157,8 +157,11 @@
                     </div>
                     <button type="button" id="google-signin" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap google-btn">
                         <div id="google-signin-content" class="flex items-center justify-center space-x-2">
-                            <i class="ri-google-fill text-lg"></i>
-                            <span>Continue with Google</span>
+                            <!-- داخل صفحة sign-in.php (نفس الصفحة اللي في الصورة) -->
+                            <a href="google-login.php" class="btn-google">
+                                Continue with Google
+                            </a>
+
                         </div>
                         <div id="google-signin-loading" class="hidden flex items-center justify-center space-x-2">
                             <i class="ri-loader-4-line animate-spin text-lg"></i>
