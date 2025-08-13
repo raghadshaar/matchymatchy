@@ -8,6 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <script>
+        // قراءة/كتابة السلة
+        function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
+        function setCart(next){ localStorage.setItem('cart', JSON.stringify(next)); window.dispatchEvent(new Event('cart:updated')); }
+
+        // حساب العدد وتحديث البادج (ينفع مع #header أو #header-slot)
+        function getCartCount(){ return getCart().reduce((n,i)=> n + (Number(i.quantity)||0), 0); }
+        function updateHeaderCartCount(){
+            const el = document.querySelector('#header #cart-count, #header-slot #cart-count, #cart-count, .main-header .cart .badge');
+            if (el) el.textContent = getCartCount();
+        }
+    </script>
 
 </head>
 
@@ -16,86 +28,7 @@
 <body>
 
 <!-- HEADER -->
-<header class="main-header">
-    <div class="backdrop" id="backdrop" onclick="closeAllDropdowns()"></div>
-    <div class="top-header">
-        <div class="logo">Matchy Matchy</div>
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Find your product" />
-        </div>
-        <div class="icons">
-            <span class="icon login"><i class="fa-regular fa-user"></i> Login</span>
-            <span class="icon"><i class="fa-regular fa-heart"></i></span>
-            <span class="icon cart">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span class="badge">3</span>
-      </span>
-        </div>
-    </div>
-
-    <nav class="nav-menu">
-        <ul>
-            <li class="menu-item" onclick="toggleDropdown('babyDropdown')">Baby</li>
-            <li class="menu-item" onclick="toggleDropdown('toddlerDropdown')">Toddler</li>
-            <li class="menu-item" onclick="toggleDropdown('kidsDropdown')">Kids</li>
-            <li class="menu-item" onclick="toggleDropdown('dealsDropdown')">Deals</li>
-            <li class="menu-item">Shop All</li>
-        </ul>
-    </nav>
-
-    <!-- Sidebar Menus -->
-    <div class="dropdown-panel" id="babyDropdown">
-        <div class="dropdown-header">
-            <strong>Baby</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li>Baby Girl</li>
-            <li>Baby Boy</li>
-            <li>Baby Neutral</li>
-            <li>Baby Gear</li>
-            <li>Baby Gifts</li>
-        </ul>
-    </div>
-
-    <div class="dropdown-panel" id="toddlerDropdown">
-        <div class="dropdown-header">
-            <strong>Toddler</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li>Toddler Girl</li>
-            <li>Toddler Boy</li>
-            <li>Toddler Gear</li>
-        </ul>
-    </div>
-
-    <div class="dropdown-panel" id="kidsDropdown">
-        <div class="dropdown-header">
-            <strong>Kids</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li>Girls</li>
-            <li>Boys</li>
-        </ul>
-    </div>
-
-
-    <div class="dropdown-panel" id="dealsDropdown">
-        <div class="dropdown-header">
-            <h3>Deals</h3>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul class="mega-menu-list">
-            <li>Flash Sale <span>&#8250;</span></li>
-            <li>Clearance <span>&#8250;</span></li>
-            <li>Bundle Offers <span>&#8250;</span></li>
-            <li>Weekly Specials <span>&#8250;</span></li>
-        </ul>
-    </div>
-</header>
+<div id="header-slot"></div>
 
 <!-- HERO SLIDER -->
 <section class="slider">
@@ -187,55 +120,34 @@
         </form>
     </div>
 </section>
-<!-- ========== FOOTER ========== -->
-<footer class="main-footer">
-    <div class="footer-content">
-        <div class="footer-section logo-section">
-            <h2 class="logo">Matchy Matchy</h2>
-            <p>Your trusted destination for quality kids products. Making parenting easier, one match at a time.</p>
-            <div class="social-icons">
-                <i class="fab fa-facebook-f"></i>
-                <i class="fab fa-instagram"></i>
-                <i class="fab fa-twitter"></i>
-            </div>
-        </div>
 
-        <div class="footer-section">
-            <h4>Quick Links</h4>
-            <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Contact</a></li>
-                <li><a href="#">Size Guide</a></li>
-                <li><a href="#">Return Policy</a></li>
-            </ul>
-        </div>
+<div id="foot"></div>
+<script>
 
-        <div class="footer-section">
-            <h4>Categories</h4>
-            <ul>
-                <li><a href="#">Baby</a></li>
-                <li><a href="#">Toddler</a></li>
-                <li><a href="#">Kids</a></li>
-                <li><a href="#">Deals</a></li>
-            </ul>
-        </div>
+    fetch('footer.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('foot').innerHTML = data;
+        });
+</script>
+<script>
+    fetch('header.html')
+        .then(r => r.text())
+        .then(html => {
+            document.getElementById('header-slot').innerHTML = html;
 
-        <div class="footer-section">
-            <h4>Customer Service</h4>
-            <ul>
-                <li><a href="#">Help Center</a></li>
-                <li><a href="#">Track Order</a></li>
-                <li><a href="#">Shipping Info</a></li>
-                <li><a href="#">Returns</a></li>
-            </ul>
-        </div>
-    </div>
+            // حدّث البادج فور الحقن
+            updateHeaderCartCount();
 
-    <div class="footer-bottom">
-        <p>&copy; 2024 Matchy Matchy. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
-    </div>
-</footer>
+            // تزامن بين الصفحات/التبويبات
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'cart') updateHeaderCartCount();
+            });
 
+            // تزامن داخل نفس الصفحة
+            window.addEventListener('cart:updated', updateHeaderCartCount);
+        });
+</script>
 
 
 

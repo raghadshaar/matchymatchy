@@ -10,36 +10,60 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="../js/indexscript.js"></script>
-<script>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#008080',secondary:'#FADADD'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="../styles/productStyle.css" />
+    <link rel="stylesheet" href="../styles/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="../js/indexscript.js"></script>
+    <script>
+        // قراءة/كتابة السلة
+        function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
+        function setCart(next){ localStorage.setItem('cart', JSON.stringify(next)); window.dispatchEvent(new Event('cart:updated')); }
+
+        // حساب العدد وتحديث البادج (ينفع مع #header أو #header-slot)
+        function getCartCount(){ return getCart().reduce((n,i)=> n + (Number(i.quantity)||0), 0); }
+        function updateHeaderCartCount(){
+            const el = document.querySelector('#header #cart-count, #header-slot #cart-count, #cart-count, .main-header .cart .badge');
+            if (el) el.textContent = getCartCount();
+        }
+    </script>
+    <script>
 
         function toggleFavorite(btn) {
-        btn.classList.toggle('active');
-        const icon = btn.querySelector('i');
-        if (btn.classList.contains('active')) {
-        icon.classList.remove('fa-regular');
-        icon.classList.add('fa-solid');
-    } else {
-        icon.classList.remove('fa-solid');
-        icon.classList.add('fa-regular');
-    }
-    }
+            btn.classList.toggle('active');
+            const icon = btn.querySelector('i');
+            if (btn.classList.contains('active')) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+            } else {
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+            }
+        }
 
 
-    function changeImage(src, element) {
-        // Update main image
-        document.getElementById('main-product-image').src = src;
+        function changeImage(src, element) {
+            // Update main image
+            document.getElementById('main-product-image').src = src;
 
-        // Update active thumbnail
-        const thumbnails = document.querySelectorAll('.image-thumbnail');
-        thumbnails.forEach(thumb => {
-        thumb.classList.remove('active');
-    });
-        element.classList.add('active');
-    }
-</script>
+            // Update active thumbnail
+            const thumbnails = document.querySelectorAll('.image-thumbnail');
+            thumbnails.forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+    </script>
 </head>
 <body>
-<div data-include="header.html"></div>
+<div id="header"></div>
 <section class="product-detail">
     <div class="container">
         <div class="product-wrapper">
@@ -101,7 +125,7 @@
                     </div>
                 </div>
 
-                <button class="add-to-cart">Add to Cart</button>
+                <button  class="add-to-cart">Add to Cart</button>
                 <button class="icon-btn favorite-btn" onclick="toggleFavorite(this)">
                     <i class="fa-regular fa-heart"></i>
                 </button>
@@ -149,48 +173,168 @@
         <!-- Enhanced Similar Products Section -->
         <div class="similar-products">
             <h2>You May Also Like</h2>
-            <div class="similar-products-grid">
-                <div class="similar-product-card">
+            <div class="similar-products-grid relative">
+
+                <div class="similar-product-card relative "  >
                     <img src="../images/similar1.jpg" alt="Sleeveless Summer Dress" class="similar-product-image">
-                    <h3 class="similar-product-title">Sleeveless Summer Dress</h3>
-                    <div class="similar-product-price">₪59</div>
-                    <div class="similar-product-rating">
-                        <span class="heart-icon">❤</span> 42
-                        <span>⭐ 4.2</span>
-                    </div>
-                </div>
-                <div class="similar-product-card">
-                    <img src="../images/similar2.jpg" alt="Cartoon Print Skirt" class="similar-product-image">
-                    <h3 class="similar-product-title">Cartoon Print Skirt</h3>
-                    <div class="similar-product-price">₪49</div>
-                    <div class="similar-product-rating">
-                        <span class="heart-icon">❤</span> 45
-                        <span>⭐ 4.5</span>
-                    </div>
-                </div>
-                <div class="similar-product-card">
-                    <img src="../images/similar3.jpg" alt="Elegant Summer Cardigan" class="similar-product-image">
-                    <h3 class="similar-product-title">Elegant Summer Cardigan</h3>
+                    <h3 class="similar-product-title" style="padding-top: 20px; font-size: 20px">Sleeveless Summer Dress</h3>
                     <div class="similar-product-price">₪79</div>
-                    <div class="similar-product-rating">
-                        <span class="heart-icon">❤</span> 47
-                        <span>⭐ 4.6</span>
+                    <div class="flex flex justify-center items-center " style="align-items: center; font-size: 30px;padding-right: 20px;">
+                        <div class="star-rating flex" style="padding-right: 20px;">
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="1">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="2">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="3">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="4">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="5">★</button>
+                        </div>
+                        <button class="like-btn flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                            <i class="ri-heart-line"></i>
+                            <span class="text-xs like-count">156</span>
+                        </button>
                     </div>
+
+                    <button class="add-btn  bottom-4 absolute right-1 w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-white shadow-lg" style="background-color: #E4CFC3; ">
+                        <i class="ri-add-line text-sm " style="font-size: 30px"></i>
+                    </button>
+
                 </div>
-                <div class="similar-product-card">
-                    <img src="../images/similar4.jpg" alt="Light Summer Shorts" class="similar-product-image">
-                    <h3 class="similar-product-title">Light Summer Shorts</h3>
-                    <div class="similar-product-price">₪69</div>
-                    <div class="similar-product-rating">
-                        <span class="heart-icon">❤</span> 43
-                        <span>⭐ 4.7</span>
+                <div class="similar-product-card relative "  >
+                    <img src="../images/similar2.jpg" alt="Cartoon Print Skirt" class="similar-product-image">
+                    <h3 class="similar-product-title" style="padding-top: 20px; font-size: 20px">Cartoon Pink Printable Print Skirt </h3>
+                    <div class="similar-product-price">₪79</div>
+                    <div class="flex flex justify-center items-center " style="align-items: center; font-size: 30px;padding-right: 20px;">
+                        <div class="star-rating flex" style="padding-right: 20px;">
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="1">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="2">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="3">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="4">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="5">★</button>
+                        </div>
+                        <button class="like-btn flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                            <i class="ri-heart-line"></i>
+                            <span class="text-xs like-count">156</span>
+                        </button>
                     </div>
+
+                    <button class="add-btn  bottom-4 absolute right-1 w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-white shadow-lg" style="background-color: #E4CFC3; ">
+                        <i class="ri-add-line text-sm " style="font-size: 30px"></i>
+                    </button>
+
                 </div>
+                <div class="similar-product-card relative "  >
+                    <img src="../images/similar3.jpg" alt="Elegant Summer Cardigan" class="similar-product-image">
+                    <h3 class="similar-product-title" style="padding-top: 20px; font-size: 20px">Elegant Summer Cardigan</h3>
+                    <div class="similar-product-price">₪79</div>
+                    <div class="flex flex justify-center items-center " style="align-items: center; font-size: 30px;padding-right: 20px;">
+                        <div class="star-rating flex" style="padding-right: 20px;">
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="1">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="2">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="3">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="4">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="5">★</button>
+                        </div>
+                        <button class="like-btn flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                            <i class="ri-heart-line"></i>
+                            <span class="text-xs like-count">156</span>
+                        </button>
+                    </div>
+
+                    <button class="add-btn  bottom-4 absolute right-1 w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-white shadow-lg" style="background-color: #E4CFC3; ">
+                        <i class="ri-add-line text-sm " style="font-size: 30px"></i>
+                    </button>
+
+                </div>
+                <div class="similar-product-card relative "  >
+                    <img src="../images/Modal Cloud Print Footie Pajamas.jpg" alt="Modal Cloud Print Footie Pajamas" class="similar-product-image">
+                    <h3 class="similar-product-title" style="padding-top: 20px; font-size: 20px">Modal Cloud Print Footie Pajamas</h3>
+                    <div class="similar-product-price">₪59</div>
+                    <div class="flex flex justify-center items-center " style="align-items: center; font-size: 30px;padding-right: 20px;">
+                        <div class="star-rating flex" style="padding-right: 20px;">
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="1">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="2">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="3">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="4">★</button>
+                            <button class="star text-gray-300 hover:text-yellow-400" data-rating="5">★</button>
+                        </div>
+                        <button class="like-btn flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                            <i class="ri-heart-line"></i>
+                            <span class="text-xs like-count">156</span>
+                        </button>
+                    </div>
+
+                    <button class="add-btn  bottom-4 absolute right-1 w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-white shadow-lg" style="background-color: #E4CFC3;">
+                        <i class="ri-add-line text-sm " style="font-size: 30px"></i>
+                    </button>
+
+                </div>
+            </div>
+        </div>
             </div>
         </div>
     </div>
 </section>
 <div data-include="footer.html"></div>
+<script>
+    fetch('header.html')
+        .then(r => r.text())
+        .then(html => {
+            document.getElementById('header').innerHTML = html;
+
+            // حدّث البادج فور الحقن
+            updateHeaderCartCount();
+
+            // تزامن بين الصفحات/التبويبات
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'cart') updateHeaderCartCount();
+            });
+
+            // تزامن داخل نفس الصفحة
+            window.addEventListener('cart:updated', updateHeaderCartCount);
+        });
+</script>
 <script src="../js/include.js"></script>
+<script id="like-and-rating-functionality">
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButtons = document.querySelectorAll('.like-btn');
+        const starContainers = document.querySelectorAll('.star-rating');
+        likeButtons.forEach(button => {
+            let isLiked = false;
+            button.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                const count = this.querySelector('.like-count');
+                const currentCount = parseInt(count.textContent);
+                if (!isLiked) {
+                    icon.classList.remove('ri-heart-line');
+                    icon.classList.add('ri-heart-fill');
+                    this.classList.add('text-red-400');
+                    count.textContent = currentCount + 1;
+                } else {
+                    icon.classList.remove('ri-heart-fill');
+                    icon.classList.add('ri-heart-line');
+                    this.classList.remove('text-red-400');
+                    count.textContent = currentCount - 1;
+                }
+                isLiked = !isLiked;
+            });
+        });
+        starContainers.forEach(container => {
+            const stars = container.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = this.getAttribute('data-rating');
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.remove('text-gray-300');
+                            s.classList.add('text-yellow-400');
+                        } else {
+                            s.classList.remove('text-yellow-400');
+                            s.classList.add('text-gray-300');
+                        }
+                    });
+                });
+            });
+        });
+    });
+</script>
 </body>
 </html>
