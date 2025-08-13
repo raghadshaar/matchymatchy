@@ -5,21 +5,38 @@
     </form>
 
     <div class="top-actions">
-        <!-- Notifications  -->
+        <!-- Notifications -->
         <button class="icon-btn notify-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notify-menu">
             <i class="fa-regular fa-bell"></i>
             <span class="badge-dot" aria-hidden="true"></span>
         </button>
 
+        <!-- Notifications popover (NEW) -->
+        <div id="notify-menu" class="popover notify-popover" role="menu" aria-label="Notifications">
+            <div class="notify-head" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);">
+                <strong>Notifications</strong>
+                <div class="notify-actions" style="display:flex;gap:8px;">
+                    <button type="button" class="link-btn" id="markAllRead" style="background:none;border:0;color:var(--teal);cursor:pointer;">Mark all as read</button>
+                    <button type="button" class="link-btn" id="clearAll" style="background:none;border:0;color:#b94a48;cursor:pointer;">Clear all</button>
+                </div>
+            </div>
+
+            <ul class="notify-list" id="notifyList" style="list-style:none;margin:0;padding:8px;"></ul>
+
+            <div class="notify-foot" style="padding:10px 12px;border-top:1px solid var(--line);">
+                <a href="notifications.html" class="link-btn" style="text-decoration:none;color:var(--teal);">View all</a>
+            </div>
+        </div>
+
         <!-- Profile trigger -->
         <button class="profile-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu">
-    <span class="pf-avatar">
-      <img src="../images/raghad.jpg" alt="Raghad Shaar">
-    </span>
+      <span class="pf-avatar">
+        <img src="../images/raghad.jpg" alt="Raghad Shaar">
+      </span>
             <span class="pf-meta">
-      <strong>Raghad Shaar</strong>
-      <small>Administrator</small>
-    </span>
+        <strong>Raghad Shaar</strong>
+        <small>Administrator</small>
+      </span>
             <i class="fa-solid fa-chevron-down"></i>
         </button>
 
@@ -38,9 +55,9 @@
                 <button class="pf-account" data-email="afnan.hasan@company.com">
                     <span class="pf-acc-avatar"><img src="https://i.pravatar.cc/80?img=31" alt="Afnan Hasan"></span>
                     <span class="pf-acc-meta">
-    <strong>Afnan Hasan</strong>
-    <small>Administrator</small>
-  </span>
+            <strong>Afnan Hasan</strong>
+            <small>Administrator</small>
+          </span>
                 </button>
             </div>
 
@@ -48,15 +65,14 @@
 
             <div class="pf-sec pf-actions">
                 <button class="pf-action">
-                    <i class="fa-solid fa-gear"></i>  <!-- Changed to fa-solid -->
+                    <i class="fa-solid fa-gear"></i>
                     <span>Settings</span>
                 </button>
                 <button class="pf-action">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>  <!-- Changed to fa-solid -->
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     <span>Sign out</span>
                 </button>
             </div>
         </div>
     </div>
-
 </header>

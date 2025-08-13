@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Matchy Matchy — Admin • Reviews</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Shared base styles already in your project -->
+    <link rel="stylesheet" href="../styles/sidebar.css"/>
+    <link rel="stylesheet" href="../styles/products.css"/>
+    <link rel="stylesheet" href="../styles/topbarAdmin.css"/>
+
+    <!-- Page styles -->
+    <link rel="stylesheet" href="../styles/reviews.css"/>
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main -->
+    <main class="main">
+        <!-- Topbar -->
+        <div data-include="topBarAdmin.html"></div>
+
+        <!-- Header -->
+        <div class="page-head">
+            <div class="title-wrap">
+                <h1>Reviews</h1>
+                <p class="muted">
+                    Manage and moderate product feedback across Baby, Kids, and Family Matching collections.
+                </p>
+            </div>
+            <button class="btn btn-ghost" id="showAnalytics">
+                <i class="fa-solid fa-chart-line"></i> Show Analytics
+            </button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <!-- الصف العلوي -->
+            <div class="top-row">
+                <div class="field field-search" style="flex:1">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="q" type="search" placeholder="Search products, reviewers, or text…">
+                </div>
+
+                <div class="field field-cat">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <select id="cat">
+                        <option value="">All Categories</option>
+                        <option>Baby</option>
+                        <option>Kids</option>
+                        <option>Family Matching</option>
+                    </select>
+                </div>
+
+                <div class="field ratings-field">
+                    <i class="fa-solid fa-star"></i>
+                    <select id="rating">
+                        <option value="">All Ratings</option>
+                        <option value="5">★★★★★ </option>
+                        <option value="4">★★★★☆ </option>
+                        <option value="3">★★★☆☆ </option>
+                        <option value="2">★★☆☆☆ </option>
+                        <option value="1">★☆☆☆☆ </option>
+                    </select>
+                </div>
+
+                <div class="field field-sort">
+                    <i class="fa-solid fa-arrow-down-short-wide"></i>
+                    <select id="sort">
+                        <option value="new">Newest First</option>
+                        <option value="old">Oldest First</option>
+                        <option value="high">Highest Rated</option>
+                        <option value="low">Lowest Rated</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-ghost top-clear-btn" id="clearFilters">
+                    <i class="fa-solid fa-rotate-left"></i> Clear Filters
+                </button>
+            </div>
+
+            <!-- الصف الثاني -->
+            <div class="review-tabs" id="statusTabs">
+                <button class="pill active" data-status="">All</button>
+                <button class="pill" data-status="Published">Published</button>
+                <button class="pill" data-status="Pending">Pending</button>
+                <button class="pill" data-status="Hidden">Hidden</button>
+                <button class="pill" data-status="Flagged">Flagged</button>
+            </div>
+        </div>
+
+
+        <!-- List -->
+        <section class="card" id="listWrap">
+            <div id="reviewsList" class="reviews-list"></div>
+
+            <div id="emptyState" class="empty" style="display:none">
+                <div class="emoji">💬</div>
+                <h3 style="margin:0 0 6px;color:var(--umber)">No reviews found</h3>
+                <p class="muted" style="margin:0">Try adjusting filters or search terms.</p>
+            </div>
+
+            <div class="pager">
+                <div class="pager-info" id="pagerInfo"></div>
+                <button class="page-btn" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
+                <div id="pageNums" style="display:flex;gap:6px"></div>
+                <button class="page-btn" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Page scripts -->
+<script src="../js/reviews.js"></script>
+
+<!-- Your existing helpers -->
+<script src="../js/adminbar.js" defer></script>
+<script src="../js/includeadminBar.js" defer></script>
+<script>
+    (function(){
+        function enhanceSelect(sel){
+            sel.classList.add('ui-select-hidden');
+
+            const wrap = document.createElement('div');
+            wrap.className = 'mm-select';
+            wrap.setAttribute('aria-expanded','false');
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'mm-select__btn';
+            const label = document.createElement('span');
+            label.className = 'mm-select__label';
+            const chev = document.createElement('i');
+            chev.className = 'mm-select__chev fa-solid fa-chevron-down';
+            btn.append(label, chev);
+
+            const menu = document.createElement('div');
+            menu.className = 'mm-select__menu';
+            Array.from(sel.options).forEach((opt, idx)=>{
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'mm-option';
+                row.setAttribute('role','option');
+                row.dataset.value = opt.value;
+                row.innerHTML = `<span>${opt.textContent}</span><i class="fa-solid fa-check" style="visibility:hidden"></i>`;
+                if(opt.selected){
+                    row.setAttribute('aria-selected','true');
+                    row.querySelector('i').style.visibility = 'visible';
+                    label.textContent = opt.textContent;
+                }
+                row.addEventListener('click', ()=>{
+                    // حدّث الواجهة والـ select الأصلي
+                    menu.querySelectorAll('.mm-option').forEach(o=>{
+                        o.setAttribute('aria-selected','false');
+                        o.querySelector('i').style.visibility = 'hidden';
+                    });
+                    row.setAttribute('aria-selected','true');
+                    row.querySelector('i').style.visibility = 'visible';
+                    label.textContent = opt.textContent;
+                    sel.value = opt.value;
+                    sel.dispatchEvent(new Event('change', {bubbles:true}));
+                    close();
+                });
+                menu.appendChild(row);
+            });
+
+            if(!label.textContent) label.textContent = sel.options[sel.selectedIndex]?.text || sel.options[0]?.text || '';
+
+            function open(){ wrap.setAttribute('aria-expanded','true'); }
+            function close(){ wrap.setAttribute('aria-expanded','false'); }
+            function toggle(){ (wrap.getAttribute('aria-expanded')==='true') ? close() : open(); }
+
+            btn.addEventListener('click', toggle);
+
+            document.addEventListener('click', (e)=>{
+                if(!wrap.contains(e.target)) close();
+            });
+
+            btn.addEventListener('keydown', (e)=>{
+                if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggle(); }
+                if(e.key==='Escape'){ close(); }
+            });
+            menu.addEventListener('keydown', (e)=>{
+                if(e.key==='Escape'){ e.preventDefault(); close(); btn.focus(); }
+            });
+
+            sel.parentNode.insertBefore(wrap, sel);
+            wrap.append(btn, menu, sel);
+        }
+
+        window.addEventListener('DOMContentLoaded', ()=>{
+            document.querySelectorAll('.toolbar .field select').forEach(enhanceSelect);
+        });
+    })();
+</script>
+
+</body>
+</html>

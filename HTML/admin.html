@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Styles -->
     <link rel="stylesheet" href="../styles/admin.css" />
-
+    <link rel="stylesheet" href="../styles/topbarAdmin.css" />
 </head>
 <body>
 <!-- SIDEBAR -->
@@ -19,69 +19,7 @@
 <!-- MAIN -->
 <main class="main">
 
-    <!-- TOPBAR -->
-    <header class="topbar">
-        <form class="search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" placeholder="Search orders, products, customers…" />
-        </form>
-
-        <div class="top-actions">
-            <!-- Notifications  -->
-            <button class="icon-btn notify-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notify-menu">
-                <i class="fa-regular fa-bell"></i>
-                <span class="badge-dot" aria-hidden="true"></span>
-            </button>
-
-            <!-- Profile trigger -->
-            <button class="profile-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu">
-    <span class="pf-avatar">
-      <img src="../images/raghad.jpg" alt="Raghad Shaar">
-    </span>
-                <span class="pf-meta">
-      <strong>Raghad Shaar</strong>
-      <small>Administrator</small>
-    </span>
-                <i class="fa-solid fa-chevron-down"></i>
-            </button>
-
-            <!-- Profile popover -->
-            <div id="profile-menu" class="popover profile-popover" role="menu" aria-label="Profile menu">
-                <div class="pf-sec pf-signed">
-                    <span class="pf-sec-title">Signed in as</span>
-                    <a href="mailto:raghadshaar20@gmail.com" class="pf-email">raghadshaar20@gmail.com</a>
-                </div>
-
-                <div class="pf-divider"></div>
-
-                <div class="pf-sec">
-                    <span class="pf-sec-title">Switch account</span>
-
-                    <button class="pf-account" data-email="afnan.hasan@company.com">
-                        <span class="pf-acc-avatar"><img src="https://i.pravatar.cc/80?img=31" alt="Afnan Hasan"></span>
-                        <span class="pf-acc-meta">
-    <strong>Afnan Hasan</strong>
-    <small>Administrator</small>
-  </span>
-                    </button>
-                </div>
-
-                <div class="pf-divider"></div>
-
-                <div class="pf-sec pf-actions">
-                    <button class="pf-action">
-                        <i class="fa-solid fa-gear"></i>  <!-- Changed to fa-solid -->
-                        <span>Settings</span>
-                    </button>
-                    <button class="pf-action">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>  <!-- Changed to fa-solid -->
-                        <span>Sign out</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-    </header>
+    <div data-include="topBarAdmin.html"></div>
 
     <!-- CONTENT -->
     <section class="content">
@@ -218,5 +156,7 @@
     </section>
 </main>
 <script src="../js/admin.js"> </script>
+<script src="../js/adminbar.js" defer></script>
+<script src="../js/includeadminBar.js" defer></script>
 </body>
 </html>

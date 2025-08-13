@@ -1,0 +1,533 @@
+/* Reviews — uses your palette from products.css :root
+   --baby #F9F8F3, --jet #383838, --teal #008080, --pink #E4CFC3, --umber #715E51, --white #fff */
+
+.reviews-list { display: flex; flex-direction: column; }
+.review-item  { display:grid; grid-template-columns: 280px 1fr; gap:16px; padding:16px; }
+.review-item + .review-item { border-top:1px solid var(--border); }
+@media (max-width: 980px){
+    .review-item{ grid-template-columns: 1fr; }
+}
+
+/* Left product block */
+.prod-meta { display:flex; gap:12px; }
+.prod-thumb{
+    width:100px;height:100px;border:1px solid var(--border);border-radius:12px;
+    background:#fff;display:grid;place-items:center;overflow:hidden;box-shadow:var(--shadow);
+}
+.prod-thumb img{ width:100%; height:100%; object-fit:contain; } /* show entire image */
+.prod-info h4{ margin:0 0 2px; font-size:1rem; }
+.prod-info .muted{ font-size:.9rem; }
+.prod-chips{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+.chip{ display:inline-flex; align-items:center; justify-content:center;
+    height:26px; border-radius:999px; padding:0 10px; border:1px solid var(--border);
+    font-size:.8rem; font-weight:600; background:#fff; color:var(--umber);
+}
+.chip.cat{ background:var(--baby); }
+
+/* Right panel */
+.rev-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.rev-person{ display:flex; align-items:center; gap:10px; }
+.avatar{
+    width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--border);
+}
+.rev-person .meta{ display:flex; flex-direction:column; }
+.rev-person .meta small{ color:var(--muted); }
+
+.stars{ display:flex; gap:2px; color:#f6b400; font-size:14px; }
+
+/* Status chips – strictly your palette */
+.badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:96px; height:28px; border-radius:999px; padding:0 10px;
+    font-weight:600; font-size:.8rem; border:1px solid transparent;
+}
+.badge.published{ background:#e6f4f4; color:var(--teal); border-color:#cdeaea; }         /* teal-light */
+.badge.pending  { background:var(--baby); color:var(--umber); border-color:#e7e5e4; }    /* baby/umber */
+.badge.hidden   { background:#f1ece8; color:var(--umber); border-color:#e5ddd6; }        /* umber-neutral */
+.badge.flagged  { background:#f4e7e2; color:#7c5547; border-color:var(--pink); }         /* pink-tint */
+
+.rev-text{ margin:8px 0 0; line-height:1.55; }
+.reply{
+    margin-top:10px; padding:10px 12px; border:1px dashed var(--border); border-radius:12px;
+    background:#fff;
+}
+.reply strong{ color:var(--umber); }
+
+/* Actions */
+.actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.action{
+    display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 12px;
+    border-radius:12px; border:1px solid var(--border); background:#fff; cursor:pointer;
+}
+.action i{ font-size:14px; }
+
+/* Button accents (palette only) */
+.action.teal   { background:var(--teal); border-color:var(--teal); color:#fff; }
+.action.teal:hover{ filter:brightness(.95); }
+.action.ghost  { background:#fff; color:var(--umber); }
+.action.pink   { background:#fff; border-color:var(--pink); color:#7c5547; }
+.action.ghost:hover, .action.pink:hover{ box-shadow:0 6px 18px rgba(0,0,0,.06); }
+
+/* Pills (status filter tabs) */
+.review-tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+.pill{
+    height:34px; padding:0 12px; border-radius:999px; border:1px solid var(--border); background:#fff; cursor:pointer;
+}
+.pill.active{ background:var(--white); }
+
+/* Pager tiny trim */
+.pager{ padding:10px; }
+.page-btn{ min-width:32px; height:32px; }
+
+/* Tiny typography tighten */
+.reviews-list, .review-item{ font-size:.95rem; }
+/* ===== Reviews toolbar layout ===== */
+.reviews-toolbar{ margin-bottom:14px }
+.reviews-toolbar-top{ display:flex; justify-content:center; margin-bottom:10px }
+.field.wide{ min-width:min(820px, 90vw) }       /* search width */
+.field-search{ display:flex; align-items:center; gap:10px;
+    background:#fff; border:1px solid var(--border); border-radius:999px;
+    padding:12px 14px; box-shadow:var(--shadow); }
+.field-search input{ border:0; outline:0; width:100%; font:inherit; color:var(--jet) }
+
+.reviews-toolbar-row{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center;
+}
+.reviews-toolbar-row .field{
+    display:flex; align-items:center; gap:8px; background:#fff;
+    border:1px solid var(--border); border-radius:12px; padding:10px 12px;
+    min-width: 220px;
+}
+.reviews-toolbar-row .field select,
+.reviews-toolbar-row .field input{ border:0; background:transparent; outline:0; width:100% }
+
+/* Status segment pills */
+.status-seg{ display:flex; gap:8px; flex-wrap:wrap }
+.seg-btn{
+    padding:8px 14px; border-radius:999px; border:1px solid var(--border);
+    background:#fff; cursor:pointer; font-weight:600; transition:.15s ease; color:var(--jet);
+}
+.seg-btn:hover{ border-color:var(--teal); color:var(--teal) }
+.seg-btn.active{ background:var(--teal); color:#fff; border-color:var(--teal) }
+
+/* Rating dropdown with stars */
+.rating-dropdown{ position:relative; padding:0 !important; border:none !important; background:transparent !important }
+.rating-trigger{
+    display:flex; align-items:center; gap:8px; padding:10px 12px;
+    border:1px solid var(--border); border-radius:12px; background:#fff; cursor:pointer; font-weight:600;
+}
+.rating-trigger .chevron{ margin-left:6px }
+.rating-menu{
+    position:absolute; top:100%; left:0; margin-top:8px; background:#fff; border:1px solid var(--border);
+    border-radius:12px; box-shadow:var(--shadow); padding:8px; min-width:260px; z-index:30; display:none;
+}
+.rating-menu.show{ display:block }
+.rating-item{
+    width:100%; text-align:left; background:#fff; border:0; border-radius:10px; padding:10px;
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+}
+.rating-item:hover{ background:#f8f7f5 }
+
+/* Stars (visual only) */
+.stars{ --n:0; display:inline-grid; grid-auto-flow:column; gap:2px }
+
+
+/* Small screens */
+@media (max-width:720px){
+    .field.wide{ min-width:unset; width:100% }
+}
+.toolbar {
+     background: linear-gradient(135deg, var(--pink) 0%, var(--baby) 50%, var(--teal) 100%);
+     border: 1px solid #e5e5e5;
+     border-radius: 12px;
+     padding: 12px;
+     display: flex;
+     flex-direction: column;
+     gap: 10px;
+ }
+
+
+.top-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: var(--baby);
+}
+
+.field select, .field input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font: inherit;
+    flex: 1;
+}
+
+.top-clear-btn {
+    background: var(--baby);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.review-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.pill {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    background: var(--white);
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.pill:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+}
+
+.pill.active {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--white);
+}
+
+/* Make stars in the dropdown yellow */
+.ratings-field select option {
+    color: var(--jet); /* default text color */
+}
+
+.ratings-field select option[value="5"],
+.ratings-field select option[value="4"],
+.ratings-field select option[value="3"],
+.ratings-field select option[value="2"],
+.ratings-field select option[value="1"] {
+    color: gold; /* gold/yellow stars */
+    font-weight: bold;
+}
+
+
+/* --- Stars --- */
+.stars {
+    display: inline-flex;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.stars i {
+    font-size: 16px;                 /* tweak if you want them smaller/bigger */
+}
+
+.stars .full,
+.stars .half {
+    color: #f6b100;                   /* warm yellow */
+}
+
+.stars .empty {
+    color: #e6e6e6;                   /* soft grey (close to var(--border)) */
+}
+
+/* Slightly smaller stars in meta rows (e.g. author line) */
+.review-head .stars i { font-size: 14px; }
+
+
+
+
+
+
+
+
+/* Ensure only one set of stars is shown */
+
+
+/* Neat inline star row */
+.stars {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+/* Star sizes/colors */
+.stars i {
+    font-size: 16px;               /* tweak as you like */
+    vertical-align: middle;
+}
+
+/* Match your palette: yellow star fill, soft gray empty */
+.stars .full,
+.stars .half {
+    color: #F4B400;                /* yellow */
+}
+
+.stars .empty {
+    color: #D8D8D8;                /* light gray */
+}
+
+/* (optional) a touch of spacing in the review header*/
+.rev-person .stars { margin-left: 8px; }
+
+
+
+
+/* Header layout inside each review row */
+.rev-head{                 /* or whatever you call the name/date line */
+    display: grid;
+    grid-template-columns: 1fr 120px;  /* left = name/meta, right = stars */
+    align-items: center;
+    gap: 10px;
+}
+
+/* Fixed-width star bar aligned to the right */
+.rev-head .stars{
+    justify-self: end;
+    width: 120px;                   /* <- keep all rows identical */
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;                       /* spacing between stars */
+    line-height: 1;                 /* no vertical wobble */
+}
+
+/* Each star takes equal space and same size */
+.rev-head .stars i{
+    font-size: 18px;                /* size of the icons */
+    width: 100%;
+    text-align: center;
+}
+
+/* Colors (keep your existing ones if you already set them) */
+.stars .full,
+.stars .half{ color: #F4B400; }   /* yellow */
+.stars .empty{ color: #D8D8D8; }  /* light gray */
+
+
+.stars{width: 110px; /* عرض ثابت لكل التقييمات */}
+
+
+
+
+
+.review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reviewer-info {
+    flex: 1; /* ياخذ المساحة المتبقية */
+    min-width: 200px; /* عرض ثابت تقريبي للأسماء */
+}
+
+.rating-stars {
+    width: 110px; /* عرض ثابت للنجوم */
+    text-align: right;
+}
+
+.rating-stars i {
+    color: #F4B400; /* أصفر للنجوم */
+    font-size: 18px;
+    margin-left: 2px;
+}
+
+
+
+/* تثبيت مكان وحجم النجوم */
+.rev-person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rev-person .meta {
+    flex: 1; /* يأخذ باقي المساحة */
+}
+
+.rev-person .stars {
+    width: 80px; /* عرض ثابت */
+    text-align: right; /* النجوم تصطف يمين أو غيره حسب رغبتك */
+    flex-shrink: 0; /* يمنعها من التصغير */
+}
+
+.rev-person .stars i {
+    color: #FFD700; /* أصفر */
+}
+
+
+.rev-person .stars {
+    width: 80px; /* عرض ثابت */
+    text-align: right;
+    flex-shrink: 0;
+    margin-right: 20vw; /* مسافة إضافية عن حالة المراجعة */
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* مسافة بين النجوم وعناصر الحالة */
+}
+
+
+/* تثبيت المسافة بين النجوم */
+.stars {
+    display: inline-flex;
+    gap: 4px;             /* المسافة بين كل نجمة */
+    align-items: center;
+    line-height: 1;
+}
+
+.stars i {
+    font-size: 18px;      /* حجم النجوم */
+    width: 18px;          /* عرض ثابت لكل نجمة */
+    text-align: center;   /* توسيط النجمة داخل المساحة */
+    color: #FFD700;       /* أصفر لكل النجوم */
+}
+
+
+/* ==== FIX: equal spacing for yellow stars ==== */
+.review-item .rev-person .stars {
+    display: inline-flex !important;
+    gap: 4px !important;          /* مسافة ثابتة بين كل نجمة */
+    align-items: center;
+    line-height: 1;
+}
+
+.review-item .rev-person .stars i {
+    font-size: 18px !important;
+    width: 18px !important;
+    text-align: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    letter-spacing: 0 !important;
+    color: #FFD700 !important;
+}
+
+.review-item .rev-person .stars::before,
+.review-item .rev-person .stars::after {
+    content: none !important;
+}
+/* === Pretty Select (toolbar) === */
+.toolbar .field { position: relative; }
+
+.mm-select {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-width: 180px;
+    font-weight: 600;
+}
+
+.mm-select__btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--baby);
+    color: var(--jet);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: box-shadow .15s ease, border-color .15s ease, transform .06s ease;
+}
+.mm-select__btn:hover { border-color: var(--teal); }
+.mm-select__btn:active { transform: translateY(1px); }
+.mm-select__chev {
+    font-size: 14px;
+    opacity: .7;
+    transition: transform .15s ease;
+}
+.mm-select[aria-expanded="true"] .mm-select__chev { transform: rotate(180deg); }
+
+/* Dropdown menu */
+.mm-select__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background: var(--baby);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: none;
+    max-height: 280px;
+    overflow: auto;
+}
+.mm-select[aria-expanded="true"] .mm-select__menu { display: block; }
+
+/* Option rows */
+.mm-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--jet);
+    font: inherit;
+}
+.mm-option:hover { background: #f4efe9; }
+.mm-option[aria-selected="true"] {
+    background: #e6f4f4;
+    color: var(--teal);
+}
+.mm-option i { opacity: .8; }
+
+.ui-select-hidden {
+    position: absolute !important;
+    inset: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* === Make search + Clear same height as the other controls === */
+:root { --toolbar-h: 50px; }              /* غيّرها لـ 40/42 لو بدك أنحف */
+
+.field.field-search{
+    height: var(--toolbar-h);
+    padding: 0 12px;                        /* نفس إحساس السيلكت */
+    display: inline-flex;
+    align-items: center;
+    border-radius: 12px;
+}
+.field.field-search i{ font-size:14px; }
+.field.field-search input{
+    height: 100%;
+    line-height: 1;                         /* من غير تمديد */
+    padding: 0;                             /* يمنع زيادة الارتفاع */
+}
+
+/* زر Clear Filters */
+.top-clear-btn{
+    height: var(--toolbar-h);
+    padding: 0 14px;                        /* يمين/يسار فقط */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+}
