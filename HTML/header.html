@@ -10,11 +10,21 @@
             <input type="text" placeholder="Find your product" />
         </div>
         <div class="icons">
-            <span class="icon login"><i class="fa-regular fa-user"></i> Login</span>
+
+                <a href="/matchymatchy/sign-in.php" class="icon login" aria-label="Login">
+                    <i class="fa-regular fa-user"></i> <span>Login</span>
+                </a>
+
+<!--                <span class="icon login"><i class="fa-regular fa-user"></i> Login</span>-->
             <span class="icon"><i class="fa-regular fa-heart"></i></span>
-            <span class="icon cart">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span class="badge">3</span>
+<!--            <span class="icon cart">-->
+<!--        <i class="fa-solid fa-cart-shopping"></i>-->
+<!--       <span class="badge" id="cart-count"></span>-->
+            <a href="cart.html" class="icon cart" aria-label="Cart">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="badge" id="cart-count">0</span>
+            </a>
+
       </span>
         </div>
     </div>

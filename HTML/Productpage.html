@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="../js/indexscript.js"></script>
     <style>
-        :where([class^="ri-"])::before { content: "\f3c2"; }
+        /*:where([class^="ri-"])::before { content: "\f3c2"; }*/
         body { background-color: #FEFEFA; }
         .product-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
@@ -43,6 +43,19 @@
         .custom-checkbox:checked { background-color: #008080; border-color: #008080; }
         .custom-checkbox:checked::after { content: '✓'; position: absolute; top: -2px; left: 2px; color: white; font-size: 12px; font-weight: bold; }
     </style>
+    <script>
+        // قراءة/كتابة السلة
+        function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
+        function setCart(next){ localStorage.setItem('cart', JSON.stringify(next)); window.dispatchEvent(new Event('cart:updated')); }
+
+        // حساب العدد وتحديث البادج (ينفع مع #header أو #header-slot)
+        function getCartCount(){ return getCart().reduce((n,i)=> n + (Number(i.quantity)||0), 0); }
+        function updateHeaderCartCount(){
+            const el = document.querySelector('#header #cart-count, #header-slot #cart-count, #cart-count, .main-header .cart .badge');
+            if (el) el.textContent = getCartCount();
+        }
+    </script>
+
 </head>
 <body>
 <!--<body >
@@ -323,6 +336,8 @@ class="min-h-screen"-->
             });
         });
     });
+
+
 </script>
 <script id="like-and-rating-functionality">
     document.addEventListener('DOMContentLoaded', function() {
@@ -385,16 +400,33 @@ class="min-h-screen"-->
     });
 </script>
 <script>
-    fetch('header.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('header').innerHTML = data;
-        });
+
     fetch('footer.html')
         .then(response => response.text())
         .then(data => {
             document.getElementById('foot').innerHTML = data;
         });
 </script>
+<script>
+    fetch('header.html')
+        .then(r => r.text())
+        .then(html => {
+            document.getElementById('header').innerHTML = html;
+
+            // حدّث البادج فور الحقن
+            updateHeaderCartCount();
+
+            // تزامن بين الصفحات/التبويبات
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'cart') updateHeaderCartCount();
+            });
+
+            // تزامن داخل نفس الصفحة
+            window.addEventListener('cart:updated', updateHeaderCartCount);
+        });
+</script>
+
+
+
 </body>
 </html>
