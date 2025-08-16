@@ -336,5 +336,100 @@
         });
     });
 </script>
+
+<script>
+    (async function(){
+        // 1) خذي id من الرابط
+        const params = new URLSearchParams(location.search);
+        const id = Number(params.get('id') || 0);
+        if (!id) {
+            alert('Product not found');
+            location.href = 'category.html';
+            return;
+        }
+
+        // 2) اطلب بيانات المنتج (نفس products.php لكن mode=detail)
+        const res = await fetch(`/matchymatchy/backend/products.php?id=${id}`, {
+            headers: { 'Accept':'application/json' }
+        });
+        if (!res.ok) { alert('Failed to load product'); return; }
+        const j = await res.json();
+        if (!j.ok || !j.data) { alert('Product not found'); return; }
+
+        const p = j.data; // {id, name, price, description, images[], sizes[], rating_avg, rating_count, likes, my_like, my_rating}
+
+        // 3) عبّي العناصر في صفحتك الحالية:
+        // العنوان/الوصف/السعر
+        document.querySelector('.product-info h1').textContent = p.name;
+        document.querySelector('.product-info .description').textContent = p.description || '';
+        document.querySelector('.price-section .new-price').textContent = `₪${Number(p.price).toFixed(2)}`;
+        const oldEl = document.querySelector('.price-section .old-price');
+        if (oldEl) oldEl.style.display = p.old_price ? '' : 'none';
+        if (p.old_price) oldEl.textContent = `₪${Number(p.old_price).toFixed(2)}`;
+
+        // التقييم
+        const ratingEl = document.querySelector('.rating');
+        if (ratingEl) ratingEl.innerHTML = `<span>⭐ ${p.rating_avg?.toFixed?.(1) ?? '—'}</span> (${p.rating_count || 0} reviews)`;
+
+        // الصور (Main + thumbnails)
+        const mainImg = document.getElementById('main-product-image');
+        const thumbsWrap = document.querySelector('.image-thumbnails');
+        const imgs = Array.isArray(p.images) && p.images.length ? p.images : [p.image_main_url];
+        if (mainImg) mainImg.src = imgs[0] || '../images/placeholder.jpg';
+        if (thumbsWrap) {
+            thumbsWrap.innerHTML = imgs.map((src,i)=>`
+      <div class="image-thumbnail ${i===0?'active':''}" onclick="changeImage('${src}', this)">
+        <img src="${src}" alt="Image ${i+1}">
+      </div>
+    `).join('');
+        }
+
+        // المقاسات
+        const sizesWrap = document.querySelector('.size-options');
+        if (sizesWrap && Array.isArray(p.sizes) && p.sizes.length){
+            sizesWrap.innerHTML = p.sizes.map(s=>`<button type="button" data-size="${s}">${s}</button>`).join('');
+        }
+
+        // زر الإضافة للسلة
+        const addBtn = document.querySelector('.add-to-cart');
+        if (addBtn) {
+            addBtn.addEventListener('click', ()=>{
+                // نفس دوال السلة الموجودة عندك
+                const item = { id:p.id, name:p.name, price:Number(p.price), image:p.image_main_url || imgs[0], quantity:1 };
+                const cart = JSON.parse(localStorage.getItem('cart')||'[]');
+                const i = cart.findIndex(x => x.id === item.id);
+                if (i>=0) cart[i].quantity += 1; else cart.push(item);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                window.dispatchEvent(new Event('cart:updated'));
+                addBtn.textContent = 'Added ✓';
+                setTimeout(()=> addBtn.textContent='Add to Cart', 1200);
+            });
+        }
+
+        // لايك
+        const favBtn = document.querySelector('.favorite-btn');
+        if (favBtn) {
+            // عيّني الحالة
+            if (p.my_like) favBtn.classList.add('active');
+            favBtn.addEventListener('click', async ()=>{
+                favBtn.disabled = true;
+                try{
+                    const r = await fetch('/matchymatchy/backend/like_toggle.php', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                        body:`product_id=${encodeURIComponent(p.id)}`
+                    });
+                    const jj = await r.json();
+                    if (jj.ok){
+                        favBtn.classList.toggle('active', jj.liked);
+                    }
+                }finally{ favBtn.disabled = false; }
+            });
+        }
+
+        // التقييم (اختياري لاحقًا بنفس أسلوب الـ PLP)
+    })();
+</script>
+
 </body>
 </html>

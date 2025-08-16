@@ -159,5 +159,27 @@
 
 
 <script src="../js/indexscript.js"></script>
+
+<script defer src="../js/headerjs.js"></script>
+
+<script>
+    const host = document.getElementById('header-slot');
+
+    fetch('header.html')
+        .then(r => r.text())
+        .then(html => {
+            host.innerHTML = html;
+
+            // دوالك الحالية
+            updateHeaderCartCount();
+            window.addEventListener('storage', e => { if (e.key === 'cart') updateHeaderCartCount(); });
+            window.addEventListener('cart:updated', updateHeaderCartCount);
+
+            if (typeof setupHeaderMenu === 'function') setupHeaderMenu();
+
+            if (typeof setupHeaderSearch === 'function') setupHeaderSearch();
+        });
+</script>
+
 </body>
 </html>

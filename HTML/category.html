@@ -1,436 +1,378 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Matchy Matchy — Admin • Categories</title>
+    <title>Category • Matchy Matchy</title>
+
+    <!-- Tailwind (للتطوير فقط) -->
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary:'#008080', secondary:'#FADADD' },
+                    borderRadius: { 'button':'8px' }
+                }
+            }
+        }
+    </script>
 
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Shared styles -->
-    <link rel="stylesheet" href="../styles/sidebar.css" />
-    <link rel="stylesheet" href="../styles/products.css" />
-    <link rel="stylesheet" href="../styles/topbarAdmin.css" />
+    <!-- Styles -->
+    <link rel="stylesheet" href="../styles/style.css"/>
+    <link rel="stylesheet" href="../styles/productStyle.css"/>
 
     <style>
-        :root { --drop-dash: 4px dashed var(--border); }
+        body { background-color:#FEFEFA }
+        .product-card { transition: transform .2s ease, box-shadow .2s ease; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.1); }
+        .add-btn { transition: all .2s ease; }
+        .add-btn:hover { transform: scale(1.1); }
+        .filter-btn { transition: all .2s ease; }
+        .filter-btn:hover { background-color: rgba(0,128,128,.1); }
+        .similar-product-title { font-size:.9rem; margin-bottom:5px; color:var(--jet); }
+        .similar-product-price { font-weight:bold; color:var(--teal); margin-bottom:8px; }
+        .custom-checkbox { appearance:none; width:18px; height:18px; border:2px solid #ccc; border-radius:4px; position:relative; cursor:pointer; }
+        .custom-checkbox:checked { background:#008080; border-color:#008080; }
+        .custom-checkbox:checked::after { content:'✓'; position:absolute; top:-2px; left:2px; color:#fff; font-size:12px; font-weight:bold; }
 
-        .cat-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }
-        .cat-card{ background:var(--baby); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; }
-        .cat-media{ height:180px; background:#f6f5f2; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
-        .cat-media img{ width:100%; height:100%; object-fit:cover; }
-        .cat-body{ padding:14px; display:flex; flex-direction:column; gap:8px; flex:1; }
-        .cat-title{ margin:0; font-weight:600; color:var(--jet); }
-        .cat-desc{ margin:0; color:var(--muted); font-size:.92rem; min-height:38px; }
-        .cat-foot{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-top:1px solid var(--border) }
-        .cat-actions{ display:flex; gap:8px }
-        .stat{ color:var(--umber); font-weight:500 }
+        :root { --pink:#E4CFC3; }
 
-        .badge.st-active{ background:#e9f8f1; border:1px solid #cfeadf; color:#1b8e57; padding:6px 10px; border-radius:999px; font-weight:600; font-size:.82rem }
-        .badge.st-hidden{ background:#f2f2f2; border:1px solid #e5e5e5; color:#6b7280; padding:6px 10px; border-radius:999px; font-weight:600; font-size:.82rem }
+        /* صف الميتا (نجوم + رقم + قلب) */
+        .meta-row{ display:flex; align-items:center; justify-content:space-between; }
 
-        /* Drawer upload dropzone */
-        .dropzone{ border:var(--drop-dash); border-radius:14px; padding:18px; display:grid; place-items:center; text-align:center; color:var(--muted); background:var(--baby) }
-        .dropzone.drag{ background:#f4efe9; }
-        .dropzone .hint{ font-size:.9rem }
-        .dz-preview{ margin-top:10px; display:none }
-        .dz-preview img{ width:100%; max-height:160px; object-fit:contain; border:1px solid var(--border); border-radius:10px; }
+        /* النجوم: مطفّية دائمًا، وتضيء فقط بعد تقييم المستخدم */
+        .star-rating{ display:flex; align-items:center; gap:8px; line-height:1; }
+        .star{ font-size:20px; color:#d1d5db; transition:transform .12s ease; }
+        .star:hover{ transform:scale(1.05); }
+        .star.is-filled{ color:#facc15; }   /* أصفر بعد التقييم */
+        .star-rating .avg{ min-width:2.2ch; text-align:left; font-weight:600; color:#94a3b8; }
+        .star-rating .count{ margin-left:2px; color:#9ca3af; font-size:.8rem; }
 
-        .toolbar .field{ min-width:240px }
-        .toolbar .btn i{ margin-right:6px }
+        /* القلب: زهري بالحالتين — Outline عند عدم الإعجاب وFilled عند الإعجاب */
+        .wish-btn{ display:inline-flex; align-items:center; gap:6px; color:var(--pink) !important; }
+        .wish-btn i{ font-size:20px; color:inherit !important; }
+        .wish-btn .ri-heart-fill::before,
+        .wish-btn .ri-heart-line::before{ color:inherit !important; } /* يضمن بقاء اللون زهري */
+        .wish-btn.is-liked{ color:var(--pink) !important; }
+        .wish-btn.is-liked i{ color:var(--pink) !important; filter:drop-shadow(0 2px 6px rgba(228,207,195,.45)); }
 
-        .icon-link{ width:38px; height:38px; border-radius:10px }
-
-
-
-
-
-
-        /* خلي زر Clear بنفس ارتفاع الفيلدز (44px) */
-        #clearFilters {
-            height: 44px;         /* نفس ارتفاع الحقول */
-            padding: 10px 12px;   /* نفس الحشوة */
-            border-radius: 12px;  /* نفس انحناء الزوايا */
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /* ===== Toolbar band (مطابق لستايل الـ Reviews) ===== */
-        :root{
-            --ctl-h: 44px;           /* ارتفاع موحّد لكل العناصر */
-            --ctl-br: 12px;          /* نصف القطر */
-            --ctl-pad: 10px 12px;    /* حشوة داخليّة */
-        }
-
-        /* الحاوية الخلفية مع التدرّج */
-        .toolbar.band.cat-toolbar{
-            background: linear-gradient(90deg, #e9d9d1 0%, #00808022 40%, #00808055 100%); /* من ألوان البالِت */
-            border: 1px solid #e8e6e2;
-            border-radius: 16px;
-            padding: 12px;
-            box-shadow: var(--shadow);
-        }
-
-        /* صف العناصر */
-        .tb-row{
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* الفيلد العام */
-        .toolbar.band .field{
-            display:flex; align-items:center; gap:10px;
-            background:#fff; border:1px solid var(--border);
-            height: var(--ctl-h);
-            padding: 0 12px;
-            border-radius: var(--ctl-br);
-            min-width: 240px;
-            box-shadow: var(--shadow);
-        }
-        .toolbar.band .field i{ color:var(--umber); }
-        .toolbar.band .field input,
-        .toolbar.band .field select{
-            border:0; outline:0; background:transparent;
-            height: calc(var(--ctl-h) - 2px);
-            line-height: calc(var(--ctl-h) - 2px);
-            font: inherit;
-        }
-
-        /* سيرتش بعرض مرن */
-        .field-search{ flex:1; }
-
-        /* الأزرار بنفس الارتفاع */
-        .toolbar.band .btn{
-            height: var(--ctl-h);
-            padding: var(--ctl-pad);
-            border-radius: var(--ctl-br);
-            display:inline-flex; align-items:center; gap:8px;
-            box-shadow: var(--shadow);
-        }
-        .toolbar.band .btn i{ font-size: 14px; }
-
-        /* زر Clear ghost بنفس ارتفاع الباقي */
-        .toolbar.band .btn-clear{
-            background:#fff;
-            border:1px solid var(--border);
-            color:var(--jet);
-        }
-
-        /* مسافة قبل زر الإضافة */
-        .fx-spacer{ flex:1; }
-
-        /* استجابة */
-        @media (max-width: 900px){
-            .tb-row{ flex-wrap: wrap; }
-            .toolbar.band .field{ min-width: min(100%, 320px); flex:1; }
-            .fx-spacer{ display:none; }
-            .toolbar.band .btn-clear{ order: 3; }
-            #addCategoryBtn{ width: 100%; justify-content:center; }
-        }
-
+        /* أثناء الإرسال لمنع النقرات المكررة */
+        .is-busy { opacity:.7; pointer-events:none; }
     </style>
+
+    <script>
+        /* Helpers: cart + header badge + search */
+        function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
+        function setCart(next){ localStorage.setItem('cart', JSON.stringify(next)); window.dispatchEvent(new Event('cart:updated')); }
+        function getCartCount(){ return getCart().reduce((n,i)=> n + (Number(i.quantity)||0), 0); }
+        function updateHeaderCartCount(){
+            const el = document.querySelector('#header #cart-count, #header-slot #cart-count, #cart-count, .main-header .cart .badge');
+            if (el) el.textContent = getCartCount();
+        }
+        function setupHeaderMenu(){ /* hook لو عندك منيو */ }
+        function setupHeaderSearch(){
+            const input = document.querySelector('.search-box input');
+            if (!input) return;
+            input.addEventListener('keydown', (e)=>{
+                if (e.key === 'Enter') {
+                    const q = input.value.trim();
+                    if (q) location.href = `category.html?q=${encodeURIComponent(q)}&page=1`;
+                }
+            });
+        }
+    </script>
 </head>
 <body>
-<div class="layout">
-    <!-- Sidebar -->
-    <div id="sidebar-container"></div>
 
-    <!-- Main -->
-    <main class="main">
-        <!-- Topbar -->
-        <div data-include="topBarAdmin.html"></div>
+<!-- HEADER -->
+<div id="header-slot"></div>
 
-        <!-- Header -->
-        <div class="page-head">
-            <div class="title-wrap">
-                <h1>Categories Management</h1>
-                <p class="muted">Create and organize storefront categories. Used for navigation and product filtering.</p>
+<!-- شريط عنوان وبريدكرَمب -->
+<section class="w-full px-6 py-6 border-b" style="background-color:#F9F8F3;">
+    <div class="mb-4 max-w-6xl mx-auto">
+        <nav class="text-sm text-gray-500 mb-2" id="breadcrumb">Home / <span>Category</span></nav>
+        <h1 class="text-2xl font-bold text-gray-800" id="page-title">Loading…</h1>
+    </div>
+
+    <!-- فلاتر شكلية -->
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center gap-4">
+        <button class="filter-btn flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50">
+            <span>All Filters</span>
+            <span class="bg-primary text-white text-xs px-2 py-1 rounded-full">5</span>
+        </button>
+
+        <div class="relative">
+            <select class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+                <option>Size</option><option>Newborn</option><option>0-3M</option><option>3-6M</option>
+                <option>6-9M</option><option>9-12M</option><option>12-18M</option><option>18-24M</option>
+            </select>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <i class="ri-arrow-down-s-line text-gray-500"></i>
             </div>
         </div>
 
-        <div class="toolbar">
-            <div class="field" style="flex:1">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input id="searchInput" type="search" placeholder="Search categories…">
+        <div class="relative">
+            <select class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+                <option>Fabric</option><option>Cotton</option><option>Organic Cotton</option>
+                <option>Bamboo</option><option>Modal</option>
+            </select>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <i class="ri-arrow-down-s-line text-gray-500"></i>
             </div>
-            <div class="field">
-                <i class="fa-solid fa-signal"></i>
-                <select id="statusFilter">
-                    <option value="">All Status</option>
-                    <option>Active</option>
-                    <option>Hidden</option>
-                </select>
+        </div>
+
+        <div class="relative">
+            <select class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+                <option>Style</option><option>Footie</option><option>Two-piece</option>
+                <option>Sleep Sack</option><option>Gown</option>
+            </select>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <i class="ri-arrow-down-s-line text-gray-500"></i>
             </div>
-            <button class="btn btn-ghost" id="clearFilters"><i class="fa-solid fa-rotate-left"></i> Clear</button>
-            <div style="flex:1"></div>
-            <button class="btn btn-teal" id="addCategoryBtn"><i class="fa-solid fa-plus"></i> Add Category</button>
         </div>
 
-        <!-- Grid -->
-        <section class="card">
-            <div id="grid" class="cat-grid"></div>
-
-            <!-- Empty State -->
-            <div id="emptyState" class="empty" style="display:none">
-                <div class="emoji">🧩</div>
-                <h3 style="margin:0 0 6px;color:var(--umber)">No categories yet</h3>
-                <p style="margin:0 0 14px">Click “Add Category” to create your first category.</p>
-                <button class="btn btn-teal" id="emptyAddBtn"><i class="fa-solid fa-plus"></i> Add Category</button>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pager">
-                <div class="pager-info" id="pagerInfo"></div>
-                <button class="page-btn" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
-                <div id="pageNums" style="display:flex;gap:6px"></div>
-                <button class="page-btn" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-        </section>
-    </main>
-</div>
-
-<!-- Drawer -->
-<div class="drawer-backdrop" id="drawerBackdrop"></div>
-<div class="drawer" id="drawer">
-    <h3 id="drawerTitle">Add New Category</h3>
-    <div class="form-grid">
-        <div class="form-item" style="grid-column:1/-1">
-            <label>Category Image</label>
-            <div id="dropzone" class="dropzone">
-                <div>
-                    <div style="font-size:28px;margin-bottom:6px"><i class="fa-regular fa-image"></i></div>
-                    <div class="hint">Click to upload or drag and drop<br><small>PNG, JPG up to 2MB</small></div>
-                    <input id="fileInput" type="file" accept="image/*" style="display:none"/>
-                    <div class="dz-preview" id="dzPreview"><img id="dzImg" alt="Preview"></div>
-                </div>
-            </div>
-            <input id="imageUrl" class="input" placeholder="…or paste an image URL (optional)" style="margin-top:8px"/>
-        </div>
-
-        <div class="form-item">
-            <label>Category Name</label>
-            <input class="input" id="cName" placeholder="e.g., Baby"/>
-        </div>
-        <div class="form-item">
-            <label>Parent Category</label>
-            <select class="select" id="cParent"></select>
-        </div>
-
-        <div class="form-item" style="grid-column:1/-1">
-            <label>Description</label>
-            <textarea class="textarea" id="cDesc" placeholder="Brief description of the category"></textarea>
-        </div>
-
-        <div class="form-item">
-            <label>Status</label>
-            <select class="select" id="cStatus"><option>Active</option><option>Hidden</option></select>
-        </div>
-        <div class="form-item">
-            <label>Products Count</label>
-            <input class="input" id="cCount" type="number" min="0" placeholder="e.g., 156"/>
+        <div class="flex items-center gap-2 ml-auto">
+            <input type="checkbox" id="pickup" class="custom-checkbox">
+            <label for="pickup" class="text-sm text-gray-700 cursor-pointer">Free 1-hour pickup</label>
         </div>
     </div>
-    <div class="drawer-actions">
-        <button class="btn btn-ghost" id="cancelDrawer">Cancel</button>
-        <button class="btn btn-teal" id="saveCategory">Save</button>
-    </div>
-</div>
+</section>
 
+<!-- GRID -->
+<main class="w-full px-6 py-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="products-grid"></div>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<div id="foot"></div>
+
+<!-- Inject header/footer -->
 <script>
-    const LS_KEY = 'mm_categories_v1';
-    const PAGE_SIZE = 8;
-    const $  = (s,c=document)=>c.querySelector(s);
-    const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));
+    fetch('header.html')
+        .then(r => r.text())
+        .then(html => {
+            document.getElementById('header-slot').innerHTML = html;
+            updateHeaderCartCount();
+            setupHeaderMenu();
+            setupHeaderSearch();
+            window.addEventListener('storage', (e)=>{ if (e.key === 'cart') updateHeaderCartCount(); });
+            window.addEventListener('cart:updated', updateHeaderCartCount);
+        });
 
-    /* Sidebar include + active link */
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const html = await fetch('sidebar.html').then(r=>r.text());
-            const wrap = $('#sidebar-container');
-            wrap.innerHTML = html;
-            $$('a', wrap).forEach(a=>{
-                if((a.textContent||'').trim().toLowerCase()==='categories') a.classList.add('active');
-            });
-        } catch {}
-    });
-
-    /* Seed */
-    const seed = [
-        {id:1, name:'Baby', desc:'Clothing and accessories for babies 0-24 months', count:156, status:'Active', parent:'', image:'../images/categories/baby.jpg'},
-        {id:2, name:'Toddler', desc:'Fun and comfortable clothes for toddlers 2-4 years', count:89, status:'Active', parent:'', image:'../images/categories/toddler.jpg'},
-        {id:3, name:'Kids', desc:'Stylish clothing for kids 5-12 years old', count:203, status:'Active', parent:'', image:'../images/categories/kids.jpg'},
-        {id:4, name:'Family Matching', desc:'Coordinated outfits for the whole family', count:67, status:'Active', parent:'', image:'../images/categories/famillymatching.jpg'},
-        {id:5, name:'Baby Accessories', desc:'Hats, bibs, socks and other baby essentials', count:42, status:'Active', parent:'Baby', image:'../images/categories/BabyAccessories.jpg'},
-        {id:6, name:'Kids Footwear', desc:'Comfortable shoes and sneakers for active kids', count:78, status:'Active', parent:'Kids', image:'../images/categories/kidsfootwear.jpg'},
-        {id:7, name:'Premium Brands', desc:'Designer and premium brand collections', count:34, status:'Active', parent:'', image:'../images/categories/Brands.jpg'},
-        {id:8, name:'Seasonal Deals', desc:'Special offers and seasonal promotions', count:23, status:'Hidden', parent:'', image:'../images/categories/deals.jpg'}
-    ];
-    function load(){ const raw=localStorage.getItem(LS_KEY); if(!raw){ localStorage.setItem(LS_KEY, JSON.stringify(seed)); return [...seed]; } try{ return JSON.parse(raw)||[] }catch{ return [...seed] } }
-    function save(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
-    let categories = load();
-
-    /* State (بدون parent) */
-    let state = { q:'', status:'', page:1 };
-
-    /* Parents list فقط للدروار */
-    function parentsList(){
-        const set = new Set(categories.map(c=>c.parent).filter(Boolean));
-        categories.forEach(c=>{ if(!c.parent) set.add(c.name); });
-        return [''].concat([...set].sort());
-    }
-    function refreshParentFilters(){
-        const list = parentsList();
-        $('#cParent').innerHTML = '<option value="">None (Top Level)</option>' + list.filter(Boolean).map(p=>`<option>${p}</option>`).join('');
-    }
-    refreshParentFilters();
-
-    /* Filters + pagination */
-    function applyFilters(){
-        let list=[...categories];
-        const q=state.q.trim().toLowerCase();
-        if(q) list=list.filter(c=> c.name.toLowerCase().includes(q) || (c.desc||'').toLowerCase().includes(q));
-        if(state.status) list=list.filter(c=>c.status===state.status);
-        return list;
-    }
-    function paginate(list){
-        const total=list.length; const pages=Math.max(1, Math.ceil(total/PAGE_SIZE));
-        if(state.page>pages) state.page=pages; const start=(state.page-1)*PAGE_SIZE;
-        return {slice:list.slice(start,start+PAGE_SIZE), total, pages};
-    }
-
-    function statusBadgeClass(s){ return s==='Active'?'badge st-active':'badge st-hidden'; }
-
-    function render(){
-        const filtered=applyFilters();
-        const {slice,total,pages}=paginate(filtered);
-        $('#grid').innerHTML = slice.map(c=>`
-      <div class="cat-card">
-        <div class="cat-media">${c.image?`<img src="${c.image}" alt="${c.name}">`:'<span class="muted">No image</span>'}</div>
-        <div class="cat-body">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
-            <h4 class="cat-title">${c.name}</h4>
-            <span class="${statusBadgeClass(c.status)}">${c.status}</span>
-          </div>
-          <p class="cat-desc">${c.desc||''}</p>
-        </div>
-        <div class="cat-foot">
-          <div class="stat"><i class="fa-regular fa-box"></i> ${c.count||0} products</div>
-          <div class="cat-actions">
-            <button class="icon-link" title="Edit" data-edit="${c.id}"><i class="fa-regular fa-pen-to-square"></i></button>
-            <button class="icon-link" title="Delete" data-del="${c.id}"><i class="fa-regular fa-trash-can"></i></button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-        $('#emptyState').style.display = filtered.length ? 'none' : 'block';
-        $('#pagerInfo').textContent = filtered.length
-            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1,total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} categories`
-            : 'No results';
-
-        const pageNums = $('#pageNums'); pageNums.innerHTML='';
-        for(let i=1;i<=pages;i++){
-            const b=document.createElement('button'); b.className='page-btn'+(i===state.page?' active':'');
-            b.textContent=i; b.onclick=()=>{state.page=i; render();}; pageNums.appendChild(b);
-        }
-        $('#prevPage').disabled=state.page<=1; $('#nextPage').disabled=state.page>=pages;
-
-        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawerForEdit(+b.dataset.edit));
-        $$('[data-del]').forEach(b=>b.onclick=()=>removeCategory(+b.dataset.del));
-    }
-    render();
-
-    /* Toolbar bindings */
-    $('#searchInput').oninput = e=>{ state.q=e.target.value; state.page=1; render(); };
-    $('#statusFilter').onchange = e=>{ state.status=e.target.value; state.page=1; render(); };
-    $('#clearFilters').onclick = ()=>{ state={q:'', status:'', page:1}; $('#searchInput').value=''; $('#statusFilter').value=''; render(); };
-    $('#prevPage').onclick=()=>{ if(state.page>1){state.page--; render();} };
-    $('#nextPage').onclick=()=>{ state.page++; render(); };
-
-    /* Drawer */
-    const drawer=$('#drawer'), backdrop=$('#drawerBackdrop');
-    const els={ name:$('#cName'), desc:$('#cDesc'), parent:$('#cParent'), status:$('#cStatus'), count:$('#cCount'), imageUrl:$('#imageUrl') };
-    const dropzone=$('#dropzone'), fileInput=$('#fileInput'), dzPrev=$('#dzPreview'), dzImg=$('#dzImg');
-    let editingId=null, imageBlobUrl='';
-
-    function resetForm(){
-        editingId=null; $('#drawerTitle').textContent='Add New Category';
-        Object.values(els).forEach(el=>{ if(el.tagName==='SELECT') return; el.value=''; });
-        els.status.value='Active'; els.parent.value=''; els.count.value='0'; imageBlobUrl=''; dzPrev.style.display='none'; dzImg.src='';
-        refreshParentFilters();
-    }
-    function openDrawer(){ drawer.classList.add('open'); backdrop.classList.add('show'); }
-    function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); resetForm(); }
-    $('#cancelDrawer').onclick=closeDrawer; backdrop.onclick=closeDrawer;
-
-    function openDrawerForAdd(){ resetForm(); openDrawer(); }
-    function openDrawerForEdit(id){
-        const c=categories.find(x=>x.id===id); if(!c) return;
-        resetForm(); editingId=id; $('#drawerTitle').textContent='Edit Category';
-        els.name.value=c.name; els.desc.value=c.desc||''; els.parent.value=c.parent||''; els.status.value=c.status; els.count.value=c.count||0;
-        if(c.image){ dzPrev.style.display='block'; dzImg.src=c.image; imageBlobUrl=c.image; }
-        openDrawer();
-    }
-
-    function persistFromForm(){
-        const name=els.name.value.trim(); if(!name){ alert('Please enter a category name'); return null; }
-        return {
-            name,
-            desc:els.desc.value.trim(),
-            parent:els.parent.value,
-            status:els.status.value,
-            count: Math.max(0, Number(els.count.value||0)),
-            image: imageBlobUrl || els.imageUrl.value.trim()
-        };
-    }
-
-    $('#saveCategory').onclick=()=>{
-        const payload=persistFromForm(); if(!payload) return;
-        if(editingId){ categories=categories.map(c=>c.id===editingId?{...c, ...payload}:c); }
-        else { const nextId=(categories.reduce((m,c)=>Math.max(m,c.id),0)||0)+1; categories=[{id:nextId, ...payload}, ...categories]; }
-        save(categories); refreshParentFilters(); closeDrawer(); render();
-    };
-
-    $('#addCategoryBtn').onclick=openDrawerForAdd; $('#emptyAddBtn').onclick=openDrawerForAdd;
-
-    function removeCategory(id){
-        const c=categories.find(x=>x.id===id); if(!c) return;
-        if(confirm(`Delete category "${c.name}"?`)){
-            categories=categories.filter(x=>x.id!==id);
-            save(categories); refreshParentFilters(); render();
-        }
-    }
-
-    /* Dropzone */
-    function setPreview(src){ if(src){ dzImg.src=src; dzPrev.style.display='block'; imageBlobUrl=src; } }
-    dropzone.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', e=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>setPreview(ev.target.result); r.readAsDataURL(f); });
-    ;['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag'); }));
-    ;['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('drag'); }));
-    dropzone.addEventListener('drop', e=>{ const f=e.dataTransfer.files?.[0]; if(f){ const r=new FileReader(); r.onload=ev=>setPreview(ev.target.result); r.readAsDataURL(f); } });
-    $('#imageUrl').addEventListener('change', e=>{ const url=e.target.value.trim(); if(url) setPreview(url); });
+    fetch('footer.html')
+        .then(r => r.text())
+        .then(t => { document.getElementById('foot').innerHTML = t; });
 </script>
 
-<script src="../js/adminbar.js" defer></script>
-<script src="../js/includeadminBar.js" defer></script>
+<!-- Page script -->
+<script>
+    const gridEl = document.getElementById('products-grid');
+
+    // قالب البطاقة
+    // قالب البطاقة (مع إضاءة النجوم حسب my_rating)
+    function card(p){
+        const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
+        const cnt      = Number(p.rating_count || 0);
+        const likes    = Number(p.likes || 0);
+        const myLike   = Number(p.my_like || 0) === 1;
+        const myRating = (p.my_rating == null ? null : Number(p.my_rating)); // <-- مهم
+
+        // نجوم مطفّية افتراضًا، ونضيء حسب "تقييمي أنا" إن وجد
+        const stars = Array.from({length:5}, (_,i)=>{
+            const filled = (myRating !== null) ? (i < myRating) : false;
+            return `<button type="button" class="star ${filled ? 'is-filled' : ''}" data-rating="${i+1}">★</button>`;
+        }).join('');
+
+        const ratingLine = (cnt > 0)
+            ? `<span class="avg">${avg.toFixed(1)}</span><span class="count">(${cnt})</span>`
+            : `<span class="avg">—</span>`;
+
+        return `
+    <div class="similar-product-card product-card" data-id="${p.id}">
+      <a class="image-wrap" href="product.html?id=${p.id}">
+        <img src="${p.image_main_url || '../images/placeholder.jpg'}" alt="${p.name}">
+      </a>
+
+      <h3 class="similar-product-title">
+        <a href="product.html?id=${p.id}">${p.name}</a>
+      </h3>
+
+      <div class="price-alone">₪${Number(p.price).toFixed(2)}</div>
+
+      <div class="meta-row">
+        <div class="star-rating">${stars} ${ratingLine}</div>
+        <button type="button" class="like-btn wish-btn ${myLike ? 'is-liked':''}" title="Wishlist">
+          <i class="${myLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+          <span class="text-xs like-count">${likes}</span>
+        </button>
+      </div>
+
+      <div class="add-row" style="margin-top:12px;display:flex;justify-content:flex-end;">
+        <button type="button" class="add-btn"
+                data-id="${p.id}"
+                data-name="${p.name.replace(/"/g,'&quot;')}"
+                data-price="${p.price}"
+                data-image="${p.image_main_url || '../images/placeholder.jpg'}">
+          <i class="ri-add-line"></i>
+        </button>
+      </div>
+    </div>
+  `;
+    }
+
+
+
+    async function renderPLP(){
+        // Params
+        const params = new URLSearchParams(location.search);
+        const slug = params.get('slug') || 'baby-girl';
+        const q    = params.get('q') || '';
+        const page = Math.max(1, +(params.get('page') || 1));
+        const size = Math.max(1, +(params.get('size') || 24));
+
+        // Loading
+        gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Loading…</div>`;
+
+        // API
+        const apiBase = '/matchymatchy/backend/products.php';
+        let url = `${apiBase}?page=${page}&size=${size}`;
+        if (q) url += `&q=${encodeURIComponent(q)}`;
+        else if (slug && slug !== 'all-products') url += `&category_slug=${encodeURIComponent(slug)}`;
+
+        // Fetch
+        let ok=false, data=[], total=0;
+        try{
+            const res = await fetch(url, { headers: { 'Accept':'application/json' } });
+            if (!res.ok){ throw new Error(`API ${res.status}`); }
+            const json = await res.json();
+            ok    = !!json.ok;
+            data  = json.data  || [];
+            total = json.total || 0;
+        }catch(err){
+            console.error('Fetch failed:', err);
+        }
+        if (!ok){
+            gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Error loading products</div>`;
+            return;
+        }
+
+        // Title + breadcrumb
+        const pretty = q ? `Results for “${q}”` : slug.replace(/-/g,' ').replace(/\b\w/g, s => s.toUpperCase());
+        const titleEl = document.getElementById('page-title');
+        if (titleEl) titleEl.innerHTML = `${pretty} <span class="text-lg font-normal text-gray-600">(${total} items)</span>`;
+        const bc = document.getElementById('breadcrumb');
+        if (bc) bc.innerHTML = `Home / <span class="text-gray-800">${pretty}</span>`;
+
+        // Render
+        gridEl.innerHTML = data.length
+            ? data.map(card).join('')
+            : `<div class="col-span-full text-center py-10 text-gray-500">No products found</div>`;
+    }
+
+    // شغّل الرندر مرة واحدة
+    renderPLP();
+
+    /* مستمع واحد: Add-to-cart + Like (يحفظ) + Rating (يحفظ) */
+    gridEl.addEventListener('click', async (e) => {
+        // ADD TO CART
+        const addBtn = e.target.closest('.add-btn');
+        if (addBtn) {
+            const item = {
+                id: Number(addBtn.dataset.id),
+                name: addBtn.dataset.name,
+                price: Number(addBtn.dataset.price),
+                image: addBtn.dataset.image,
+                quantity: 1
+            };
+            const cart = getCart();
+            const i = cart.findIndex(x => x.id === item.id);
+            if (i >= 0) cart[i].quantity += 1; else cart.push(item);
+            setCart(cart);
+            addBtn.style.transform = 'scale(1.1)';
+            setTimeout(() => addBtn.style.transform = 'scale(1)', 160);
+            return;
+        }
+
+        // LIKE (يحفظ بالداتابيس) — لا تبديل محلي قبل نجاح الرد
+        const likeBtn = e.target.closest('.like-btn');
+        if (likeBtn) {
+            if (likeBtn.classList.contains('is-busy')) return;
+            likeBtn.classList.add('is-busy');
+
+            const cardEl  = likeBtn.closest('.product-card');
+            const pid     = Number(cardEl.dataset.id);
+            const icon    = likeBtn.querySelector('i');
+            const countEl = likeBtn.querySelector('.like-count');
+
+            try {
+                const res = await fetch('/matchymatchy/backend/like_toggle.php', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+                    body:`product_id=${encodeURIComponent(pid)}`
+                });
+                const j = await res.json();
+                if (j && j.ok) {
+                    likeBtn.classList.toggle('is-liked', j.liked);
+                    icon.className = j.liked ? 'ri-heart-fill' : 'ri-heart-line';
+                    countEl.textContent = String(j.likes);
+                }
+            } catch(err) {
+                console.error('like_toggle failed', err);
+            } finally {
+                likeBtn.classList.remove('is-busy');
+            }
+            return;
+        }
+
+        // RATING (يحفظ بالداتابيس) — يلوّن نجوم تقييمي أنا فقط
+        const star = e.target.closest('.star');
+        if (star) {
+            const rating   = Number(star.dataset.rating);
+            const cardEl   = star.closest('.product-card');
+            const pid      = Number(cardEl.dataset.id);
+            const starWrap = star.parentElement;
+
+            if (starWrap.classList.contains('is-busy')) return;
+            starWrap.classList.add('is-busy');
+
+            try {
+                const res = await fetch('/matchymatchy/backend/rate_set.php', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+                    body:`product_id=${encodeURIComponent(pid)}&rating=${encodeURIComponent(rating)}`
+                });
+                const j = await res.json();
+                if (j && j.ok) {
+                    // نجومي أنا
+                    [...starWrap.querySelectorAll('.star')].forEach((s,i)=>{
+                        s.classList.toggle('is-filled', i < j.my_rating);
+                    });
+                    // المتوسط والعدد
+                    const avgEl = starWrap.querySelector('.avg');
+                    const cntEl = starWrap.querySelector('.count');
+                    if (avgEl) avgEl.textContent = j.count ? Number(j.avg).toFixed(1) : '—';
+                    if (cntEl) cntEl.textContent = j.count ? `(${j.count})` : '';
+                }
+            } catch(err) {
+                console.error('rate_set failed', err);
+            } finally {
+                starWrap.classList.remove('is-busy');
+            }
+        }
+    });
+</script>
+
+<script src="../js/indexscript.js"></script>
 </body>
 </html>

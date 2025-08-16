@@ -16,7 +16,7 @@
         }catch{}
     });
 
-    // Seed — Reviews mapped to your products/images
+
     const seed = [
         {
             id: 1,
