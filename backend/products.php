@@ -34,7 +34,7 @@ $sort         = trim($_GET['sort'] ?? '');    // price_asc | price_desc | name_a
 if (isset($_GET['id']) || isset($_GET['product_id'])) {
     $id = (int)($_GET['id'] ?? $_GET['product_id']);
 
-    // المنتج الأساسي
+    // ===== المنتج الأساسي =====
     $stmt = $pdo->prepare("
       SELECT p.id, p.name, p.slug, p.description, p.price, p.image_main_url,
              COALESCE(AVG(r.rating), NULL) AS rating_avg,
@@ -50,42 +50,93 @@ if (isset($_GET['id']) || isset($_GET['product_id'])) {
     $prod = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$prod) { echo json_encode(['ok'=>false,'error'=>'not_found']); exit; }
 
-    // الصور (إن وجدت لديك جدول للصور، أو أعد فقط image_main_url)
+    // ===== الصور =====
     $imgsStmt = $pdo->prepare("SELECT image_url FROM product_images WHERE product_id = ? ORDER BY sort_order ASC");
     $imgs = [];
     if ($imgsStmt->execute([$id])) { $imgs = $imgsStmt->fetchAll(PDO::FETCH_COLUMN); }
     if (!$imgs) { $imgs = [$prod['image_main_url']]; }
 
-    // المقاسات
+    // ===== المقاسات =====
     $sizesStmt = $pdo->prepare("SELECT size_label FROM product_sizes WHERE product_id = ? ORDER BY id ASC");
     $sizesStmt->execute([$id]);
     $sizes = $sizesStmt->fetchAll(PDO::FETCH_COLUMN);
 
-    // (اختياري) هل المستخدم عمل Like سابقًا؟ بناءً على user_id أو device_hash
-    $my_like = 0; $my_rating = null;
-    // ... حددي user_id من السيشن إن وجد
+    // ===== تصنيف/تصنيف فرعي (لـ breadcrumb) =====
+    // نختار أَوّل تصنيف مرتبط بالمنتج مفضّلين التصنيف “الابن” (له parent_id)
+    $catSql = "
+      SELECT 
+        c.id, c.name, c.slug, c.parent_id,
+        p2.name AS parent_name, p2.slug AS parent_slug
+      FROM product_categories pc
+      JOIN categories c   ON c.id = pc.category_id
+      LEFT JOIN categories p2 ON p2.id = c.parent_id
+      WHERE pc.product_id = ?
+      ORDER BY (c.parent_id IS NOT NULL) DESC, c.id ASC
+      LIMIT 1
+    ";
+    $catStmt = $pdo->prepare($catSql);
+    $catStmt->execute([$id]);
+    $c = $catStmt->fetch(PDO::FETCH_ASSOC);
 
-    // (اختياري) related products:
-    // SELECT منتجات من نفس التصنيف
+    // قيَم افتراضية لو ما في تصنيف
+    $categoryName = null; $categorySlug = null;
+    $subcategoryName = null; $subcategorySlug = null;
+    if ($c) {
+        if (!empty($c['parent_id'])) {
+            // c = ابن => الأب هو الـ category، والابن هو subcategory
+            $categoryName    = $c['parent_name'];
+            $categorySlug    = $c['parent_slug'];
+            $subcategoryName = $c['name'];
+            $subcategorySlug = $c['slug'];
+        } else {
+            // c = أب بدون parent => هو الـ category فقط
+            $categoryName    = $c['name'];
+            $categorySlug    = $c['slug'];
+            // لا subcategory
+        }
+    }
+
+    // نبني مصفوفة breadcrumb بسيطة
+    $breadcrumbs = [
+        ['name' => 'Home', 'url' => 'index.html'],
+    ];
+    if ($categoryName && $categorySlug) {
+        $breadcrumbs[] = ['name' => $categoryName, 'url' => "category.html?cat=" . urlencode($categorySlug)];
+    }
+    if ($subcategoryName && $subcategorySlug) {
+        $breadcrumbs[] = ['name' => $subcategoryName, 'url' => "category.html?cat=" . urlencode($categorySlug) . "&sub=" . urlencode($subcategorySlug)];
+    }
+    $breadcrumbs[] = ['name' => $prod['name']];
+
+    // (اختياري) هل المستخدم عمل Like/Rating — حسب نظامك
+    $my_like = 0;
+    $my_rating = null;
 
     echo json_encode([
         'ok'   => true,
         'data' => [
-            'id'            => (int)$prod['id'],
-            'name'          => $prod['name'],
-            'slug'          => $prod['slug'],
-            'description'   => $prod['description'],
-            'price'         => (float)$prod['price'],
-            'image_main_url'=> $prod['image_main_url'],
-            'images'        => $imgs,
-            'sizes'         => $sizes,
-            'rating_avg'    => $prod['rating_avg'] !== null ? (float)$prod['rating_avg'] : null,
-            'rating_count'  => (int)$prod['rating_count'],
-            'likes'         => (int)$prod['likes'],
-            'my_like'       => (int)$my_like,
-            'my_rating'     => $my_rating
+            'id'              => (int)$prod['id'],
+            'name'            => $prod['name'],
+            'slug'            => $prod['slug'],
+            'description'     => $prod['description'],
+            'price'           => (float)$prod['price'],
+            'image_main_url'  => $prod['image_main_url'],
+            'images'          => $imgs,
+            'sizes'           => $sizes,
+            'rating_avg'      => $prod['rating_avg'] !== null ? (float)$prod['rating_avg'] : null,
+            'rating_count'    => (int)$prod['rating_count'],
+            'likes'           => (int)$prod['likes'],
+            'my_like'         => (int)$my_like,
+            'my_rating'       => $my_rating,
+
+            // ==== حقول الـ breadcrumb ====
+            'category'        => $categoryName,
+            'category_slug'   => $categorySlug,
+            'subcategory'     => $subcategoryName,
+            'subcategory_slug'=> $subcategorySlug,
+            'breadcrumbs'     => $breadcrumbs
         ]
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 // ===== base + joins =====
