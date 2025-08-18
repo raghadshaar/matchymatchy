@@ -13,7 +13,7 @@
     <style>
         :where([class^="ri-"])::before { content: "\f3c2"; }
         :root {
-    --baby: #F9F8F3;
+            --baby: #F9F8F3;
             --jet: #383838;
             --teal: #008080;
             --pink: #E4CFC3;
@@ -21,32 +21,32 @@
             --white: #ffffff;
         }
         .pattern-bg {
-    background-image: radial-gradient(circle at 20% 20%, var(--pink) 0%, transparent 20%),
+            background-image: radial-gradient(circle at 20% 20%, var(--pink) 0%, transparent 20%),
             radial-gradient(circle at 80% 80%, var(--pink) 0%, transparent 20%),
             radial-gradient(circle at 40% 60%, var(--pink) 0%, transparent 20%);
             background-size: 100px 100px, 120px 120px, 80px 80px;
             background-position: 0 0, 40px 40px, 80px 20px;
         }
         .strength-bar {
-    transition: all 0.3s ease;
+            transition: all 0.3s ease;
         }
         .strength-weak { background-color: #ef4444; width: 25%; }
         .strength-fair { background-color: #f59e0b; width: 50%; }
         .strength-good { background-color: #10b981; width: 75%; }
         .strength-strong { background-color: var(--teal); width: 100%; }
         .google-btn {
-                background: linear-gradient(135deg, #4285f4 0%, #34a853 25%, #fbbc05 50%, #ea4335 75%);
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 25%, #fbbc05 50%, #ea4335 75%);
             background-size: 400% 400%;
             animation: gradient 3s ease infinite;
         }
         @keyframes gradient {
-                0% { background-position: 0% 50%; }
+            0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
         .custom-checkbox {
-                appearance: none;
-                width: 1.25rem;
+            appearance: none;
+            width: 1.25rem;
             height: 1.25rem;
             border: 2px solid var(--umber);
             border-radius: 0.25rem;
@@ -55,8 +55,8 @@
             cursor: pointer;
         }
         .custom-checkbox:checked {
-                background: var(--teal);
-                border-color: var(--teal);
+            background: var(--teal);
+            border-color: var(--teal);
         }
         .custom-checkbox:checked::after {
             content: '✓';
@@ -69,28 +69,28 @@
             font-weight: bold;
         }
         .floating-label {
-                transition: all 0.2s ease;
+            transition: all 0.2s ease;
         }
         .input-focused .floating-label {
-                transform: translateY(-1.5rem) scale(0.875);
+            transform: translateY(-1.5rem) scale(0.875);
             color: var(--teal);
         }
         .auth-card {
-                background: var(--white);
-                border: 1px solid rgba(113, 94, 81, 0.1);
+            background: var(--white);
+            border: 1px solid rgba(113, 94, 81, 0.1);
             box-shadow: 0 10px 25px rgba(113, 94, 81, 0.1);
         }
     </style>
     <script>
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        colors: {
-                            primary: '#008080',
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#008080',
                         secondary: '#715E51'
                     },
-                        borderRadius: {
-                            'none': '0px',
+                    borderRadius: {
+                        'none': '0px',
                         'sm': '4px',
                         DEFAULT: '8px',
                         'md': '12px',
@@ -101,11 +101,19 @@
                         'full': '9999px',
                         'button': '8px'
                     }
-                    }
                 }
             }
+        }
     </script>
 </head>
+<?php if (!empty($_GET['notice'])): ?>
+    <div class="mb-4 rounded-lg border px-4 py-3 flex items-center gap-2"
+         style="border-color:#E4CFC3;background:#F9F8F3;color:red;">
+        <i class="ri-information-line"></i>
+        <span><?= htmlspecialchars($_GET['notice'], ENT_QUOTES, 'UTF-8') ?></span>
+    </div>
+<?php endif; ?>
+
 <body style="background-color: var(--baby);" class="min-h-screen pattern-bg">
 <div class="min-h-screen flex flex-col">
     <header class="py-6">
@@ -146,8 +154,8 @@
                         <button type="button" id="forgot-password-btn" class="text-sm hover:underline" style="color: var(--teal);">Forgot Password?</button>
                     </div>
                     <button type="submit" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap" style="background-color: var(--teal);">
-                Sign In
-            </button>
+                        Sign In
+                    </button>
                     <div class="relative my-6">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t" style="border-color: var(--pink);"></div>
@@ -161,7 +169,7 @@
                             <!-- داخل صفحة sign-in.php (نفس الصفحة اللي في الصورة) -->
                             <a href="/matchymatchy/google-login.php" class="btn-google">
                                 Continue with Google
-            </a>
+                            </a>
 
                         </div>
                         <div id="google-signin-loading" class="hidden flex items-center justify-center space-x-2">
@@ -175,7 +183,7 @@
                     </div>
                     <div class="text-center mt-6">
                         <p class="text-sm" style="color: var(--umber);">
-                Don't have an account?
+                            Don't have an account?
                             <a href="\matchymatchy\HTML\signup.html" data-readdy="true" class="font-semibold hover:underline" style="color: var(--teal);">Sign up</a>
                         </p>
                     </div>
@@ -199,8 +207,8 @@
                         </div>
                     </button>
                     <button type="button" id="back-to-signin" class="w-full py-2 text-sm hover:underline" style="color: var(--umber);">
-                Back to Sign In
-            </button>
+                        Back to Sign In
+                    </button>
                 </div>
                 <div id="reset-password-form" class="space-y-6 hidden">
                     <div class="text-center mb-6">
@@ -255,8 +263,8 @@
                         </p>
                     </div>
                     <button type="submit" id="reset-submit" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap opacity-50 cursor-not-allowed" style="background-color: var(--teal);" disabled>
-            Reset Password
-            </button>
+                        Reset Password
+                    </button>
                 </div>
                 <div id="success-message" class="text-center space-y-4 hidden">
                     <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center" style="background-color: var(--teal);">

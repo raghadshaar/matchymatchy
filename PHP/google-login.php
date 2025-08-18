@@ -1,9 +1,15 @@
 <?php
-// C:\xampp\htdocs\your-app\google-login.php
+
+
+
 require __DIR__ . '/config.php';
 
 $client = makeGoogleClient();
-$authUrl = $client->createAuthUrl();
-header('Location: ' . $authUrl);
-exit;
 
+// CSRF state
+$state = bin2hex(random_bytes(16));
+$_SESSION['oauth2_state'] = $state;
+$client->setState($state);
+
+header('Location: ' . $client->createAuthUrl());
+exit;
