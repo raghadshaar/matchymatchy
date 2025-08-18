@@ -106,6 +106,14 @@
             }
     </script>
 </head>
+<?php if (!empty($_GET['notice'])): ?>
+    <div class="mb-4 rounded-lg border px-4 py-3 flex items-center gap-2"
+         style="border-color:#E4CFC3;background:#F9F8F3;color:red;">
+        <i class="ri-information-line"></i>
+        <span><?= htmlspecialchars($_GET['notice'], ENT_QUOTES, 'UTF-8') ?></span>
+    </div>
+<?php endif; ?>
+
 <body style="background-color: var(--baby);" class="min-h-screen pattern-bg">
 <div class="min-h-screen flex flex-col">
     <header class="py-6">
