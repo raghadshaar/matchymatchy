@@ -71,3 +71,10 @@ CREATE TABLE IF NOT EXISTS pending_google_signups (
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;
 
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+                                              email           VARCHAR(255) PRIMARY KEY,
+    fail_count      INT NOT NULL DEFAULT 0,
+    locked_until    DATETIME NULL,
+    last_failed_at  TIMESTAMP NULL DEFAULT NULL
+    ) ENGINE=InnoDB;
