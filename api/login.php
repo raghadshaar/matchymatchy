@@ -13,13 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $email    = trim((string)($_POST['email'] ?? ''));
 $password = (string)($_POST['password'] ?? '');
 
-// basic validation
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
     http_response_code(422);
-    echo json_encode(['ok'=>false,'error'=>'Invalid credentials']); exit;
+    echo json_encode(['ok'=>false,'error'=>'invalid_input','message'=>'Please enter a valid email and password.']); exit;
 }
 
-// normalize domain case (example@GMAIL.COM -> example@gmail.com)
+// normalize domain case
 if (strpos($email,'@') !== false) {
     [$local,$domain] = explode('@',$email,2);
     $email = $local . '@' . mb_strtolower($domain);
@@ -27,7 +26,7 @@ if (strpos($email,'@') !== false) {
 
 $conn = db();
 
-/* ========== 1) Throttling / lock check ========== */
+/* --- read throttling status --- */
 $failCount   = 0;
 $lockedUntil = null;
 
@@ -39,14 +38,22 @@ $st->fetch();
 $st->close();
 
 if ($lockedUntil && (new DateTimeImmutable($lockedUntil)) > new DateTimeImmutable()) {
+    $remain = (new DateTimeImmutable($lockedUntil))->getTimestamp() - time();
+    if ($remain < 0) $remain = 0;
     http_response_code(429);
-    echo json_encode(['ok'=>false, 'error'=>'Too many attempts. Try again later.']); exit;
+    echo json_encode([
+        'ok'=>false,
+        'error'=>'locked',
+        'message'=>'Too many attempts. Try again later.',
+        'lock_remaining_sec'=>$remain
+    ]);
+    exit;
 }
 
-/* helper: record a failed attempt with lock after N tries */
+/* helper: record failed login */
 function record_failure(mysqli $conn, string $email, int $currentFailCount) {
     $count   = $currentFailCount + 1;
-    $lockNow = ($count >= 5); // lock for 15 minutes after 5th failure
+    $lockNow = ($count >= 5); // lock after 5 fails
 
     if ($lockNow) {
         $q = "INSERT INTO login_attempts (email, fail_count, locked_until, last_failed_at)
@@ -69,65 +76,71 @@ function record_failure(mysqli $conn, string $email, int $currentFailCount) {
 
     $stmt->execute();
     $stmt->close();
-
-    http_response_code(400);
-    echo json_encode(['ok'=>false, 'error'=>'Invalid credentials']); exit;
 }
 
-/* ========== 2) Load user ========== */
+/* --- load user by email --- */
 $stmt = $conn->prepare("SELECT id, first_name, last_name, email, password, provider, avatar
-                        FROM users WHERE email = ? LIMIT 1");
+                        FROM users WHERE email=? LIMIT 1");
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$user) {
-    record_failure($conn, $email, (int)$failCount);
-}
-
-/* If this is a Google-only account (no local password), block local sign-in */
-if ($user['provider'] === 'google' || is_null($user['password'])) {
-    http_response_code(409);
+    // email not found -> tell user to sign up (per your requirement)
+    http_response_code(404);
     echo json_encode([
-        'ok'      => false,
-        'error'   => 'google_account',
-        'message' => 'This email is registered with Google. Please continue with Google to sign in.'
+        'ok'=>false,
+        'error'=>'no_account',
+        'message'=>'No account found for this email. Please sign up.'
     ]);
     exit;
 }
 
-/* ========== 3) Verify password ========== */
-if (!password_verify($password, $user['password'])) {
-    record_failure($conn, $email, (int)$failCount);
+/* allow login even if provider='google' as long as a local password exists */
+if (is_null($user['password'])) {
+    http_response_code(400);
+    echo json_encode([
+        'ok'=>false,
+        'error'=>'no_local_password',
+        'message'=>'This account does not have a password yet. Use Continue with Google or click Forgot Password to set one.'
+    ]);
+    exit;
 }
 
-/* Optional: upgrade stored hash if PHP’s defaults changed */
+/* verify password */
+if (!password_verify($password, $user['password'])) {
+    record_failure($conn, $email, (int)$failCount);
+    http_response_code(400);
+    echo json_encode([
+        'ok'=>false,
+        'error'=>'bad_credentials',
+        'message'=>'Incorrect email or password.'
+    ]);
+    exit;
+}
+
+/* optional: upgrade hash if needed */
 if (password_needs_rehash($user['password'], PASSWORD_DEFAULT)) {
     $newHash = password_hash($password, PASSWORD_DEFAULT);
     $up = $conn->prepare("UPDATE users SET password=? WHERE id=?");
     $up->bind_param('si', $newHash, $user['id']);
-    $up->execute();
-    $up->close();
+    $up->execute(); $up->close();
 }
 
-/* ========== 4) Success: clear throttle & start session ========== */
+/* success: clear throttling row */
 $del = $conn->prepare("DELETE FROM login_attempts WHERE email=?");
-$del->bind_param('s',$email);
-$del->execute();
-$del->close();
+$del->bind_param('s', $email);
+$del->execute(); $del->close();
 
-/* Renew session ID to prevent fixation */
+/* renew session */
 session_regenerate_id(true);
-
 $_SESSION['user_id']  = (int)$user['id'];
 $_SESSION['email']    = $user['email'];
 $_SESSION['provider'] = $user['provider'] ?: 'local';
 $_SESSION['avatar']   = $user['avatar'] ?? null;
 
-/* Frontend will redirect to this URL on ok:true */
 echo json_encode([
-    'ok'       => true,
-    'redirect' => '/matchymatchy/HTML/index.html'
+    'ok'=>true,
+    'redirect'=>'/matchymatchy/HTML/index.html'
 ]);
-

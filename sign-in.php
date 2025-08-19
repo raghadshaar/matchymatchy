@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
     <style>
-        :where([class^="ri-"])::before { content: "\f3c2"; }
+
         :root {
             --baby: #F9F8F3;
             --jet: #383838;
@@ -106,6 +106,7 @@
         }
     </script>
 </head>
+<body style="background-color: var(--baby);" class="min-h-screen pattern-bg">
 <?php if (!empty($_GET['notice'])): ?>
     <div class="mb-4 rounded-lg border px-4 py-3 flex items-center gap-2"
          style="border-color:#E4CFC3;background:#F9F8F3;color:red;">
@@ -114,7 +115,6 @@
     </div>
 <?php endif; ?>
 
-<body style="background-color: var(--baby);" class="min-h-screen pattern-bg">
 <div class="min-h-screen flex flex-col">
     <header class="py-6">
         <div class="container mx-auto px-4">
@@ -124,6 +124,7 @@
             </div>
         </div>
     </header>
+
     <main class="flex-1 flex items-center justify-center px-4 py-8">
         <div class="w-full max-w-md">
             <div class="auth-card rounded-2xl p-8">
@@ -131,21 +132,29 @@
                     <h2 class="text-2xl font-bold mb-2" style="color: var(--jet);">Welcome Back</h2>
                     <p class="text-sm" style="color: var(--umber);">Sign in to your account to continue shopping</p>
                 </div>
-                <div id="signin-form" class="space-y-6">
+
+                <!-- SIGN IN (single valid form) -->
+                <form id="signin-form" class="space-y-6">
                     <div class="relative">
-                        <input type="email" id="email" class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors peer" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
+                        <input type="email" id="email" name="email"
+                               class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors peer"
+                               style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
                         <label for="email" class="floating-label absolute left-4 top-3 text-sm pointer-events-none" style="color: var(--umber);">Email Address</label>
                         <div class="absolute right-3 top-3 w-6 h-6 flex items-center justify-center">
                             <i class="ri-mail-line text-lg" style="color: var(--umber);"></i>
                         </div>
                     </div>
+
                     <div class="relative">
-                        <input type="password" id="password" class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
+                        <input type="password" id="password" name="password"
+                               class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors"
+                               style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
                         <label for="password" class="floating-label absolute left-4 top-3 text-sm pointer-events-none" style="color: var(--umber);">Password</label>
                         <button type="button" id="toggle-password" class="absolute right-3 top-3 w-6 h-6 flex items-center justify-center">
                             <i class="ri-eye-line text-lg" style="color: var(--umber);"></i>
                         </button>
                     </div>
+
                     <div class="flex items-center justify-between">
                         <label class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" id="remember-me" class="custom-checkbox">
@@ -153,75 +162,84 @@
                         </label>
                         <button type="button" id="forgot-password-btn" class="text-sm hover:underline" style="color: var(--teal);">Forgot Password?</button>
                     </div>
-                    <button type="submit" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap" style="background-color: var(--teal);">
+
+                    <button type="submit" id="signin-submit"
+                            class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap"
+                            style="background-color: var(--teal);">
                         Sign In
                     </button>
-                    <div class="relative my-6">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t" style="border-color: var(--pink);"></div>
-                        </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-4" style="background-color: var(--white); color: var(--umber);">Or continue with</span>
-                        </div>
-                    </div>
-                    <button type="button" id="google-signin" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap google-btn">
-                        <div id="google-signin-content" class="flex items-center justify-center space-x-2">
-                            <!-- داخل صفحة sign-in.php (نفس الصفحة اللي في الصورة) -->
-                            <a href="/matchymatchy/google-login.php" class="btn-google">
-                                Continue with Google
-                            </a>
+                </form>
 
-                        </div>
-                        <div id="google-signin-loading" class="hidden flex items-center justify-center space-x-2">
-                            <i class="ri-loader-4-line animate-spin text-lg"></i>
-                            <span>Authenticating...</span>
-                        </div>
-                    </button>
-                    <div id="google-signin-error" class="hidden mt-2 text-sm text-red-500 flex items-center justify-center space-x-1">
-                        <i class="ri-error-warning-line"></i>
-                        <span></span>
+                <!-- Divider -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t" style="border-color: var(--pink);"></div>
                     </div>
-                    <div class="text-center mt-6">
-                        <p class="text-sm" style="color: var(--umber);">
-                            Don't have an account?
-                            <a href="\matchymatchy\HTML\signup.html" data-readdy="true" class="font-semibold hover:underline" style="color: var(--teal);">Sign up</a>
-                        </p>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4" style="background-color: var(--white); color: var(--umber);">Or continue with</span>
                     </div>
                 </div>
-                <div id="forgot-password-form" class="space-y-6 hidden">
+
+                <!-- Google Sign-In (separate file for sign-in flow) -->
+                <a href="/matchymatchy/PHP/google-login-signin.php"
+                   class="w-full py-3 rounded-button font-semibold text-white google-btn flex items-center justify-center space-x-2">
+                    <i class="ri-google-fill text-lg"></i>
+                    <span>Continue with Google</span>
+                </a>
+
+
+                <div class="text-center mt-6">
+                    <p class="text-sm" style="color: var(--umber);">
+                        Don't have an account?
+                        <a href="/matchymatchy/HTML/signup.html" class="font-semibold hover:underline" style="color: var(--teal);">Sign up</a>
+                    </p>
+                </div>
+
+                <!-- FORGOT PASSWORD (send link) -->
+                <div id="forgot-password-form" class="space-y-6 hidden mt-8">
                     <div class="text-center mb-6">
                         <h3 class="text-xl font-bold mb-2" style="color: var(--jet);">Reset Password</h3>
                         <p class="text-sm" style="color: var(--umber);">Enter your email address and we'll send you a reset link</p>
                     </div>
                     <div class="relative">
-                        <input type="email" id="reset-email" class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
+                        <input type="email" id="reset-email"
+                               class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors"
+                               style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
                         <label for="reset-email" class="floating-label absolute left-4 top-3 text-sm pointer-events-none" style="color: var(--umber);">Email Address</label>
                         <div class="absolute right-3 top-3 w-6 h-6 flex items-center justify-center">
                             <i class="ri-mail-line text-lg" style="color: var(--umber);"></i>
                         </div>
                     </div>
-                    <button type="submit" id="reset-link-button" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap flex items-center justify-center" style="background-color: var(--teal);">
+                    <button type="button" id="reset-link-button"
+                            class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap flex items-center justify-center"
+                            style="background-color: var(--teal);">
                         <span id="reset-button-text">Send Reset Link</span>
-                        <div id="reset-button-spinner" class="hidden ml-2">
-                            <i class="ri-loader-4-line animate-spin"></i>
-                        </div>
+                        <span id="reset-button-spinner" class="hidden ml-2">
+              <i class="ri-loader-4-line animate-spin"></i>
+            </span>
                     </button>
                     <button type="button" id="back-to-signin" class="w-full py-2 text-sm hover:underline" style="color: var(--umber);">
                         Back to Sign In
                     </button>
                 </div>
-                <div id="reset-password-form" class="space-y-6 hidden">
+
+                <!-- RESET PASSWORD (shown when ?token=... in URL) -->
+                <div id="reset-password-form" class="space-y-6 hidden mt-8">
                     <div class="text-center mb-6">
                         <h3 class="text-xl font-bold mb-2" style="color: var(--jet);">Create New Password</h3>
                         <p class="text-sm" style="color: var(--umber);">Please enter your new password below</p>
                     </div>
+
                     <div class="relative">
-                        <input type="password" id="new-password" class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
+                        <input type="password" id="new-password"
+                               class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors"
+                               style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
                         <label for="new-password" class="floating-label absolute left-4 top-3 text-sm pointer-events-none" style="color: var(--umber);">New Password</label>
                         <button type="button" id="toggle-new-password" class="absolute right-3 top-3 w-6 h-6 flex items-center justify-center">
                             <i class="ri-eye-line text-lg" style="color: var(--umber);"></i>
                         </button>
                     </div>
+
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-xs" style="color: var(--umber);">Password Strength</span>
@@ -231,42 +249,47 @@
                             <div id="strength-bar" class="strength-bar h-2 rounded-full strength-weak"></div>
                         </div>
                     </div>
+
                     <div class="text-xs space-y-1" style="color: var(--umber);">
                         <p id="req-length" class="flex items-center space-x-2">
-                            <i class="ri-close-circle-line text-red-500"></i>
-                            <span>At least 8 characters</span>
+                            <i class="ri-close-circle-line text-red-500"></i><span>At least 8 characters</span>
                         </p>
                         <p id="req-uppercase" class="flex items-center space-x-2">
-                            <i class="ri-close-circle-line text-red-500"></i>
-                            <span>One uppercase letter</span>
+                            <i class="ri-close-circle-line text-red-500"></i><span>One uppercase letter</span>
                         </p>
                         <p id="req-lowercase" class="flex items-center space-x-2">
-                            <i class="ri-close-circle-line text-red-500"></i>
-                            <span>One lowercase letter</span>
+                            <i class="ri-close-circle-line text-red-500"></i><span>One lowercase letter</span>
                         </p>
                         <p id="req-number" class="flex items-center space-x-2">
-                            <i class="ri-close-circle-line text-red-500"></i>
-                            <span>One number</span>
+                            <i class="ri-close-circle-line text-red-500"></i><span>One number</span>
                         </p>
                     </div>
+
                     <div class="relative">
-                        <input type="password" id="confirm-password" class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
+                        <input type="password" id="confirm-password"
+                               class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors"
+                               style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
                         <label for="confirm-password" class="floating-label absolute left-4 top-3 text-sm pointer-events-none" style="color: var(--umber);">Confirm Password</label>
                         <button type="button" id="toggle-confirm-password" class="absolute right-3 top-3 w-6 h-6 flex items-center justify-center">
                             <i class="ri-eye-line text-lg" style="color: var(--umber);"></i>
                         </button>
                     </div>
+
                     <div id="password-match" class="text-xs hidden">
                         <p class="flex items-center space-x-2 text-red-500">
-                            <i class="ri-close-circle-line"></i>
-                            <span>Passwords do not match</span>
+                            <i class="ri-close-circle-line"></i><span>Passwords do not match</span>
                         </p>
                     </div>
-                    <button type="submit" id="reset-submit" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap opacity-50 cursor-not-allowed" style="background-color: var(--teal);" disabled>
+
+                    <button id="reset-submit"
+                            class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap opacity-50 cursor-not-allowed"
+                            style="background-color: var(--teal);" disabled>
                         Reset Password
                     </button>
                 </div>
-                <div id="success-message" class="text-center space-y-4 hidden">
+
+                <!-- Success after sending reset link -->
+                <div id="success-message" class="text-center space-y-4 hidden mt-8">
                     <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center" style="background-color: var(--teal);">
                         <i class="ri-check-line text-2xl text-white"></i>
                     </div>
@@ -275,325 +298,292 @@
                     <button type="button" id="back-to-signin-success" class="text-sm hover:underline" style="color: var(--teal);">Back to Sign In</button>
                 </div>
             </div>
+
+            <!-- Little badges -->
             <div class="text-center mt-6">
                 <div class="flex items-center justify-center space-x-4 text-xs" style="color: var(--umber);">
                     <div class="flex items-center space-x-1">
-                        <i class="ri-shield-check-line"></i>
-                        <span>Secure Login</span>
+                        <i class="ri-shield-check-line"></i><span>Secure Login</span>
                     </div>
                     <div class="flex items-center space-x-1">
-                        <i class="ri-lock-line"></i>
-                        <span>SSL Protected</span>
+                        <i class="ri-lock-line"></i><span>SSL Protected</span>
                     </div>
                     <div class="flex items-center space-x-1">
-                        <i class="ri-user-heart-line"></i>
-                        <span>Privacy First</span>
+                        <i class="ri-user-heart-line"></i><span>Privacy First</span>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 </div>
+
+<!-- ===== SCRIPTS (no duplicates) ===== -->
+
 <script id="form-navigation">
     document.addEventListener('DOMContentLoaded', function() {
         const signinForm = document.getElementById('signin-form');
-        const forgotPasswordForm = document.getElementById('forgot-password-form');
-        const resetPasswordForm = document.getElementById('reset-password-form');
-        const successMessage = document.getElementById('success-message');
-        const forgotPasswordBtn = document.getElementById('forgot-password-btn');
-        const backToSigninBtn = document.getElementById('back-to-signin');
-        const backToSigninSuccessBtn = document.getElementById('back-to-signin-success');
-        function showForm(formToShow) {
-            [signinForm, forgotPasswordForm, resetPasswordForm, successMessage].forEach(form => {
-                form.classList.add('hidden');
-            });
-            formToShow.classList.remove('hidden');
+        const forgotForm = document.getElementById('forgot-password-form');
+        const resetForm  = document.getElementById('reset-password-form');
+        const successMsg = document.getElementById('success-message');
+
+        const forgotBtn  = document.getElementById('forgot-password-btn');
+        const backBtn    = document.getElementById('back-to-signin');
+        const backSucc   = document.getElementById('back-to-signin-success');
+
+        function showForm(el) {
+            [signinForm, forgotForm, resetForm, successMsg].forEach(x => x && x.classList.add('hidden'));
+            el && el.classList.remove('hidden');
         }
-        forgotPasswordBtn.addEventListener('click', () => showForm(forgotPasswordForm));
-        backToSigninBtn.addEventListener('click', () => showForm(signinForm));
-        backToSigninSuccessBtn.addEventListener('click', () => showForm(signinForm));
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('reset') === 'true') {
-            showForm(resetPasswordForm);
-        }
+
+        if (forgotBtn) forgotBtn.addEventListener('click', () => showForm(forgotForm));
+        if (backBtn)   backBtn.addEventListener('click', () => showForm(signinForm));
+        if (backSucc)  backSucc.addEventListener('click', () => showForm(signinForm));
     });
 </script>
+
 <script id="password-visibility">
     document.addEventListener('DOMContentLoaded', function() {
-        function setupPasswordToggle(inputId, toggleId) {
-            const input = document.getElementById(inputId);
-            const toggle = document.getElementById(toggleId);
-            if (input && toggle) {
-                toggle.addEventListener('click', function() {
-                    const icon = toggle.querySelector('i');
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.className = 'ri-eye-off-line text-lg';
-                    } else {
-                        input.type = 'password';
-                        icon.className = 'ri-eye-line text-lg';
-                    }
-                });
-            }
+        function toggle(btnId, inputId) {
+            const btn = document.getElementById(btnId);
+            const inp = document.getElementById(inputId);
+            if (!btn || !inp) return;
+            btn.addEventListener('click', () => {
+                const icon = btn.querySelector('i');
+                if (inp.type === 'password') { inp.type = 'text';  if (icon) icon.className = 'ri-eye-off-line text-lg'; }
+                else                         { inp.type = 'password'; if (icon) icon.className = 'ri-eye-line text-lg'; }
+            });
         }
-        setupPasswordToggle('password', 'toggle-password');
-        setupPasswordToggle('new-password', 'toggle-new-password');
-        setupPasswordToggle('confirm-password', 'toggle-confirm-password');
+        toggle('toggle-password', 'password');
+        toggle('toggle-new-password', 'new-password');
+        toggle('toggle-confirm-password', 'confirm-password');
     });
 </script>
+
 <script id="floating-labels">
     document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('input[type="email"], input[type="password"]');
-        inputs.forEach(input => {
+        document.querySelectorAll('input[type="email"], input[type="password"]').forEach(input => {
             const container = input.parentElement;
-            function updateLabel() {
-                if (input.value.trim() !== '' || input === document.activeElement) {
-                    container.classList.add('input-focused');
-                } else {
-                    container.classList.remove('input-focused');
-                }
+            function update() {
+                if (input.value.trim() !== '' || input === document.activeElement) container.classList.add('input-focused');
+                else container.classList.remove('input-focused');
             }
-            input.addEventListener('focus', updateLabel);
-            input.addEventListener('blur', updateLabel);
-            input.addEventListener('input', updateLabel);
-            updateLabel();
+            ['focus','blur','input'].forEach(ev => input.addEventListener(ev, update));
+            update();
         });
     });
 </script>
-<script id="password-strength">
-    document.addEventListener('DOMContentLoaded', function() {
-        const newPasswordInput = document.getElementById('new-password');
-        const confirmPasswordInput = document.getElementById('confirm-password');
-        const strengthBar = document.getElementById('strength-bar');
-        const strengthText = document.getElementById('strength-text');
-        const resetSubmitBtn = document.getElementById('reset-submit');
-        const passwordMatchDiv = document.getElementById('password-match');
-        const requirements = {
-            length: document.getElementById('req-length'),
-            uppercase: document.getElementById('req-uppercase'),
-            lowercase: document.getElementById('req-lowercase'),
-            number: document.getElementById('req-number')
-        };
-        function updateRequirement(element, met) {
-            const icon = element.querySelector('i');
-            if (met) {
-                icon.className = 'ri-check-circle-line text-green-500';
-                element.style.color = 'var(--teal)';
-            } else {
-                icon.className = 'ri-close-circle-line text-red-500';
-                element.style.color = 'var(--umber)';
-            }
-        }
-        function checkPasswordStrength(password) {
-            const checks = {
-                length: password.length >= 8,
-                uppercase: /[A-Z]/.test(password),
-                lowercase: /[a-z]/.test(password),
-                number: /\d/.test(password)
-            };
-            Object.keys(checks).forEach(key => {
-                updateRequirement(requirements[key], checks[key]);
+
+<script id="signin-submit">
+    document.addEventListener('DOMContentLoaded', () => {
+        const form   = document.getElementById('signin-form');
+        const email  = document.getElementById('email');
+        const pass   = document.getElementById('password');
+        const remember = document.getElementById('remember-me');
+        const btn    = document.getElementById('signin-submit');
+
+        function fmtRemain(secs){ const m=Math.floor(secs/60),s=secs%60; return `${m}m ${String(s).padStart(2,'0')}s`; }
+        async function postForm(url, payload){
+            const res = await fetch(url, {
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                credentials:'same-origin',
+                body:new URLSearchParams(payload)
             });
-            const score = Object.values(checks).filter(Boolean).length;
-            strengthBar.className = 'strength-bar h-2 rounded-full';
-            switch(score) {
-                case 0:
-                case 1:
-                    strengthBar.classList.add('strength-weak');
-                    strengthText.textContent = 'Weak';
-                    strengthText.style.color = '#ef4444';
-                    break;
-                case 2:
-                    strengthBar.classList.add('strength-fair');
-                    strengthText.textContent = 'Fair';
-                    strengthText.style.color = '#f59e0b';
-                    break;
-                case 3:
-                    strengthBar.classList.add('strength-good');
-                    strengthText.textContent = 'Good';
-                    strengthText.style.color = '#10b981';
-                    break;
-                case 4:
-                    strengthBar.classList.add('strength-strong');
-                    strengthText.textContent = 'Strong';
-                    strengthText.style.color = 'var(--teal)';
-                    break;
-            }
-            return score === 4;
+            let json={}; try{ json = await res.json(); }catch(_){}
+            return {res,json};
         }
-        function checkPasswordMatch() {
-            const password = newPasswordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-            if (confirmPassword && password !== confirmPassword) {
-                passwordMatchDiv.classList.remove('hidden');
-                return false;
-            } else {
-                passwordMatchDiv.classList.add('hidden');
-                return true;
-            }
+        function setLoading(on){
+            if(!btn) return;
+            if(on){ btn.dataset._html = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i>Signing in...'; }
+            else  { btn.disabled = false; if(btn.dataset._html) btn.innerHTML = btn.dataset._html; }
         }
-        function updateSubmitButton() {
-            const isStrongPassword = checkPasswordStrength(newPasswordInput.value);
-            const passwordsMatch = checkPasswordMatch();
-            if (isStrongPassword && passwordsMatch && confirmPasswordInput.value) {
-                resetSubmitBtn.disabled = false;
-                resetSubmitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                resetSubmitBtn.disabled = true;
-                resetSubmitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        }
-        if (newPasswordInput) {
-            newPasswordInput.addEventListener('input', updateSubmitButton);
-        }
-        if (confirmPasswordInput) {
-            confirmPasswordInput.addEventListener('input', updateSubmitButton);
-        }
-    });
-</script>
-<script id="form-submissions">
-    document.addEventListener('DOMContentLoaded', function() {
-        const signinForm = document.getElementById('signin-form');
-        const forgotPasswordForm = document.getElementById('forgot-password-form');
-        const resetPasswordForm = document.getElementById('reset-password-form');
-        const emailInput = document.getElementById('email');
-        const rememberMeCheckbox = document.getElementById('remember-me');
-        function loadSavedEmail() {
-            const savedEmail = localStorage.getItem('rememberedEmail');
-            if (savedEmail) {
-                emailInput.value = savedEmail;
-                rememberMeCheckbox.checked = true;
-                emailInput.parentElement.classList.add('input-focused');
-            }
-        }
-        loadSavedEmail();
-        const successMessage = document.getElementById('success-message');
-        const googleSigninBtn = document.getElementById('google-signin');
-        const googleSigninContent = document.getElementById('google-signin-content');
-        const googleSigninLoading = document.getElementById('google-signin-loading');
-        const googleSigninError = document.getElementById('google-signin-error');
-        function showForm(formToShow) {
-            [signinForm, forgotPasswordForm, resetPasswordForm, successMessage].forEach(form => {
-                form.classList.add('hidden');
-            });
-            formToShow.classList.remove('hidden');
-        }
-        signinForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            if (rememberMeCheckbox.checked) {
-                localStorage.setItem('rememberedEmail', email);
-            } else {
-                localStorage.removeItem('rememberedEmail');
-            }
-            console.log('Sign in attempt:', { email, password: '***' });
-            const successMessage = document.createElement('div');
-            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2';
-            successMessage.innerHTML = `
-  <i class="ri-checkbox-circle-line"></i>
-  <span>Successfully signed in!</span>
-`;
-            document.body.appendChild(successMessage);
-            setTimeout(() => successMessage.remove(), 3000);
-        });
-        forgotPasswordForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const emailInput = document.getElementById('reset-email');
-            const resetButton = document.getElementById('reset-link-button');
-            const buttonText = document.getElementById('reset-button-text');
-            const buttonSpinner = document.getElementById('reset-button-spinner');
-            if (!emailInput.value) {
-                emailInput.classList.add('border-red-500');
-                emailInput.parentElement.insertAdjacentHTML('afterend',
-                    '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Please enter your email address</div>');
-                return;
-            }
-            if (!emailInput.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-                emailInput.classList.add('border-red-500');
-                emailInput.parentElement.insertAdjacentHTML('afterend',
-                    '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Please enter a valid email address</div>');
-                return;
-            }
-            const errorMessage = emailInput.parentElement.nextElementSibling;
-            if (errorMessage && errorMessage.classList.contains('text-red-500')) {
-                errorMessage.remove();
-            }
-            emailInput.classList.remove('border-red-500');
-            resetButton.disabled = true;
-            resetButton.classList.add('opacity-70');
-            buttonText.textContent = 'Sending...';
-            buttonSpinner.classList.remove('hidden');
-            setTimeout(() => {
-                if (Math.random() > 0.5) {
-                    resetButton.disabled = false;
-                    resetButton.classList.remove('opacity-70');
-                    buttonText.textContent = 'Send Reset Link';
-                    buttonSpinner.classList.add('hidden');
-                    showForm(successMessage);
-                } else {
-                    resetButton.disabled = false;
-                    resetButton.classList.remove('opacity-70');
-                    buttonText.textContent = 'Send Reset Link';
-                    buttonSpinner.classList.add('hidden');
-                    emailInput.classList.add('border-red-500');
-                    emailInput.parentElement.insertAdjacentHTML('afterend',
-                        '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Email address not found</div>');
-                }
-            }, 2000);
-        });
-        resetPasswordForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newPassword = document.getElementById('new-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            if (newPassword === confirmPassword) {
-                console.log('Password reset successful');
-                alert('Password has been reset successfully!');
-                showForm(signinForm);
-            }
-        });
-        function initGoogleAuth() {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    if (Math.random() > 0.3) {
-                        resolve({ email: 'user@example.com', name: 'Demo User' });
-                    } else {
-                        reject(new Error('Failed to authenticate with Google'));
+
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const eVal = (email?.value || '').trim();
+                const pVal = (pass?.value || '');
+                if (!eVal || !pVal) return;
+
+                if (remember?.checked) localStorage.setItem('rememberedEmail', eVal);
+                else localStorage.removeItem('rememberedEmail');
+
+                setLoading(true);
+                try {
+                    const {res, json} = await postForm('/matchymatchy/api/login.php', { email: eVal, password: pVal });
+                    if (res.ok && json.ok) { location.href = json.redirect || '/matchymatchy/HTML/index.html'; return; }
+
+                    if (res.status === 404 && json.error === 'no_account') {
+                        alert('No account found for this email. Please sign up.');
+                        location.href = '/matchymatchy/HTML/signup.html';
+                        return;
                     }
-                }, 2000);
+                    if (res.status === 429 && json.error === 'locked') {
+                        alert(`Too many attempts. Try again in ${fmtRemain(Number(json.lock_remaining_sec||0))}.`);
+                        return;
+                    }
+                    alert(json.message || 'Incorrect email or password.');
+                } catch {
+                    alert('Network error. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            // restore remembered
+            const saved = localStorage.getItem('rememberedEmail');
+            if (saved && email) {
+                email.value = saved;
+                email.parentElement?.classList.add('input-focused');
+                if (remember) remember.checked = true;
+            }
+        }
+    });
+</script>
+
+<script id="forgot-send-link">
+    document.addEventListener('DOMContentLoaded', () => {
+        const block   = document.getElementById('forgot-password-form');
+        const btn     = document.getElementById('reset-link-button');
+        const email   = document.getElementById('reset-email');
+        const txt     = document.getElementById('reset-button-text');
+        const spin    = document.getElementById('reset-button-spinner');
+        const success = document.getElementById('success-message');
+
+        async function postForm(url, payload){
+            const res = await fetch(url, {
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                credentials:'same-origin',
+                body:new URLSearchParams(payload)
+            });
+            let json={}; try{ json = await res.json(); }catch(_){}
+            return {res,json};
+        }
+
+        if (btn && email && block) {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const val = (email.value || '').trim();
+                if (!val) { email.classList.add('border-red-500'); return; }
+                email.classList.remove('border-red-500');
+
+                btn.disabled = true;
+                txt.textContent = 'Sending...';
+                spin.classList.remove('hidden');
+
+                try {
+                    const {res, json} = await postForm('/matchymatchy/api/request-password-reset.php', { email: val });
+
+                    if (res.status === 404 && json.error === 'no_account') {
+                        alert('No account found for this email. Please sign up.');
+                        location.href = '/matchymatchy/HTML/signup.html';
+                        return;
+                    }
+
+                    // success or neutral -> show confirmation
+                    block.classList.add('hidden');
+                    success?.classList.remove('hidden');
+                } catch {
+                    alert('Something went wrong. Please try again.');
+                } finally {
+                    btn.disabled = false;
+                    txt.textContent = 'Send Reset Link';
+                    spin.classList.add('hidden');
+                }
             });
         }
-        function showGoogleError(message) {
-            googleSigninError.querySelector('span').textContent = message;
-            googleSigninError.classList.remove('hidden');
-            setTimeout(() => {
-                googleSigninError.classList.add('hidden');
-            }, 5000);
+    });
+</script>
+
+<script id="inline-reset-flow">
+    document.addEventListener('DOMContentLoaded', function () {
+        const qs = new URLSearchParams(location.search);
+        const token = qs.get('token');
+
+        const resetBlock = document.getElementById('reset-password-form');
+        const signinForm = document.getElementById('signin-form');
+        const forgotForm = document.getElementById('forgot-password-form');
+
+        const p1  = document.getElementById('new-password');
+        const p2  = document.getElementById('confirm-password');
+        const btn = document.getElementById('reset-submit');
+
+        if (!resetBlock || !p1 || !p2 || !btn) return;
+
+        // Show reset UI if token present
+        if (token) {
+            resetBlock.classList.remove('hidden');
+            signinForm?.classList.add('hidden');
+            forgotForm?.classList.add('hidden');
         }
-        function setGoogleButtonState(isLoading) {
-            googleSigninBtn.disabled = isLoading;
-            if (isLoading) {
-                googleSigninContent.classList.add('hidden');
-                googleSigninLoading.classList.remove('hidden');
-            } else {
-                googleSigninContent.classList.remove('hidden');
-                googleSigninLoading.classList.add('hidden');
+
+        // Strength + match
+        const bar   = document.getElementById('strength-bar');
+        const label = document.getElementById('strength-text');
+        const reqLen = document.querySelector('#req-length i');
+        const reqUp  = document.querySelector('#req-uppercase i');
+        const reqLo  = document.querySelector('#req-lowercase i');
+        const reqNum = document.querySelector('#req-number i');
+        const matchRow = document.getElementById('password-match');
+
+        function update() {
+            const v1 = p1.value, v2 = p2.value;
+            const checks = [ v1.length>=8, /[A-Z]/.test(v1), /[a-z]/.test(v1), /\d/.test(v1) ];
+            const score = checks.filter(Boolean).length;
+
+            if (bar && label) {
+                bar.className = 'strength-bar h-2 rounded-full';
+                if (score <= 1) { bar.classList.add('strength-weak');  label.textContent='Weak'; }
+                else if (score === 2) { bar.classList.add('strength-fair'); label.textContent='Fair'; }
+                else if (score === 3) { bar.classList.add('strength-good'); label.textContent='Good'; }
+                else { bar.classList.add('strength-strong'); label.textContent='Strong'; }
             }
+            if (reqLen) reqLen.className = checks[0] ? 'ri-check-circle-line text-green-500' : 'ri-close-circle-line text-red-500';
+            if (reqUp)  reqUp.className  = checks[1] ? 'ri-check-circle-line text-green-500' : 'ri-close-circle-line text-red-500';
+            if (reqLo)  reqLo.className  = checks[2] ? 'ri-check-circle-line text-green-500' : 'ri-close-circle-line text-red-500';
+            if (reqNum) reqNum.className = checks[3] ? 'ri-check-circle-line text-green-500' : 'ri-close-circle-line text-red-500';
+
+            const match = v1.length>0 && v1===v2;
+            matchRow?.classList.toggle('hidden', match);
+
+            const ok = !!token && score===4 && match;
+            btn.disabled = !ok;
+            btn.classList.toggle('opacity-50', !ok);
+            btn.classList.toggle('cursor-not-allowed', !ok);
         }
-        googleSigninBtn.addEventListener('click', async function() {
-            try {
-                setGoogleButtonState(true);
-                googleSigninError.classList.add('hidden');
-                const userData = await initGoogleAuth();
-                console.log('Google Sign-In successful:', userData);
-                window.location.href = '/dashboard';
-            } catch (error) {
-                console.error('Google Sign-In failed:', error);
-                showGoogleError(error.message || 'Authentication failed. Please try again.');
-                setGoogleButtonState(false);
-            }
+        ['input','change','keyup','blur'].forEach(ev => { p1.addEventListener(ev, update); p2.addEventListener(ev, update); });
+        update();
+
+        // Submit via temporary POST form so browser follows server redirect
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (btn.disabled || !token) return;
+
+            btn.disabled = true;
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i>Saving...';
+
+            const f = document.createElement('form');
+            f.method = 'POST';
+            f.action = '/matchymatchy/PHP/reset-password.php';
+
+            const t  = document.createElement('input');
+            t.type='hidden'; t.name='token'; t.value=token;
+
+            const i1 = document.createElement('input');
+            i1.type='hidden'; i1.name='p1'; i1.value=p1.value;
+
+            const i2 = document.createElement('input');
+            i2.type='hidden'; i2.name='p2'; i2.value=p2.value;
+
+            f.appendChild(t); f.appendChild(i1); f.appendChild(i2);
+            document.body.appendChild(f);
+            f.submit();
         });
     });
 </script>
 </body>
+
+
 </html>

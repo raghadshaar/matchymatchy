@@ -78,3 +78,8 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     locked_until    DATETIME NULL,
     last_failed_at  TIMESTAMP NULL DEFAULT NULL
     ) ENGINE=InnoDB;
+
+
+ALTER TABLE magic_links
+    MODIFY purpose ENUM('login','welcome','set_password','reset_password')
+    NOT NULL DEFAULT 'set_password';
