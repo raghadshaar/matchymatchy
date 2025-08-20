@@ -83,3 +83,7 @@ CREATE TABLE IF NOT EXISTS login_attempts (
 ALTER TABLE magic_links
     MODIFY purpose ENUM('login','welcome','set_password','reset_password')
     NOT NULL DEFAULT 'set_password';
+
+
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS phone      VARCHAR(30) NULL,ADD COLUMN IF NOT EXISTS notes       TEXT NULL,;
