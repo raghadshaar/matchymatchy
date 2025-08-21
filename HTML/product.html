@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../styles/productStyle.css" />
     <link rel="stylesheet" href="../styles/style.css" />
 
+
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
@@ -135,10 +136,7 @@
                     <div id="size-guide" class="size-guide">
                         <div class="sg-header">
                             <strong>Sizing</strong>
-                            <div class="tabs">
-                                <button class="tab active" data-unit="US">US</button>
-                                <button class="tab" data-unit="Metric">Metric</button>
-                            </div>
+
                         </div>
                         <div class="sg-body"></div>
                     </div>
@@ -157,16 +155,30 @@
         <!-- Reviews (unchanged) -->
         <section class="product-reviews">
             <h2>Customer Reviews</h2>
-            <div class="review-list">
-                <div class="review"><strong>Fatima A.</strong><p>Loved the quality and fast shipping!</p></div>
-                <div class="review"><strong>Sara M.</strong><p>Nice colors and soft material. Will buy again.</p></div>
-            </div>
-            <form class="review-form">
-                <h3>Leave a Comment</h3>
-                <label><textarea placeholder="Write your review..."></textarea></label>
-                <button type="submit">Submit</button>
-            </form>
+            <div id="reviewsList" class="reviews-list"></div>
+            <button id="loadMoreReviews" style="margin: 20px auto; display: block;">Load More</button>
         </section>
+        <div class="add-review-box" style="margin-top: 30px">
+            <h3>Leave a Review</h3>
+
+            <div style="margin:10px 0">
+                <label for="review-rating">Rating (1 to 5):</label>
+                <select id="review-rating" required style="margin-left:10px;">
+                    <option value="">Select</option>
+                    <option value="1">★☆☆☆☆</option>
+                    <option value="2">★★☆☆☆</option>
+                    <option value="3">★★★☆☆</option>
+                    <option value="4">★★★★☆</option>
+                    <option value="5">★★★★★</option>
+                </select>
+            </div>
+
+            <textarea id="reviewComment" placeholder="Write your comment..." rows="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;"></textarea>
+            <br>
+            <button type="button" id="submitReviewBtn" style="background:#008080;color:#fff;padding:10px 16px;border:none;border-radius:8px">Submit Review</button>
+        </div>
+
+
     </div>
 </section>
 
@@ -184,7 +196,7 @@
         .then(data => {
             document.getElementById('foot').innerHTML = data;
         });
-    
+
 
     // like & card demo handlers (keep existing if you already have)
     document.addEventListener('DOMContentLoaded',()=>{
@@ -200,46 +212,140 @@
     // ===== PRODUCT LOGIC =====
     (function(){
         const $=s=>document.querySelector(s);
-
+        let reviewOffset = 0;
+        const reviewLimit = 5;
         function starsHTML(avg){const n=Math.round(+avg||0);return Array.from({length:5},(_,i)=>`<span class="star ${i<n?'filled':''}">★</span>`).join('')}
+        async function loadReviews(productId) {
+            const res = await fetch(`/matchymatchy/backend/reviews.php?product_id=${productId}&limit=${reviewLimit}&offset=${reviewOffset}`);
+            const json = await res.json();
+            if (!json.ok) return;
+
+            const list = document.getElementById('reviewsList');
+            if (!list) return;
+
+            if (json.reviews.length === 0 && reviewOffset === 0) {
+                list.innerHTML = '<p>No reviews yet.</p>';
+                document.getElementById('loadMoreReviews').style.display = 'none';
+                return;
+            }
+
+            list.innerHTML += json.reviews.map(r => {
+                const name = `${r.first_name || 'Anonymous'} ${r.last_name?.[0] || ''}.`;
+                const email = r.email || '';
+                const date = new Date(r.created_at).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                });
+                const stars = '★★★★★☆☆☆☆☆'.slice(5 - r.rating, 10 - r.rating);
+                const avatar = r.avatar || '../images/avatar.png';
+
+                return `
+            <div class="review" style="margin-bottom:20px">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <img src="${avatar}" width="40" height="40" style="border-radius:50%;" alt="User">
+                    <div>
+                        <strong>${name}</strong>
+                        <div style="font-size: 13px; color: #888;">${date} • ${email}</div>
+                    </div>
+                </div>
+                <div style="margin: 6px 0; font-size: 18px; color: gold;">${stars.slice(0, r.rating)}</div>
+                <div style="font-size: 15px; color: #333;">${r.comment}</div>
+            </div>
+        `;
+            }).join('');
+
+            // hide button if no more
+            if (json.reviews.length < reviewLimit) {
+                document.getElementById('loadMoreReviews').style.display = 'none';
+            }
+
+            reviewOffset += reviewLimit;
+        }
+
+// bind button
+
 
         function renderBreadcrumb(p) {
             const el = document.getElementById('breadcrumb');
             if (!el) return;
 
+            // لو فيه breadcrumbs جاية من الـ API
+            if (Array.isArray(p.breadcrumbs)) {
+                const html = p.breadcrumbs.map((item, i) => {
+                    const isLast = i === p.breadcrumbs.length - 1;
+                    const url = item.url;
+
+                    if (!isLast && url) {
+                        try {
+                            const u = new URL(url, window.location.href);
+                            const cat = u.searchParams.get("cat");
+                            const sub = u.searchParams.get("sub");
+                            let slug = sub || cat;
+
+                            if (slug) {
+                                return `<span class="breadcrumb-link" onclick="location.href='category.html?slug=${encodeURIComponent(slug)}'">${item.name}</span>`;
+                            }
+                        } catch (e) {
+                            // إذا الرابط لا يمكن تحليله (مثلاً slug جاهز)
+                        }
+
+                        return `<span class="breadcrumb-link" onclick="location.href='${url}'">${item.name}</span>`;
+                    }
+
+                    // العنصر الأخير (اسم المنتج)
+                    return `<span class="text-gray-700 font-medium">${item.name}</span>`;
+                }).join(' / ');
+                el.innerHTML = html;
+                return;
+            }
+
+            // fallback بسيط لو ما فيه breadcrumbs
             const parts = [
                 { name: 'Home', url: 'index.html' },
-                { name: p.category, url: `category.html?cat=${encodeURIComponent(p.category)}` },
-                { name: p.subcategory, url: `category.html?cat=${encodeURIComponent(p.category)}&sub=${encodeURIComponent(p.subcategory)}` },
-                { name: p.name } // المنتج الحالي بدون رابط
-            ];
+                p.category && p.category_slug ? { name: p.category, url: `category.html?slug=${p.category_slug}` } : null,
+                p.subcategory && p.subcategory_slug ? { name: p.subcategory, url: `category.html?slug=${p.subcategory_slug}` } : null,
+                { name: p.name }
+            ].filter(Boolean);
 
-            el.innerHTML = parts.map((part,i) => {
-                if (part.url && i < parts.length-1) {
-                    return `<span class="breadcrumb-link" onclick="location.href='${part.url}'">${part.name}</span>`;
-                } else {
-                    return `<span class="text-gray-700 font-medium">${part.name}</span>`;
-                }
+            el.innerHTML = parts.map((item, i) => {
+                const isLast = i === parts.length - 1;
+                return isLast || !item.url
+                    ? `<span class="text-gray-700 font-medium">${item.name}</span>`
+                    : `<span class="breadcrumb-link" onclick="location.href='${item.url}'">${item.name}</span>`;
             }).join(' / ');
         }
 
-        // Size guide data – Toddler example
-        const SIZE_GUIDES={
-            toddler:{
-                US:[
-                    {size:'2T',height:'88 – 93cm',weight:'13.2 – 14.1kg'},
-                    {size:'3T',height:'93 – 99cm',weight:'14.1 – 15kg'},
-                    {size:'4T',height:'99 – 105cm',weight:'15 – 17kg'},
-                    {size:'5T',height:'105 – 112cm',weight:'17 – 19.1kg'},
-                ],
-                Metric:[
-                    {size:'2T',height:'88 – 93 cm',weight:'13.2 – 14.1 kg'},
-                    {size:'3T',height:'93 – 99 cm',weight:'14.1 – 15 kg'},
-                    {size:'4T',height:'99 – 105 cm',weight:'15 – 17 kg'},
-                    {size:'5T',height:'105 – 112 cm',weight:'17 – 19.1 kg'},
+        const SIZE_GUIDES = {
+            baby: {
+                Metric: [
+                    { size: 'Newborn', height: '45–50 cm', weight: '2–3 kg' },
+                    { size: '0-3M', height: '50–60 cm', weight: '3–5 kg' },
+                    { size: '3-6M', height: '60–66 cm', weight: '5–7 kg' },
+                    { size: '6-9M', height: '66–72 cm', weight: '7–8.5 kg' },
+                    { size: '9-12M', height: '72–78 cm', weight: '8.5–10 kg' },
+                    { size: '12-18M', height: '78–84 cm', weight: '10–11.5 kg' }
+                ]
+            },
+            toddler: {
+                Metric: [
+                    { size: '2T', height: '88–93 cm', weight: '13.2–14.1 kg' },
+                    { size: '3T', height: '93–99 cm', weight: '14.1–15 kg' },
+                    { size: '4T', height: '99–105 cm', weight: '15–17 kg' },
+                    { size: '5T', height: '105–112 cm', weight: '17–19.1 kg' }
+                ]
+            },
+            kids: {
+                Metric: [
+                    { size: '5', height: '105–112 cm', weight: '18–20 kg' },
+                    { size: '6', height: '112–118 cm', weight: '20–22 kg' },
+                    { size: '7', height: '118–124 cm', weight: '22–25 kg' },
+                    { size: '8', height: '124–130 cm', weight: '25–28 kg' },
+                    { size: '10', height: '130–140 cm', weight: '28–34 kg' },
+                    { size: '12', height: '140–150 cm', weight: '34–40 kg' },
+                    { size: '14', height: '150–160 cm', weight: '40–48 kg' }
                 ]
             }
         };
+
 
         function buildSizeTable(target, group='toddler', unit='US'){
             const data=(SIZE_GUIDES[group]||SIZE_GUIDES.toddler)[unit];
@@ -249,97 +355,178 @@
         </table>`;
         }
 
-        async function init(){
-            const id=Number(new URLSearchParams(location.search).get('id')||0);
-            if(!id){location.href='category.html';return;}
+        async function init() {
+            const id = Number(new URLSearchParams(location.search).get('id') || 0);
+            if (!id) {
+                location.href = 'category.html';
+                return;
+            }
 
-            const res=await fetch(`/matchymatchy/backend/products.php?id=${id}`,{headers:{Accept:'application/json'}});
-            if(!res.ok){alert('Failed to load product');return}
-            const j=await res.json(); if(!j.ok||!j.data){alert('Product not found');return}
-            const p=j.data;
+            const res = await fetch(`/matchymatchy/backend/products.php?id=${id}`, {headers: {Accept: 'application/json'}});
+            if (!res.ok) {
+                alert('Failed to load product');
+                return
+            }
+            const j = await res.json();
+            if (!j.ok || !j.data) {
+                alert('Product not found');
+                return
+            }
+            const p = j.data;
 
             // breadcrumb (category/subcategory may be missing -> fallback handled)
             renderBreadcrumb(p);
 
             // title + prices
-            document.title=`${p.name} • Matchy Matchy`; $('.product-title').textContent=p.name;
-            $('.new-price').textContent=`₪${(+p.price).toFixed(2)}`;
-            const oldEl=$('.old-price'), discEl=$('.discount');
-            if(p.old_price){ oldEl.style.display=''; oldEl.textContent=`₪${(+p.old_price).toFixed(2)}`; discEl.style.display=''; }
-            else { oldEl.style.display='none'; discEl.style.display='none'; }
+            document.title = `${p.name} • Matchy Matchy`;
+            $('.product-title').textContent = p.name;
+            $('.new-price').textContent = `₪${(+p.price).toFixed(2)}`;
+            const oldEl = $('.old-price'), discEl = $('.discount');
+            if (p.old_price) {
+                oldEl.style.display = '';
+                oldEl.textContent = `₪${(+p.old_price).toFixed(2)}`;
+                discEl.style.display = '';
+            } else {
+                oldEl.style.display = 'none';
+                discEl.style.display = 'none';
+            }
 
             // rating
-            const rEl=$('.rating');
-            rEl.innerHTML=`<span class="rating-stars">${starsHTML(p.rating_avg)}</span>
+            const rEl = $('.rating');
+            rEl.innerHTML = `<span class="rating-stars">${starsHTML(p.rating_avg)}</span>
                      <span style="margin-inline:8px;font-weight:600">${p.rating_avg?.toFixed?.(1) ?? '—'}</span>
-                     <span style="color:#666">(${p.rating_count||0} reviews)</span>`;
+                     <span style="color:#666">(${p.rating_count || 0} reviews)</span>`;
 
             // images
-            const mainImg=$('#main-product-image'), thumbs=$('.image-thumbnails');
-            const imgs=(Array.isArray(p.images)&&p.images.length)?p.images:[p.image_main_url];
-            mainImg.src=imgs[0]||'../images/placeholder.jpg';
-            thumbs.innerHTML=imgs.map((src,i)=>`<div class="image-thumbnail ${i?'':'active'}" onclick="changeImage('${src}',this)"><img src="${src}" alt="Image ${i+1}"></div>`).join('');
+            const mainImg = $('#main-product-image'), thumbs = $('.image-thumbnails');
+            const imgs = (Array.isArray(p.images) && p.images.length) ? p.images : [p.image_main_url];
+            mainImg.src = imgs[0] || '../images/placeholder.jpg';
+            thumbs.innerHTML = imgs.map((src, i) => `<div class="image-thumbnail ${i ? '' : 'active'}" onclick="changeImage('${src}',this)"><img src="${src}" alt="Image ${i + 1}"></div>`).join('');
 
             // sizes
-            const sizesWrap=$('.size-options'); let selected=null;
-            if(Array.isArray(p.sizes)&&p.sizes.length){
-                sizesWrap.innerHTML=p.sizes.map(s=>`<button type="button" data-size="${s}">${s}</button>`).join('');
-                sizesWrap.addEventListener('click',e=>{
-                    const b=e.target.closest('button[data-size]'); if(!b) return;
-                    selected=b.dataset.size; sizesWrap.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));
+            const sizesWrap = $('.size-options');
+            let selected = null;
+            if (Array.isArray(p.sizes) && p.sizes.length) {
+                sizesWrap.innerHTML = p.sizes.map(s => `<button type="button" data-size="${s}">${s}</button>`).join('');
+                sizesWrap.addEventListener('click', e => {
+                    const b = e.target.closest('button[data-size]');
+                    if (!b) return;
+                    selected = b.dataset.size;
+                    sizesWrap.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
                 });
             }
 
             // add to cart
-            const addBtn=document.querySelector('.add-to-cart');
-            addBtn.addEventListener('click',()=>{
-                const cart=getCart();
-                const i=cart.findIndex(x=>x.id===p.id && (x.size||null)===(selected||null));
-                if(i>=0) cart[i].quantity+=1;
-                else cart.push({id:p.id,name:p.name,price:+p.price,image:p.image_main_url||imgs[0],size:selected||null,quantity:1});
-                setCart(cart); addBtn.textContent='Added ✓'; setTimeout(()=>addBtn.textContent='Add to Cart',1100);
-            });
+
 
             // transform features -> details box from description
-            const pf=document.querySelector('.product-features');
-            if(pf){
-                const raw=String(p.description||'').trim();
-                let cleaned=raw.replace(/^About This Item\s*/i,'').replace(/\n?Features\s*/i,'\n__FEATURES__\n').replace(/\r/g,'').trim();
-                let styleLine=''; cleaned=cleaned.replace(/(^|\n)\s*Style\s*#\s*([^\n]+)\s*/i,(m,_a,v)=>{styleLine=v.trim();return '\n';});
-                const parts=cleaned.split('__FEATURES__'), about=(parts[0]||'').trim(), feats=(parts[1]||'').trim();
-                const paras=about.split(/\n{2,}|(?<=\.)\s+(?=[A-Z(])/g).map(s=>s.trim()).filter(Boolean);
-                const features=feats.split(/[\n•\-–]+/g).map(s=>s.trim()).filter(s=>s.length>2);
+            const pf = document.querySelector('.product-features');
+            if (pf) {
+                const raw = String(p.description || '').trim();
+                let cleaned = raw.replace(/^About This Item\s*/i, '').replace(/\n?Features\s*/i, '\n__FEATURES__\n').replace(/\r/g, '').trim();
+                let styleLine = '';
+                cleaned = cleaned.replace(/(^|\n)\s*Style\s*#\s*([^\n]+)\s*/i, (m, _a, v) => {
+                    styleLine = v.trim();
+                    return '\n';
+                });
+                const parts = cleaned.split('__FEATURES__'), about = (parts[0] || '').trim(),
+                    feats = (parts[1] || '').trim();
+                const paras = about.split(/\n{2,}|(?<=\.)\s+(?=[A-Z(])/g).map(s => s.trim()).filter(Boolean);
+                const features = feats.split(/[\n•\-–]+/g).map(s => s.trim()).filter(s => s.length > 2);
 
-                pf.innerHTML=`<h2>Details</h2>
+                pf.innerHTML = `<h2>Details</h2>
           <div class="details-box">
             <h3>About This Item</h3>
-            ${paras.map(p=>`<p>${p}</p>`).join('')}
-            ${styleLine?`<div class="details-meta"><span class="label">Style #</span><span>${styleLine}</span></div>`:''}
-            ${features.length?`<ul class="features-grid">${features.map(li=>`<li>${li}</li>`).join('')}</ul>`:''}
+            ${paras.map(p => `<p>${p}</p>`).join('')}
+            ${styleLine ? `<div class="details-meta"><span class="label">Style #</span><span>${styleLine}</span></div>` : ''}
+            ${features.length ? `<ul class="features-grid">${features.map(li => `<li>${li}</li>`).join('')}</ul>` : ''}
           </div>`;
             }
 
             // ===== Size Guide interactions =====
-            const sg=document.getElementById('size-guide');
-            const sgBody=sg.querySelector('.sg-body');
-            const toggle=document.getElementById('size-guide-toggle');
-            const tabs=sg.querySelectorAll('.tab');
+            const sg = document.getElementById('size-guide');
+            const sgBody = sg.querySelector('.sg-body');
+            const toggle = document.getElementById('size-guide-toggle');
+            const tabs = sg.querySelectorAll('.tab');
 
             // pick group automatically (very simple guess by name, adjust as needed)
-            const group = /toddler/i.test(p.name) || /toddler/i.test(p.category||'') ? 'toddler' : 'toddler';
+            const group = (p.category_slug || 'toddler').toLowerCase();
 
             // initial table
-            buildSizeTable(sgBody, group, 'US');
+            buildSizeTable(sgBody, group, 'Metric');
 
-            toggle.addEventListener('click',()=> sg.classList.toggle('open'));
-            tabs.forEach(tb=>{
-                tb.addEventListener('click',()=>{
-                    tabs.forEach(x=>x.classList.remove('active')); tb.classList.add('active');
-                    buildSizeTable(sgBody, group, tb.dataset.unit);
+
+            toggle.addEventListener('click', () => sg.classList.toggle('open'));
+            loadReviews(p.id);
+
+
+            document.getElementById('loadMoreReviews').addEventListener('click', () => {
+                const id = Number(new URLSearchParams(location.search).get('id') || 0);
+                if (id) loadReviews(id);
+            });
+            document.getElementById('submitReviewBtn').addEventListener('click', async () => {
+                const rating = document.getElementById('review-rating').value;
+                const comment = document.getElementById('reviewComment').value.trim();
+                const productId = Number(new URLSearchParams(location.search).get('id') || 0);
+                const userId = localStorage.getItem('user_id');  // يفترض أنك تخزن user_id بعد تسجيل الدخول
+
+                if (!userId) {
+                    alert("You must be logged in to submit a review.");
+                    return;
+                }
+
+                if (!rating || comment === '') {
+                    alert("Please provide both rating and comment.");
+                    return;
+                }
+
+                const res = await fetch('/matchymatchy/backend/review_submit.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({product_id: productId, rating, comment, user_id: userId})
                 });
+
+                const result = await res.json();
+                if (result.ok) {
+                    alert("Thank you for your review!");
+                    location.reload();
+                } else {
+                    alert("Error: " + (result.error || "Unable to submit review."));
+                }
+            });
+            const addBtn = document.querySelector('.add-to-cart');
+            addBtn.addEventListener('click', () => {
+                const userId = localStorage.getItem('user_id');
+                if (!userId) {
+                    alert("Please log in to add to cart.");
+                    return;
+                }
+
+                if (!selected) {
+                    alert("Please select a size before adding to cart.");
+                    return;
+                }
+
+                const cart = getCart();
+                const i = cart.findIndex(x => x.id === p.id && (x.size || null) === (selected || null));
+                if (i >= 0) {
+                    cart[i].quantity += 1;
+                } else {
+                    cart.push({
+                        id: p.id,
+                        name: p.name,
+                        price: +p.price,
+                        image: p.image_main_url || imgs[0],
+                        size: selected || null,
+                        quantity: 1
+                    });
+                }
+
+                setCart(cart);
+                addBtn.textContent = 'Added ✓';
+                setTimeout(() => addBtn.textContent = 'Add to Cart', 1100);
             });
         }
-
         init();
     })();
 </script>
