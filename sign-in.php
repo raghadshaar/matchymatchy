@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
     <style>
-        :where([class^="ri-"])::before { content: "\f3c2"; }
+
         :root {
     --baby: #F9F8F3;
             --jet: #383838;
@@ -106,7 +106,16 @@
             }
     </script>
 </head>
+
+
 <body style="background-color: var(--baby);" class="min-h-screen pattern-bg">
+<?php if (!empty($_GET['notice'])): ?>
+    <div class="mb-4 rounded-lg border px-4 py-3 flex items-center gap-2"
+         style="border-color:#E4CFC3;background:#F9F8F3;color:red;">
+        <i class="ri-information-line"></i>
+        <span><?= htmlspecialchars($_GET['notice'], ENT_QUOTES, 'UTF-8') ?></span>
+    </div>
+<?php endif; ?>
 <div class="min-h-screen flex flex-col">
     <header class="py-6">
         <div class="container mx-auto px-4">
@@ -123,21 +132,23 @@
                     <h2 class="text-2xl font-bold mb-2" style="color: var(--jet);">Welcome Back</h2>
                     <p class="text-sm" style="color: var(--umber);">Sign in to your account to continue shopping</p>
                 </div>
-                <div id="signin-form" class="space-y-6">
+                <form id="signin-form" method="POST" action="/matchymatchy/api/login.php" class="space-y-6">
                     <div class="relative">
-                        <input type="email" id="email" class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors peer" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
+                        <input type="email" id="email" name="email" class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors peer" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
                         <label for="email" class="floating-label absolute left-4 top-3 text-sm pointer-events-none" style="color: var(--umber);">Email Address</label>
                         <div class="absolute right-3 top-3 w-6 h-6 flex items-center justify-center">
                             <i class="ri-mail-line text-lg" style="color: var(--umber);"></i>
                         </div>
                     </div>
+
                     <div class="relative">
-                        <input type="password" id="password" class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
+                        <input type="password" id="password" name="password" class="w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none focus:border-primary transition-colors" style="border-color: var(--pink); background-color: var(--baby);" placeholder=" " required>
                         <label for="password" class="floating-label absolute left-4 top-3 text-sm pointer-events-none" style="color: var(--umber);">Password</label>
                         <button type="button" id="toggle-password" class="absolute right-3 top-3 w-6 h-6 flex items-center justify-center">
                             <i class="ri-eye-line text-lg" style="color: var(--umber);"></i>
                         </button>
                     </div>
+
                     <div class="flex items-center justify-between">
                         <label class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" id="remember-me" class="custom-checkbox">
@@ -145,10 +156,13 @@
                         </label>
                         <button type="button" id="forgot-password-btn" class="text-sm hover:underline" style="color: var(--teal);">Forgot Password?</button>
                     </div>
-                    <button type="submit" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap" style="background-color: var(--teal);">
-                Sign In
-            </button>
-                    <div class="relative my-6">
+
+                    <button type="submit" id="signin-submit" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap" style="background-color: var(--teal);">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="relative my-6">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t" style="border-color: var(--pink);"></div>
                         </div>
@@ -156,20 +170,13 @@
                             <span class="px-4" style="background-color: var(--white); color: var(--umber);">Or continue with</span>
                         </div>
                     </div>
-                    <button type="button" id="google-signin" class="w-full py-3 rounded-button font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap google-btn">
-                        <div id="google-signin-content" class="flex items-center justify-center space-x-2">
-                            <!-- داخل صفحة sign-in.php (نفس الصفحة اللي في الصورة) -->
-                            <a href="/matchymatchy/google-login.php" class="btn-google">
-                                Continue with Google
-            </a>
+                <a href="/matchymatchy/google-login.php"
+                   class="w-full py-3 rounded-button font-semibold text-white google-btn flex items-center justify-center space-x-2">
+                    <i class="ri-google-fill text-lg"></i>
+                    <span>Continue with Google</span>
+                </a>
 
-                        </div>
-                        <div id="google-signin-loading" class="hidden flex items-center justify-center space-x-2">
-                            <i class="ri-loader-4-line animate-spin text-lg"></i>
-                            <span>Authenticating...</span>
-                        </div>
-                    </button>
-                    <div id="google-signin-error" class="hidden mt-2 text-sm text-red-500 flex items-center justify-center space-x-1">
+                <div id="google-signin-error" class="hidden mt-2 text-sm text-red-500 flex items-center justify-center space-x-1">
                         <i class="ri-error-warning-line"></i>
                         <span></span>
                     </div>
@@ -443,149 +450,226 @@
         }
     });
 </script>
-<script id="form-submissions">
+<!--<script id="form-submissions">-->
+<!--    document.addEventListener('DOMContentLoaded', function() {-->
+<!--        const signinForm = document.getElementById('signin-form');-->
+<!--        const forgotPasswordForm = document.getElementById('forgot-password-form');-->
+<!--        const resetPasswordForm = document.getElementById('reset-password-form');-->
+<!--        const emailInput = document.getElementById('email');-->
+<!--        const rememberMeCheckbox = document.getElementById('remember-me');-->
+<!--        function loadSavedEmail() {-->
+<!--            const savedEmail = localStorage.getItem('rememberedEmail');-->
+<!--            if (savedEmail) {-->
+<!--                emailInput.value = savedEmail;-->
+<!--                rememberMeCheckbox.checked = true;-->
+<!--                emailInput.parentElement.classList.add('input-focused');-->
+<!--            }-->
+<!--        }-->
+<!--        loadSavedEmail();-->
+<!--        const successMessage = document.getElementById('success-message');-->
+<!--        const googleSigninBtn = document.getElementById('google-signin');-->
+<!--        const googleSigninContent = document.getElementById('google-signin-content');-->
+<!--        const googleSigninLoading = document.getElementById('google-signin-loading');-->
+<!--        const googleSigninError = document.getElementById('google-signin-error');-->
+<!--        function showForm(formToShow) {-->
+<!--            [signinForm, forgotPasswordForm, resetPasswordForm, successMessage].forEach(form => {-->
+<!--                form.classList.add('hidden');-->
+<!--            });-->
+<!--            formToShow.classList.remove('hidden');-->
+<!--        }-->
+<!--        signinForm.addEventListener('submit', function(e) {-->
+<!--            e.preventDefault();-->
+<!--            const email = document.getElementById('email').value;-->
+<!--            const password = document.getElementById('password').value;-->
+<!--            if (rememberMeCheckbox.checked) {-->
+<!--                localStorage.setItem('rememberedEmail', email);-->
+<!--            } else {-->
+<!--                localStorage.removeItem('rememberedEmail');-->
+<!--            }-->
+<!--            console.log('Sign in attempt:', { email, password: '***' });-->
+<!--            const successMessage = document.createElement('div');-->
+<!--            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2';-->
+<!--            successMessage.innerHTML = `-->
+<!--  <i class="ri-checkbox-circle-line"></i>-->
+<!--  <span>Successfully signed in!</span>-->
+<!--`;-->
+<!--            document.body.appendChild(successMessage);-->
+<!--            setTimeout(() => successMessage.remove(), 3000);-->
+<!--        });-->
+<!--        forgotPasswordForm.addEventListener('submit', function(e) {-->
+<!--            e.preventDefault();-->
+<!--            const emailInput = document.getElementById('reset-email');-->
+<!--            const resetButton = document.getElementById('reset-link-button');-->
+<!--            const buttonText = document.getElementById('reset-button-text');-->
+<!--            const buttonSpinner = document.getElementById('reset-button-spinner');-->
+<!--            if (!emailInput.value) {-->
+<!--                emailInput.classList.add('border-red-500');-->
+<!--                emailInput.parentElement.insertAdjacentHTML('afterend',-->
+<!--                    '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Please enter your email address</div>');-->
+<!--                return;-->
+<!--            }-->
+<!--            if (!emailInput.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {-->
+<!--                emailInput.classList.add('border-red-500');-->
+<!--                emailInput.parentElement.insertAdjacentHTML('afterend',-->
+<!--                    '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Please enter a valid email address</div>');-->
+<!--                return;-->
+<!--            }-->
+<!--            const errorMessage = emailInput.parentElement.nextElementSibling;-->
+<!--            if (errorMessage && errorMessage.classList.contains('text-red-500')) {-->
+<!--                errorMessage.remove();-->
+<!--            }-->
+<!--            emailInput.classList.remove('border-red-500');-->
+<!--            resetButton.disabled = true;-->
+<!--            resetButton.classList.add('opacity-70');-->
+<!--            buttonText.textContent = 'Sending...';-->
+<!--            buttonSpinner.classList.remove('hidden');-->
+<!--            setTimeout(() => {-->
+<!--                if (Math.random() > 0.5) {-->
+<!--                    resetButton.disabled = false;-->
+<!--                    resetButton.classList.remove('opacity-70');-->
+<!--                    buttonText.textContent = 'Send Reset Link';-->
+<!--                    buttonSpinner.classList.add('hidden');-->
+<!--                    showForm(successMessage);-->
+<!--                } else {-->
+<!--                    resetButton.disabled = false;-->
+<!--                    resetButton.classList.remove('opacity-70');-->
+<!--                    buttonText.textContent = 'Send Reset Link';-->
+<!--                    buttonSpinner.classList.add('hidden');-->
+<!--                    emailInput.classList.add('border-red-500');-->
+<!--                    emailInput.parentElement.insertAdjacentHTML('afterend',-->
+<!--                        '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Email address not found</div>');-->
+<!--                }-->
+<!--            }, 2000);-->
+<!--        });-->
+<!--        resetPasswordForm.addEventListener('submit', function(e) {-->
+<!--            e.preventDefault();-->
+<!--            const newPassword = document.getElementById('new-password').value;-->
+<!--            const confirmPassword = document.getElementById('confirm-password').value;-->
+<!--            if (newPassword === confirmPassword) {-->
+<!--                console.log('Password reset successful');-->
+<!--                alert('Password has been reset successfully!');-->
+<!--                showForm(signinForm);-->
+<!--            }-->
+<!--        });-->
+<!--        function initGoogleAuth() {-->
+<!--            return new Promise((resolve, reject) => {-->
+<!--                setTimeout(() => {-->
+<!--                    if (Math.random() > 0.3) {-->
+<!--                        resolve({ email: 'user@example.com', name: 'Demo User' });-->
+<!--                    } else {-->
+<!--                        reject(new Error('Failed to authenticate with Google'));-->
+<!--                    }-->
+<!--                }, 2000);-->
+<!--            });-->
+<!--        }-->
+<!--        function showGoogleError(message) {-->
+<!--            googleSigninError.querySelector('span').textContent = message;-->
+<!--            googleSigninError.classList.remove('hidden');-->
+<!--            setTimeout(() => {-->
+<!--                googleSigninError.classList.add('hidden');-->
+<!--            }, 5000);-->
+<!--        }-->
+<!--        function setGoogleButtonState(isLoading) {-->
+<!--            googleSigninBtn.disabled = isLoading;-->
+<!--            if (isLoading) {-->
+<!--                googleSigninContent.classList.add('hidden');-->
+<!--                googleSigninLoading.classList.remove('hidden');-->
+<!--            } else {-->
+<!--                googleSigninContent.classList.remove('hidden');-->
+<!--                googleSigninLoading.classList.add('hidden');-->
+<!--            }-->
+<!--        }-->
+<!--        googleSigninBtn.addEventListener('click', async function() {-->
+<!--            try {-->
+<!--                setGoogleButtonState(true);-->
+<!--                googleSigninError.classList.add('hidden');-->
+<!--                const userData = await initGoogleAuth();-->
+<!--                console.log('Google Sign-In successful:', userData);-->
+<!--                window.location.href = '/dashboard';-->
+<!--            } catch (error) {-->
+<!--                console.error('Google Sign-In failed:', error);-->
+<!--                showGoogleError(error.message || 'Authentication failed. Please try again.');-->
+<!--                setGoogleButtonState(false);-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
+
+
+
+<script>
     document.addEventListener('DOMContentLoaded', function() {
-        const signinForm = document.getElementById('signin-form');
-        const forgotPasswordForm = document.getElementById('forgot-password-form');
-        const resetPasswordForm = document.getElementById('reset-password-form');
-        const emailInput = document.getElementById('email');
+        const form = document.getElementById('signin-form');
         const rememberMeCheckbox = document.getElementById('remember-me');
-        function loadSavedEmail() {
-            const savedEmail = localStorage.getItem('rememberedEmail');
-            if (savedEmail) {
-                emailInput.value = savedEmail;
+        const emailInput = document.getElementById('email');
+        const btn = document.getElementById('signin-submit');
+
+        // restore remembered email
+        (function loadSavedEmail(){
+            const saved = localStorage.getItem('rememberedEmail');
+            if (saved) {
+                emailInput.value = saved;
                 rememberMeCheckbox.checked = true;
                 emailInput.parentElement.classList.add('input-focused');
             }
+        })();
+
+        function toast(message, ok=false){
+            const el = document.createElement('div');
+            el.className = `fixed top-4 right-4 ${ok ? 'bg-green-600' : 'bg-red-600'} text-white px-6 py-3 rounded-lg shadow-lg flex items-center z-50`;
+            el.innerHTML = `<i class="ri-${ok?'checkbox-circle':'error-warning'}-line mr-2"></i>${message}`;
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(), 4000);
         }
-        loadSavedEmail();
-        const successMessage = document.getElementById('success-message');
-        const googleSigninBtn = document.getElementById('google-signin');
-        const googleSigninContent = document.getElementById('google-signin-content');
-        const googleSigninLoading = document.getElementById('google-signin-loading');
-        const googleSigninError = document.getElementById('google-signin-error');
-        function showForm(formToShow) {
-            [signinForm, forgotPasswordForm, resetPasswordForm, successMessage].forEach(form => {
-                form.classList.add('hidden');
-            });
-            formToShow.classList.remove('hidden');
-        }
-        signinForm.addEventListener('submit', function(e) {
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = emailInput.value.trim();
             const password = document.getElementById('password').value;
-            if (rememberMeCheckbox.checked) {
-                localStorage.setItem('rememberedEmail', email);
-            } else {
-                localStorage.removeItem('rememberedEmail');
-            }
-            console.log('Sign in attempt:', { email, password: '***' });
-            const successMessage = document.createElement('div');
-            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2';
-            successMessage.innerHTML = `
-  <i class="ri-checkbox-circle-line"></i>
-  <span>Successfully signed in!</span>
-`;
-            document.body.appendChild(successMessage);
-            setTimeout(() => successMessage.remove(), 3000);
-        });
-        forgotPasswordForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const emailInput = document.getElementById('reset-email');
-            const resetButton = document.getElementById('reset-link-button');
-            const buttonText = document.getElementById('reset-button-text');
-            const buttonSpinner = document.getElementById('reset-button-spinner');
-            if (!emailInput.value) {
-                emailInput.classList.add('border-red-500');
-                emailInput.parentElement.insertAdjacentHTML('afterend',
-                    '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Please enter your email address</div>');
-                return;
-            }
-            if (!emailInput.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-                emailInput.classList.add('border-red-500');
-                emailInput.parentElement.insertAdjacentHTML('afterend',
-                    '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Please enter a valid email address</div>');
-                return;
-            }
-            const errorMessage = emailInput.parentElement.nextElementSibling;
-            if (errorMessage && errorMessage.classList.contains('text-red-500')) {
-                errorMessage.remove();
-            }
-            emailInput.classList.remove('border-red-500');
-            resetButton.disabled = true;
-            resetButton.classList.add('opacity-70');
-            buttonText.textContent = 'Sending...';
-            buttonSpinner.classList.remove('hidden');
-            setTimeout(() => {
-                if (Math.random() > 0.5) {
-                    resetButton.disabled = false;
-                    resetButton.classList.remove('opacity-70');
-                    buttonText.textContent = 'Send Reset Link';
-                    buttonSpinner.classList.add('hidden');
-                    showForm(successMessage);
-                } else {
-                    resetButton.disabled = false;
-                    resetButton.classList.remove('opacity-70');
-                    buttonText.textContent = 'Send Reset Link';
-                    buttonSpinner.classList.add('hidden');
-                    emailInput.classList.add('border-red-500');
-                    emailInput.parentElement.insertAdjacentHTML('afterend',
-                        '<div class="text-red-500 text-xs mt-1 flex items-center"><i class="ri-error-warning-line mr-1"></i>Email address not found</div>');
-                }
-            }, 2000);
-        });
-        resetPasswordForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newPassword = document.getElementById('new-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            if (newPassword === confirmPassword) {
-                console.log('Password reset successful');
-                alert('Password has been reset successfully!');
-                showForm(signinForm);
-            }
-        });
-        function initGoogleAuth() {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    if (Math.random() > 0.3) {
-                        resolve({ email: 'user@example.com', name: 'Demo User' });
-                    } else {
-                        reject(new Error('Failed to authenticate with Google'));
-                    }
-                }, 2000);
-            });
-        }
-        function showGoogleError(message) {
-            googleSigninError.querySelector('span').textContent = message;
-            googleSigninError.classList.remove('hidden');
-            setTimeout(() => {
-                googleSigninError.classList.add('hidden');
-            }, 5000);
-        }
-        function setGoogleButtonState(isLoading) {
-            googleSigninBtn.disabled = isLoading;
-            if (isLoading) {
-                googleSigninContent.classList.add('hidden');
-                googleSigninLoading.classList.remove('hidden');
-            } else {
-                googleSigninContent.classList.remove('hidden');
-                googleSigninLoading.classList.add('hidden');
-            }
-        }
-        googleSigninBtn.addEventListener('click', async function() {
+
+            if (rememberMeCheckbox.checked) localStorage.setItem('rememberedEmail', email);
+            else localStorage.removeItem('rememberedEmail');
+
+            // UI: loading
+            btn.disabled = true;
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i>Signing in...';
+
             try {
-                setGoogleButtonState(true);
-                googleSigninError.classList.add('hidden');
-                const userData = await initGoogleAuth();
-                console.log('Google Sign-In successful:', userData);
-                window.location.href = '/dashboard';
-            } catch (error) {
-                console.error('Google Sign-In failed:', error);
-                showGoogleError(error.message || 'Authentication failed. Please try again.');
-                setGoogleButtonState(false);
+                const res = await fetch('/matchymatchy/api/login.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    credentials: 'same-origin',
+                    body: new URLSearchParams({ email, password })
+                });
+                const data = await res.json().catch(()=> ({}));
+
+                if (res.ok && data.ok) {
+                    // success -> redirect
+                    location.href = data.redirect || '/matchymatchy/HTML/index.html';
+                    return;
+                }
+
+                // handle known server responses
+                if (res.status === 409 && data.error === 'google_account') {
+                    toast(data.message || 'This email is registered with Google. Please continue with Google.');
+                    // Optional: auto-redirect to Google flow:
+                    // location.href = '/matchymatchy/google-login.php';
+                } else if (res.status === 429) {
+                    toast('Too many attempts. Try again later.');
+                } else {
+                    toast(data.error || 'Invalid email or password.');
+                }
+
+            } catch (err) {
+                toast('Network error. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
             }
         });
     });
 </script>
+
 </body>
 </html>

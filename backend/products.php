@@ -97,15 +97,17 @@ if (isset($_GET['id']) || isset($_GET['product_id'])) {
     }
 
     // نبني مصفوفة breadcrumb بسيطة
+
     $breadcrumbs = [
         ['name' => 'Home', 'url' => 'index.html'],
     ];
     if ($categoryName && $categorySlug) {
-        $breadcrumbs[] = ['name' => $categoryName, 'url' => "category.html?cat=" . urlencode($categorySlug)];
+        $breadcrumbs[] = ['name' => $categoryName, 'url' => "category.html?slug=" . urlencode($categorySlug)];
     }
     if ($subcategoryName && $subcategorySlug) {
-        $breadcrumbs[] = ['name' => $subcategoryName, 'url' => "category.html?cat=" . urlencode($categorySlug) . "&sub=" . urlencode($subcategorySlug)];
+        $breadcrumbs[] = ['name' => $subcategoryName, 'url' => "category.html?slug=" . urlencode($subcategorySlug)];
     }
+
     $breadcrumbs[] = ['name' => $prod['name']];
 
     // (اختياري) هل المستخدم عمل Like/Rating — حسب نظامك
@@ -177,6 +179,7 @@ $args = [
 ];
 
 // ===== filters (كلها بمسماة) =====
+// ===== filters (كلها بمسماة) =====
 if ($q !== '') {
     $sqlBase .= " AND (p.name LIKE :qname OR p.sku LIKE :qsku)";
     $args[':qname'] = "%{$q}%";
@@ -190,15 +193,38 @@ if ($categoryId > 0) {
     )";
     $args[':catId'] = $categoryId;
 }
-
 if ($categorySlug !== '') {
-    $sqlBase .= " AND EXISTS (
-      SELECT 1
-      FROM product_categories pc
-      JOIN categories c2 ON c2.id = pc.category_id
-      WHERE pc.product_id = p.id AND c2.slug = :catSlug
-    )";
-    $args[':catSlug'] = $categorySlug;
+    // الحصول على ID التصنيف من الـ slug
+    $catStmt = $pdo->prepare("SELECT id, parent_id FROM categories WHERE slug = ?");
+    $catStmt->execute([$categorySlug]);
+    $category = $catStmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($category) {
+        $categoryIds = [$category['id']];
+
+        // إذا كان هذا تصنيف أب، نحتاج للحصول على جميع التصنيفات الأبناء
+        if ($category['parent_id'] === null) {
+            $childStmt = $pdo->prepare("SELECT id FROM categories WHERE parent_id = ?");
+            $childStmt->execute([$category['id']]);
+            $children = $childStmt->fetchAll(PDO::FETCH_COLUMN);
+            $categoryIds = array_merge($categoryIds, $children);
+        }
+
+        // إنشاء named placeholders للـ IN clause
+        $inPlaceholders = [];
+        foreach ($categoryIds as $index => $catId) {
+            $placeholder = ':cat_id_' . $index;
+            $inPlaceholders[] = $placeholder;
+            $args[$placeholder] = $catId;
+        }
+
+        $sqlBase .= " AND EXISTS (
+          SELECT 1
+          FROM product_categories pc
+          JOIN categories c2 ON c2.id = pc.category_id
+          WHERE pc.product_id = p.id AND c2.id IN (" . implode(',', $inPlaceholders) . ")
+        )";
+    }
 }
 
 if ($status !== '') {
@@ -212,7 +238,6 @@ if ($status !== '') {
     ) = :status";
     $args[':status'] = $status;
 }
-
 // ===== sort =====
 $orderBy = 'p.created_at DESC';
 switch ($sort) {
@@ -244,5 +269,13 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($args);
 $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
+
+
+
 echo json_encode(['ok' => true, 'data' => $list, 'page' => $page, 'size' => $size, 'total' => $total], JSON_UNESCAPED_UNICODE);
 exit;
+
+
+
+

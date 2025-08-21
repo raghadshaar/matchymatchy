@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Check your email – Matchy Matchy</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <style>:root{--teal:#008080;--umber:#715E51;--baby:#F9F8F3}</style>
+</head>
+<body style="background:var(--baby)" class="min-h-screen flex items-center justify-center p-6">
+<div class="bg-white rounded-2xl shadow p-8 max-w-md w-full">
+    <div class="text-center mb-6">
+        <h1 class="font-['Pacifico'] text-3xl" style="color:var(--teal)">Matchy Matchy</h1>
+        <p class="text-sm" style="color:var(--umber)">Please check your email</p>
+    </div>
+
+    <div class="flex gap-3 p-3 rounded-lg border mb-6" style="border-color:#eee;background:#fff">
+        <i class="ri-information-line text-xl" style="color:var(--teal)"></i>
+        <p id="msg" class="text-sm" style="color:var(--umber)">
+            We’ve sent a secure link to set your password. The link is valid for 30 minutes.
+        </p>
+    </div>
+
+    <div class="space-y-3 text-sm" style="color:var(--umber)">
+        <p>Email sent to: <span id="email-label" class="font-medium"></span></p>
+        <div class="flex gap-3">
+            <a id="open-gmail" target="_blank" rel="noopener"
+               class="px-4 py-2 rounded-button text-white" style="background:var(--teal)">Open Gmail</a>
+            <a href="/matchymatchy/HTML/signup.html"
+               class="px-4 py-2 rounded-button" style="border:1px solid #eee">Back to Sign Up</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const qs = new URLSearchParams(location.search);
+    const email = qs.get('email') || '';
+    document.getElementById('email-label').textContent = email;
+    document.getElementById('open-gmail').href = 'https://mail.google.com/';
+</script>
+</body>
+</html>
