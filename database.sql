@@ -86,4 +86,126 @@ ALTER TABLE magic_links
 
 
 ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS phone      VARCHAR(30) NULL,ADD COLUMN IF NOT EXISTS notes       TEXT NULL,;
+    ADD COLUMN IF NOT EXISTS phone      VARCHAR(30) NULL,ADD COLUMN IF NOT EXISTS notes       TEXT NULL;
+
+
+
+
+
+-- matchy_matchy schema (add to your DB init)
+CREATE TABLE IF NOT EXISTS orders (
+                                      id              INT AUTO_INCREMENT PRIMARY KEY,
+                                      public_id       VARCHAR(32) NOT NULL UNIQUE,              -- e.g., ORD-2025-001
+    order_date      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    customer_name   VARCHAR(100) NOT NULL,
+    customer_email  VARCHAR(255) NOT NULL,
+    customer_phone  VARCHAR(30)  NULL,
+    customer_address TEXT        NULL,
+
+    subtotal        DECIMAL(10,2) NOT NULL DEFAULT 0.00,      -- exact money math
+    shipping        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    tax             DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total           DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+
+    payment_status  ENUM('Paid','Pending','Failed','Refunded','COD') NOT NULL DEFAULT 'Pending',
+    order_status    ENUM('Pending','Processing','Shipped','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
+
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    KEY idx_date (order_date),
+    KEY idx_status (order_status),
+    KEY idx_payment (payment_status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS order_items (
+                                           id           INT AUTO_INCREMENT PRIMARY KEY,
+                                           order_id     INT NOT NULL,
+                                           product_id   INT NULL,                       -- optional (if you later link to products table)
+                                           product_name VARCHAR(255) NOT NULL,
+    unit_price   DECIMAL(10,2) NOT NULL,
+    quantity     INT NOT NULL,
+    -- keep line_total explicit to avoid surprises if price later changes
+    line_total   DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT fk_items_order
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    KEY idx_order (order_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+
+
+
+-- Coupons: percentage = fraction (e.g., 0.10); fixed = NIS amount
+CREATE TABLE IF NOT EXISTS coupons (
+                                       id            INT AUTO_INCREMENT PRIMARY KEY,
+                                       code          VARCHAR(32) NOT NULL UNIQUE,
+    type          ENUM('percentage','fixed') NOT NULL,
+    amount        DECIMAL(10,2) NOT NULL,     -- ex: 0.10 for 10% OR 20.00 fixed
+    min_subtotal  DECIMAL(10,2) NOT NULL DEFAULT 0,
+    starts_at     DATETIME NULL,
+    ends_at       DATETIME NULL,
+    active        TINYINT(1) NOT NULL DEFAULT 1,
+    max_uses      INT NULL,
+    used_count    INT NOT NULL DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- Carts are per session (works for anonymous users; attach user_id if you have login)
+CREATE TABLE IF NOT EXISTS carts (
+                                     id          INT AUTO_INCREMENT PRIMARY KEY,
+                                     session_id  VARCHAR(64) NOT NULL UNIQUE,
+    user_id     INT NULL,
+    coupon_id   INT NULL,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (coupon_id) REFERENCES coupons(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- Cart items snapshot the price/currency at the time they’re added
+CREATE TABLE IF NOT EXISTS cart_items (
+                                          id            INT AUTO_INCREMENT PRIMARY KEY,
+                                          cart_id       INT NOT NULL,
+                                          product_id    INT NOT NULL,
+                                          unit_price    DECIMAL(10,2) NOT NULL,
+    unit_currency CHAR(3) NOT NULL DEFAULT 'ILS',
+    quantity      INT NOT NULL,
+    line_total    DECIMAL(10,2) NOT NULL,
+    UNIQUE KEY uniq_cart_line (cart_id, product_id),
+    FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- Orders (summary) + order_items (snapshots)
+CREATE TABLE IF NOT EXISTS orders (
+                                      id              INT AUTO_INCREMENT PRIMARY KEY,
+                                      public_id       VARCHAR(32) NOT NULL UNIQUE,          -- e.g., ORD-2025-001
+    order_date      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    customer_name   VARCHAR(120) NOT NULL,
+    customer_email  VARCHAR(255) NOT NULL,
+    customer_phone  VARCHAR(40),
+    customer_address TEXT,
+    subtotal        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    shipping        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    tax             DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total           DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    currency        CHAR(3) NOT NULL DEFAULT 'ILS',
+    payment_status  ENUM('Paid','Pending','Failed','Refunded','COD') NOT NULL DEFAULT 'Pending',
+    order_status    ENUM('Pending','Processing','Shipped','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS order_items (
+                                           id            INT AUTO_INCREMENT PRIMARY KEY,
+                                           order_id      INT NOT NULL,
+                                           product_id    INT NOT NULL,
+                                           product_name  VARCHAR(160) NOT NULL,      -- snapshot
+    unit_price    DECIMAL(10,2) NOT NULL,     -- snapshot
+    unit_currency CHAR(3) NOT NULL DEFAULT 'ILS',
+    quantity      INT NOT NULL,
+    line_total    DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
