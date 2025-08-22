@@ -46,3 +46,8 @@ FROM products p
     FROM product_likes
     GROUP BY product_id
 ) l ON l.product_id = p.id;
+
+
+ALTER TABLE product_reviews
+    ADD UNIQUE KEY uq_pr_user (product_id, user_id),
+    ADD UNIQUE KEY uq_pr_dev  (product_id, device_hash);

@@ -140,7 +140,11 @@ $_SESSION['email']    = $user['email'];
 $_SESSION['provider'] = $user['provider'] ?: 'local';
 $_SESSION['avatar']   = $user['avatar'] ?? null;
 
+
 echo json_encode([
-    'ok'=>true,
-    'redirect'=>'/matchymatchy/HTML/index.html'
+    'ok' => true,
+    'redirect' => '/matchymatchy/HTML/index.html',
+    'user_id' => $user['id'],  // أضف هذا
+    'first_name' => $user['first_name'],  // مثلاً
+    'email' => $user['email']
 ]);
