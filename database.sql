@@ -209,3 +209,25 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- In case your table doesn’t have these yet
+
+
+
+
+ALTER TABLE product_reviews
+    ADD COLUMN hidden TINYINT(1) NOT NULL DEFAULT 0 AFTER comment,
+  ADD COLUMN hidden_by INT UNSIGNED NULL AFTER hidden,
+  ADD COLUMN hidden_at DATETIME NULL AFTER hidden_by,
+  ADD COLUMN updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP AFTER created_at;
+
+CREATE INDEX idx_reviews_hidden  ON product_reviews(hidden);
+CREATE INDEX idx_reviews_created ON product_reviews(created_at);
+CREATE INDEX idx_reviews_product ON product_reviews(product_id);
+
+
+ALTER TABLE product_reviews
+    ADD COLUMN flagged TINYINT(1) NOT NULL DEFAULT 0 AFTER hidden,
+  ADD COLUMN flag_reason VARCHAR(255) NULL AFTER flagged,
+  ADD COLUMN flagged_by INT UNSIGNED NULL AFTER flag_reason,
+  ADD COLUMN flagged_at DATETIME NULL AFTER flagged_by;
+
