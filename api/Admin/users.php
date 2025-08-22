@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Users API for Matchy Matchy Admin.
  * Actions: list, get, create, update, delete
  */
-
+//jj
 header('Content-Type: application/json; charset=utf-8');
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
