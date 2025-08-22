@@ -250,3 +250,24 @@ ALTER TABLE product_reviews
   ADD COLUMN flagged_by INT UNSIGNED NULL AFTER flag_reason,
   ADD COLUMN flagged_at DATETIME NULL AFTER flagged_by;
 
+
+
+ALTER TABLE products
+    ADD FULLTEXT ft_products_name_desc (name, description),
+  ADD FULLTEXT ft_products_sku (sku);
+
+
+
+CREATE TABLE IF NOT EXISTS product_embeddings (
+                                                  product_id INT PRIMARY KEY,
+                                                  model VARCHAR(64) NOT NULL,
+    embedding_json MEDIUMTEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_prod_emb_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+
+
+
+ALTER TABLE products
+    ADD FULLTEXT ft_products_name_desc_sku (name, description, sku);
+
