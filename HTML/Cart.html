@@ -21,14 +21,8 @@
             --umber: #715E51;
             --white: #ffffff;
         }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--baby);
-            color: var(--jet);
-        }
-        .font-pacifico {
-            font-family: 'Pacifico', cursive;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--baby); color: var(--jet); }
+        .font-pacifico { font-family: 'Pacifico', cursive; }
         .bg-baby { background-color: var(--baby); }
         .bg-jet { background-color: var(--jet); }
         .bg-teal { background-color: var(--teal); }
@@ -49,61 +43,22 @@
         .hover\:border-pink:hover { border-color: var(--pink); }
         .rounded-button { border-radius: 8px !important; }
 
-        .quantity-btn {
-            transition: all 0.2s ease;
-        }
-        .quantity-btn:hover {
-            transform: scale(1.05);
-        }
-        .cart-item {
-            transition: all 0.3s ease;
-        }
-        .cart-item.removing {
-            opacity: 0;
-            transform: translateX(-100%);
-        }
-        .toast {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .toast.hide {
-            opacity: 0;
-            transform: translateY(-2rem);
-        }
+        .quantity-btn { transition: all 0.2s ease; }
+        .quantity-btn:hover { transform: scale(1.05); }
+        .cart-item { transition: all 0.3s ease; }
+        .cart-item.removing { opacity: 0; transform: translateX(-100%); }
+        .toast { position: fixed; top: 2rem; right: 2rem; z-index: 1000; transition: all 0.3s ease; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.hide { opacity: 0; transform: translateY(-2rem); }
 
-        @media (max-width: 768px) {
-            .cart-summary {
-                position: static !important;
-            }
-        }
+        @media (max-width: 768px) { .cart-summary { position: static !important; } }
     </style>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        primary: '#008080',
-                        secondary: '#E4CFC3'
-                    },
-                    borderRadius: {
-                        'none': '0px',
-                        'sm': '4px',
-                        DEFAULT: '8px',
-                        'md': '12px',
-                        'lg': '16px',
-                        'xl': '20px',
-                        '2xl': '24px',
-                        '3xl': '32px',
-                        'full': '9999px',
-                        'button': '8px'
-                    }
+                    colors: { primary: '#008080', secondary: '#E4CFC3' },
+                    borderRadius: { 'none':'0px','sm':'4px', DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px' }
                 }
             }
         }
@@ -147,9 +102,7 @@
 
     <div class="lg:grid lg:grid-cols-3 lg:gap-8">
         <div class="lg:col-span-2">
-            <div id="cart-items" class="space-y-4">
-                <!-- Cart items will be populated here -->
-            </div>
+            <div id="cart-items" class="space-y-4"></div>
 
             <div id="empty-cart" class="hidden text-center py-16">
                 <div class="w-32 h-32 mx-auto mb-6 bg-pink rounded-full flex items-center justify-center">
@@ -157,9 +110,7 @@
                 </div>
                 <h2 class="font-pacifico text-2xl text-jet mb-4">Your cart is empty</h2>
                 <p class="text-umber mb-8">Looks like you haven't added any adorable outfits yet!</p>
-                <button class="bg-teal text-white px-8 py-3 !rounded-button hover:bg-opacity-90 transition-all whitespace-nowrap">
-                    Shop Now
-                </button>
+                <a href="/HTML/shop.html" class="inline-block bg-teal text-white px-8 py-3 rounded-button hover:bg-opacity-90 transition-all whitespace-nowrap">Shop Now</a>
             </div>
         </div>
 
@@ -167,14 +118,20 @@
             <div class="cart-summary bg-white rounded-lg shadow-lg p-6 lg:sticky lg:top-8">
                 <h2 class="font-pacifico text-xl text-jet mb-6">Cart Summary</h2>
 
+                <div class="space-y-2 mb-2 hidden" id="coupon-pill"></div>
+
                 <div class="space-y-4 mb-6">
                     <div class="flex justify-between">
                         <span class="text-umber">Subtotal</span>
                         <span class="text-jet font-medium" id="subtotal">₪0.00</span>
                     </div>
+                    <div class="flex justify-between hidden" id="discountRow">
+                        <span class="text-umber">Discount</span>
+                        <span class="text-jet font-medium" id="discount">-₪0.00</span>
+                    </div>
                     <div class="flex justify-between">
                         <span class="text-umber">Shipping</span>
-                        <span class="text-jet font-medium" id="shipping">₪15.00</span>
+                        <span class="text-jet font-medium" id="shipping">₪0.00</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-umber">Tax</span>
@@ -183,34 +140,62 @@
                     <hr class="border-gray-200">
                     <div class="flex justify-between text-lg font-semibold">
                         <span class="text-jet">Total</span>
-                        <span class="text-jet" id="total">₪15.00</span>
+                        <span class="text-jet" id="total">₪0.00</span>
                     </div>
                 </div>
 
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-umber mb-2">Coupon Code</label>
+                    <label class="block text-sm font-medium text-umber mb-2" for="coupon-input">Coupon Code</label>
                     <div class="flex space-x-2">
                         <input type="text" id="coupon-input" placeholder="Enter code" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-teal text-sm">
-                        <button id="apply-coupon" class="bg-pink text-jet px-4 py-2 !rounded-button hover:bg-opacity-80 transition-all whitespace-nowrap text-sm">
-                            Apply
-                        </button>
+                        <button id="apply-coupon" class="bg-pink text-jet px-4 py-2 rounded-button hover:bg-opacity-80 transition-all whitespace-nowrap text-sm">Apply</button>
                     </div>
                     <div id="coupon-message" class="mt-2 text-sm hidden"></div>
                 </div>
 
                 <div class="space-y-3">
-                    <button id="checkout-btn" class="w-full bg-teal text-white py-3 !rounded-button hover:bg-opacity-90 transition-all font-medium whitespace-nowrap">
-                        Proceed to Checkout
-                    </button>
-                    <a href="#" class="block text-center text-pink hover:text-umber transition-colors">
-                        Continue Shopping
-                    </a>
+                    <button id="checkout-btn" class="w-full bg-teal text-white py-3 rounded-button hover:bg-opacity-90 transition-all font-medium whitespace-nowrap">Proceed to Checkout</button>
+                    <a href="/HTML/shop.html" class="block text-center text-pink hover:text-umber transition-colors">Continue Shopping</a>
                 </div>
             </div>
         </div>
     </div>
-
 </main>
+
+<!-- Checkout Modal -->
+<div id="checkout-modal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/40" data-close="modal"></div>
+    <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-jet">Checkout</h3>
+            <button class="text-umber hover:text-jet" data-close="modal"><i class="ri-close-line text-2xl"></i></button>
+        </div>
+        <form id="checkout-form" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm text-umber mb-1" for="c-name">Full name</label>
+                    <input id="c-name" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-teal" required>
+                </div>
+                <div>
+                    <label class="block text-sm text-umber mb-1" for="c-email">Email</label>
+                    <input id="c-email" type="email" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-teal" required>
+                </div>
+                <div>
+                    <label class="block text-sm text-umber mb-1" for="c-phone">Phone</label>
+                    <input id="c-phone" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-teal">
+                </div>
+                <div>
+                    <label class="block text-sm text-umber mb-1" for="c-address">Address</label>
+                    <input id="c-address" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-teal">
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button type="button" class="btn-cancel px-4 py-2 rounded-md border" data-close="modal">Cancel</button>
+                <button type="submit" class="bg-teal text-white px-5 py-2 rounded-button hover:bg-opacity-90">Place Order</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <div id="toast" class="toast hide bg-white border-l-4 border-teal rounded-md shadow-lg p-4 max-w-sm">
     <div class="flex items-center">
@@ -218,242 +203,199 @@
             <i class="ri-check-line text-teal"></i>
         </div>
         <div class="ml-3">
-            <p class="text-sm text-jet" id="toast-message">Item removed from cart</p>
+            <p class="text-sm text-jet" id="toast-message">Action completed</p>
         </div>
     </div>
 </div>
 
-<script id="cart-functionality">
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-    const sampleProducts = [
-        {
-            id: 1,
-            name: "Rainbow Unicorn Dress",
-            description: "Magical dress with sparkly unicorn print",
-            size: "Age 4-5",
-            price: 89.99,
-            image: "https://readdy.ai/api/search-image?query=adorable%20rainbow%20unicorn%20dress%20for%20little%20girl%20with%20sparkles%20and%20magical%20details%20on%20clean%20white%20background%2C%20product%20photography%20style%2C%20soft%20lighting%2C%20pastel%20colors&width=120&height=120&seq=1&orientation=squarish",
-            quantity: 2
-        },
-        {
-            id: 2,
-            name: "Dinosaur Adventure T-Shirt",
-            description: "Cool dinosaur print on soft cotton",
-            size: "Age 6-7",
-            price: 45.50,
-            image: "https://readdy.ai/api/search-image?query=cute%20dinosaur%20print%20t-shirt%20for%20kids%20with%20colorful%20cartoon%20dinosaurs%20on%20clean%20white%20background%2C%20product%20photography%20style%2C%20bright%20colors%2C%20playful%20design&width=120&height=120&seq=2&orientation=squarish",
-            quantity: 1
-        },
-        {
-            id: 3,
-            name: "Princess Tutu Skirt",
-            description: "Fluffy tulle skirt in pink and gold",
-            size: "Age 3-4",
-            price: 67.00,
-            image: "https://readdy.ai/api/search-image?query=beautiful%20pink%20and%20gold%20princess%20tutu%20skirt%20for%20little%20girl%20with%20layers%20of%20soft%20tulle%20on%20clean%20white%20background%2C%20product%20photography%20style%2C%20elegant%20and%20dreamy&width=120&height=120&seq=3&orientation=squarish",
-            quantity: 1
-        }
-    ];
-
-    if (cart.length === 0) {
-        cart = sampleProducts;
-        localStorage.setItem('cart', JSON.stringify(cart));
-    }
-
-    function renderCart() {
-        const cartItemsContainer = document.getElementById('cart-items');
-        const emptyCartContainer = document.getElementById('empty-cart');
-
-        if (cart.length === 0) {
-            cartItemsContainer.innerHTML = '';
-            emptyCartContainer.classList.remove('hidden');
-            updateCartSummary();
-            return;
-        }
-
-        emptyCartContainer.classList.add('hidden');
-
-        cartItemsContainer.innerHTML = cart.map(item => `
-                <div class="cart-item bg-white rounded-lg shadow-sm p-4 md:p-6" data-id="${item.id}">
-                    <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
-                        <div class="flex-shrink-0">
-                            <img src="${item.image}" alt="${item.name}" class="w-24 h-24 md:w-30 md:h-30 object-cover rounded-lg">
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-pacifico text-lg text-jet mb-1">${item.name}</h3>
-                            <p class="text-umber text-sm mb-2">${item.description}</p>
-                            <p class="text-xs text-umber bg-pink px-2 py-1 rounded-full inline-block">${item.size}</p>
-                        </div>
-
-                        <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
-                            <div class="text-center">
-                                <p class="text-sm text-umber">Price</p>
-                                <p class="font-medium text-jet">₪${item.price.toFixed(2)}</p>
-                            </div>
-
-                            <div class="flex items-center justify-center space-x-3">
-                                <button class="quantity-btn w-8 h-8 rounded-full border-2 border-teal flex items-center justify-center hover:bg-teal hover:text-white transition-all" onclick="updateQuantity(${item.id}, ${item.quantity - 1})">
-                                    <i class="ri-subtract-line text-sm"></i>
-                                </button>
-                                <span class="w-12 text-center font-medium text-jet">${item.quantity}</span>
-                                <button class="quantity-btn w-8 h-8 rounded-full border-2 border-teal flex items-center justify-center hover:bg-teal hover:text-white transition-all" onclick="updateQuantity(${item.id}, ${item.quantity + 1})">
-                                    <i class="ri-add-line text-sm"></i>
-                                </button>
-                            </div>
-
-                            <div class="text-center">
-                                <p class="text-sm text-umber">Total</p>
-                                <p class="font-semibold text-jet">₪${(item.price * item.quantity).toFixed(2)}</p>
-                            </div>
-
-                            <button class="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full transition-all" onclick="removeItem(${item.id})">
-                                <i class="ri-delete-bin-line"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-        updateCartSummary();
-    }
-
-    function updateQuantity(id, newQuantity) {
-        if (newQuantity <= 0) {
-            removeItem(id);
-            return;
-        }
-
-        const itemIndex = cart.findIndex(item => item.id === id);
-        if (itemIndex !== -1) {
-            cart[itemIndex].quantity = newQuantity;
-            localStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
-        }
-    }
-
-    function removeItem(id) {
-        const itemElement = document.querySelector(`[data-id="${id}"]`);
-        itemElement.classList.add('removing');
-
-        setTimeout(() => {
-            cart = cart.filter(item => item.id !== id);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
-            showToast('Item removed from cart');
-        }, 300);
-    }
-
-    function updateCartSummary() {
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const shipping = cart.length > 0 ? 15.00 : 0;
-        const tax = subtotal * 0.17;
-        const total = subtotal + shipping + tax;
-
-        document.getElementById('subtotal').textContent = `₪${subtotal.toFixed(2)}`;
-        document.getElementById('shipping').textContent = `₪${shipping.toFixed(2)}`;
-        document.getElementById('tax').textContent = `₪${tax.toFixed(2)}`;
-        document.getElementById('total').textContent = `₪${total.toFixed(2)}`;
-        document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-    }
-
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
-
-        toastMessage.textContent = message;
-        toast.classList.remove('hide');
-        toast.classList.add('show');
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-            toast.classList.add('hide');
-        }, 3000);
-    }
-
-    renderCart();
-</script>
-
-<script id="coupon-functionality">
-    const validCoupons = {
-        'KIDS10': { discount: 0.10, type: 'percentage', description: '10% off' },
-        'SAVE20': { discount: 20, type: 'fixed', description: '₪20 off' },
-        'WELCOME15': { discount: 0.15, type: 'percentage', description: '15% off' }
-    };
-
-    document.getElementById('apply-coupon').addEventListener('click', function() {
-        const couponInput = document.getElementById('coupon-input');
-        const couponMessage = document.getElementById('coupon-message');
-        const couponCode = couponInput.value.trim().toUpperCase();
-
-        if (!couponCode) {
-            showCouponMessage('Please enter a coupon code', 'error');
-            return;
-        }
-
-        if (validCoupons[couponCode]) {
-            const coupon = validCoupons[couponCode];
-            showCouponMessage(`Coupon applied! ${coupon.description}`, 'success');
-            applyCouponDiscount(coupon);
-        } else {
-            showCouponMessage('Invalid coupon code', 'error');
-        }
-    });
-
-    function showCouponMessage(message, type) {
-        const couponMessage = document.getElementById('coupon-message');
-        couponMessage.textContent = message;
-        couponMessage.className = `mt-2 text-sm ${type === 'success' ? 'text-teal' : 'text-red-500'}`;
-        couponMessage.classList.remove('hidden');
-    }
-
-    function applyCouponDiscount(coupon) {
-        const subtotalElement = document.getElementById('subtotal');
-        const totalElement = document.getElementById('total');
-
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        let discount = 0;
-
-        if (coupon.type === 'percentage') {
-            discount = subtotal * coupon.discount;
-        } else {
-            discount = coupon.discount;
-        }
-
-        const shipping = cart.length > 0 ? 15.00 : 0;
-        const tax = (subtotal - discount) * 0.17;
-        const total = subtotal - discount + shipping + tax;
-
-        totalElement.textContent = `₪${Math.max(0, total).toFixed(2)}`;
-    }
-</script>
-
-<script id="checkout-functionality">
-    document.getElementById('checkout-btn').addEventListener('click', function() {
-        if (cart.length === 0) {
-            showToast('Your cart is empty');
-            return;
-        }
-
-        showToast('Redirecting to checkout...');
-        setTimeout(() => {
-            window.location.href = '#checkout';
-        }, 1000);
-    });
-</script>
-<div id="foot">
-
-</div>
 <script>
+    /* =====================
+     *  Server API bindings
+     * ===================== */
+    const API_CART = '/matchymatchy/api/cart.php';
+    const ILS = new Intl.NumberFormat('he-IL', { style:'currency', currency:'ILS' });
+    const m = n => ILS.format(Number(n||0));
 
-    fetch('footer.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('foot').innerHTML = data;
-        });
+    // State kept only for UI; server is source of truth
+    let state = { items: [], totals: { subtotal:0, discount:0, shipping:0, tax:0, total:0, currency:'ILS', coupon:null } };
+
+    async function api(action, method='GET', body) {
+        const opts = { method, credentials:'same-origin', headers:{} };
+        let url = `${API_CART}?action=${encodeURIComponent(action)}`;
+        if (body && method !== 'GET') { opts.headers['Content-Type']='application/json'; opts.body = JSON.stringify(body); }
+        const res = await fetch(url, opts);
+        const json = await res.json().catch(()=>({error:'Invalid JSON'}));
+        if (!res.ok || json.error) throw new Error(json.error || `Request failed: ${res.status}`);
+        return json;
+    }
+
+    /* ===============
+     *  Render helpers
+     * =============== */
+    function setCartCount(){ const count = state.items.reduce((s,it)=>s+it.quantity,0); document.getElementById('cart-count').textContent = count; }
+
+    function renderTotals(){
+        const t = state.totals;
+        document.getElementById('subtotal').textContent = m(t.subtotal);
+        document.getElementById('shipping').textContent = m(t.shipping);
+        document.getElementById('tax').textContent = m(t.tax);
+        document.getElementById('total').textContent = m(t.total);
+        const discountRow = document.getElementById('discountRow');
+        const discountEl  = document.getElementById('discount');
+        if (t.discount && Number(t.discount) > 0) {
+            discountRow.classList.remove('hidden');
+            discountEl.textContent = '-' + m(t.discount);
+        } else {
+            discountRow.classList.add('hidden');
+        }
+        // coupon pill
+        const pill = document.getElementById('coupon-pill');
+        if (t.coupon) {
+            pill.classList.remove('hidden');
+            pill.innerHTML = `<div class="flex items-center justify-between bg-pink/40 text-jet px-3 py-2 rounded-md">
+        <span class="text-sm">Coupon <strong>${t.coupon.code}</strong> applied (${t.coupon.type==='percentage' ? (Number(t.coupon.amount)*100).toFixed(0)+'%' : m(t.coupon.amount)})</span>
+        <button id="remove-coupon" class="text-umber hover:text-jet ml-3" title="Remove coupon"><i class="ri-close-line text-lg"></i></button>
+      </div>`;
+            document.getElementById('remove-coupon').onclick = async () => {
+                try { await api('apply_coupon','POST',{ code: '' }); } catch(_) {}
+                await loadCart();
+            };
+        } else {
+            pill.classList.add('hidden'); pill.innerHTML='';
+        }
+    }
+
+    function renderItems(){
+        const list = document.getElementById('cart-items');
+        const empty = document.getElementById('empty-cart');
+
+        if (!state.items.length){ list.innerHTML=''; empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+
+        list.innerHTML = state.items.map(item => `
+      <div class="cart-item bg-white rounded-lg shadow-sm p-4 md:p-6" data-id="${item.id}">
+        <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
+          <div class="flex-shrink-0">
+            <img src="${item.image || 'https://via.placeholder.com/120x120?text=Product'}" alt="${item.name}" class="w-24 h-24 object-cover rounded-lg">
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-pacifico text-lg text-jet mb-1">${item.name}</h3>
+          </div>
+          <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
+            <div class="text-center">
+              <p class="text-sm text-umber">Price</p>
+              <p class="font-medium text-jet">${m(item.price)}</p>
+            </div>
+            <div class="flex items-center justify-center space-x-3">
+              <button class="quantity-btn w-8 h-8 rounded-full border-2 border-teal flex items-center justify-center hover:bg-teal hover:text-white transition-all" data-action="dec" data-id="${item.id}"><i class="ri-subtract-line text-sm"></i></button>
+              <span class="w-12 text-center font-medium text-jet">${item.quantity}</span>
+              <button class="quantity-btn w-8 h-8 rounded-full border-2 border-teal flex items-center justify-center hover:bg-teal hover:text-white transition-all" data-action="inc" data-id="${item.id}"><i class="ri-add-line text-sm"></i></button>
+            </div>
+            <div class="text-center">
+              <p class="text-sm text-umber">Total</p>
+              <p class="font-semibold text-jet">${m(item.line_total)}</p>
+            </div>
+            <button class="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full transition-all" data-action="remove" data-id="${item.id}" title="Remove"><i class="ri-delete-bin-line"></i></button>
+          </div>
+        </div>
+      </div>`).join('');
+
+        // wire buttons after render
+        list.querySelectorAll('[data-action]')
+            .forEach(btn => btn.addEventListener('click', onItemAction));
+    }
+
+    function showToast(message){
+        const toast = document.getElementById('toast');
+        const msg = document.getElementById('toast-message');
+        msg.textContent = message;
+        toast.classList.remove('hide'); toast.classList.add('show');
+        setTimeout(()=>{ toast.classList.remove('show'); toast.classList.add('hide'); }, 2200);
+    }
+
+    function renderAll(){ renderItems(); renderTotals(); setCartCount(); }
+
+    /* =================
+     *  Event Handlers
+     * ================= */
+    async function onItemAction(e){
+        const btn = e.currentTarget; const id = Number(btn.dataset.id);
+        const item = state.items.find(i=>i.id===id);
+        if (!item) return;
+        try {
+            if (btn.dataset.action==='inc') {
+                await api('update','POST',{ product_id:id, qty:item.quantity+1 });
+            } else if (btn.dataset.action==='dec') {
+                const q = Math.max(0, item.quantity-1);
+                await api('update','POST',{ product_id:id, qty:q });
+            } else if (btn.dataset.action==='remove') {
+                await api('remove','POST',{ product_id:id });
+            }
+            await loadCart();
+        } catch(err){ showToast(err.message || 'Action failed'); }
+    }
+
+    async function onApplyCoupon(){
+        const input = document.getElementById('coupon-input');
+        const msg   = document.getElementById('coupon-message');
+        const code  = (input.value || '').trim();
+        if (!code) { msg.textContent='Please enter a coupon code'; msg.className='mt-2 text-sm text-red-500'; msg.classList.remove('hidden'); return; }
+        try {
+            const data = await api('apply_coupon','POST',{ code });
+            state.items = data.items; state.totals = data.totals; renderAll();
+            msg.textContent = `Coupon applied: ${data.coupon}`; msg.className='mt-2 text-sm text-teal'; msg.classList.remove('hidden');
+        } catch(err){
+            msg.textContent = err.message || 'Invalid coupon'; msg.className='mt-2 text-sm text-red-500'; msg.classList.remove('hidden');
+        }
+    }
+
+    function openCheckoutModal(){ document.getElementById('checkout-modal').classList.remove('hidden'); document.getElementById('checkout-modal').classList.add('flex'); }
+    function closeCheckoutModal(){ document.getElementById('checkout-modal').classList.add('hidden'); document.getElementById('checkout-modal').classList.remove('flex'); }
+
+    async function onCheckoutSubmit(e){
+        e.preventDefault();
+        if (!state.items.length){ showToast('Your cart is empty'); return; }
+        const name = document.getElementById('c-name').value.trim();
+        const email= document.getElementById('c-email').value.trim();
+        const phone= document.getElementById('c-phone').value.trim();
+        const addr = document.getElementById('c-address').value.trim();
+        if (!name || !email){ showToast('Please fill name and email'); return; }
+        try {
+            const data = await api('checkout','POST',{ customer:{ name, email, phone, address: addr } });
+            closeCheckoutModal(); showToast('Order placed!');
+            // redirect to confirmation page with the public order id
+            setTimeout(()=>{ window.location.href = `/HTML/order-confirmation.html?id=${encodeURIComponent(data.public_id)}`; }, 1000);
+        } catch(err){ showToast(err.message || 'Checkout failed'); }
+    }
+
+    /* ==============
+     *  Boot sequence
+     * ==============
+     */
+    async function loadCart(){
+        try {
+            const data = await api('get');
+            state.items = data.items || []; state.totals = data.totals || state.totals; renderAll();
+        } catch(err){ console.error(err); showToast('Could not load cart'); }
+    }
+
+    // Wire static controls
+    document.getElementById('apply-coupon').addEventListener('click', onApplyCoupon);
+    document.getElementById('checkout-btn').addEventListener('click', ()=>{
+        if (!state.items.length){ showToast('Your cart is empty'); return; }
+        openCheckoutModal();
+    });
+    // Modal close handlers
+    document.querySelectorAll('[data-close="modal"]').forEach(el=> el.addEventListener('click', closeCheckoutModal));
+    document.getElementById('checkout-form').addEventListener('submit', onCheckoutSubmit);
+
+    // initial load
+    loadCart();
 </script>
 
+<div id="foot"></div>
+<script>
+    fetch('footer.html').then(r=>r.text()).then(html=>{ document.getElementById('foot').innerHTML = html; });
+</script>
 </body>
-
 </html>
