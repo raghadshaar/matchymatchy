@@ -112,6 +112,4 @@ CREATE INDEX idx_pl_product ON product_likes(product_id);
 
 
 
-ALTER TABLE product_reviews
-    ADD UNIQUE KEY uq_pr_user (product_id, user_id),
-    ADD UNIQUE KEY uq_pr_dev  (product_id, device_hash);
+

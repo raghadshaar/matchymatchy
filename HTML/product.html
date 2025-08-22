@@ -468,12 +468,12 @@
                 const rating = document.getElementById('review-rating').value;
                 const comment = document.getElementById('reviewComment').value.trim();
                 const productId = Number(new URLSearchParams(location.search).get('id') || 0);
-                const userId = localStorage.getItem('user_id');  // يفترض أنك تخزن user_id بعد تسجيل الدخول
-
-                if (!userId) {
+                const userEmail = localStorage.getItem('rememberedEmail');
+                if (!userEmail) {
                     alert("You must be logged in to submit a review.");
                     return;
                 }
+
 
                 if (!rating || comment === '') {
                     alert("Please provide both rating and comment.");
@@ -483,7 +483,7 @@
                 const res = await fetch('/matchymatchy/backend/review_submit.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({product_id: productId, rating, comment, user_id: userId})
+                    body: JSON.stringify({product_id: productId, rating, comment, user_email: userEmail})
                 });
 
                 const result = await res.json();
@@ -496,11 +496,12 @@
             });
             const addBtn = document.querySelector('.add-to-cart');
             addBtn.addEventListener('click', () => {
-                const userId = localStorage.getItem('user_id');
-                if (!userId) {
-                    alert("Please log in to add to cart.");
+                const userEmail = localStorage.getItem('rememberedEmail');
+                if (!userEmail) {
+                    alert("You must be logged in to submit a review.");
                     return;
                 }
+
 
                 if (!selected) {
                     alert("Please select a size before adding to cart.");

@@ -11,8 +11,6 @@
     <link rel="stylesheet" href="../styles/sidebar.css" />
     <link rel="stylesheet" href="../styles/products.css" />
     <link rel="stylesheet" href="../styles/topbarAdmin.css" />
-
-
 </head>
 <body>
 
@@ -73,6 +71,21 @@
                 <h3 style="margin:0 0 6px;color:var(--umber)">No products yet</h3>
                 <p style="margin:0 0 14px">Add your first Matchy Matchy item and start building your family-friendly catalog.</p>
                 <button class="btn btn-teal" id="emptyAddBtn"><i class="fa-solid fa-plus"></i> Add Product</button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="empty">
+                <div class="emoji">⏳</div>
+                <h3 style="margin:0 0 6px;color:var(--umber)">Loading products...</h3>
+                <p style="margin:0 0 14px">Please wait while we load your products.</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="empty" style="display:none">
+                <div class="emoji">❌</div>
+                <h3 style="margin:0 0 6px;color:var(--umber)">Failed to load products</h3>
+                <p style="margin:0 0 14px" id="errorMessage">There was an error loading your products. Please try again.</p>
+                <button class="btn btn-teal" id="retryButton"><i class="fa-solid fa-refresh"></i> Try Again</button>
             </div>
 
             <!-- Pagination -->
@@ -143,9 +156,27 @@
             <input class="input" id="customSize" placeholder="Add custom size and press Enter" style="margin-top:8px"/>
         </div>
         <div class="form-item">
-            <label for="pImage">Image URL</label>
-            <input class="input" id="pImage" placeholder="https://…"/>
+            <label>Product Image</label>
+
+            <!-- Dropzone -->
+            <div id="dropzone" style="
+      border:2px dashed var(--teal); border-radius:12px; padding:14px; text-align:center;
+      background:#F9F8F3; cursor:pointer;">
+                <div style="font-size:14px; color:var(--umber);">
+                    <strong>Drop image here</strong> or click to choose
+                </div>
+                <div id="dzPreview" style="margin-top:8px; display:none;">
+                    <img id="dzImg" src="" alt="" style="max-width:100%; border-radius:8px"/>
+                </div>
+            </div>
+
+            <input type="file" id="fileInput" accept="image/*" style="display:none"/>
+
+            <!-- Keep the URL field (hidden) so your existing code keeps working -->
+            <input class="input" id="pImage" placeholder="https://…" style="margin-top:8px" />
+            <small style="color:var(--umber)">If you already have a URL, paste it; otherwise upload.</small>
         </div>
+
     </div>
     <div class="drawer-actions">
         <button class="btn btn-ghost" id="cancelDrawer">Cancel</button>
@@ -154,237 +185,434 @@
 </div>
 
 <script>
-    <!-- ... بداية الصفحة و HTML و CSS نفس ما هو ... -->
+    const PAGE_SIZE = 8;
+    const $ = (sel, ctx = document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+    const currencyILS = (n) => `₪${Number(n).toFixed(2)}`;
 
-        const LS_KEY = 'mm_products_v1';
-        const PAGE_SIZE = 8;
-        const $ = (sel, ctx=document)=>ctx.querySelector(sel);
-        const $$ = (sel, ctx=document)=>Array.from(ctx.querySelectorAll(sel));
-        const currencyILS = (n)=>`₪${Number(n).toFixed(2)}`;
+    // حالات التحميل والعرض
+    const showLoading = () => {
+        $('#loadingState').style.display = 'block';
+        $('#emptyState').style.display = 'none';
+        $('#errorState').style.display = 'none';
+        $('#productGrid').innerHTML = '';
+    };
 
-        /* === Load Sidebar === */
-        document.addEventListener('DOMContentLoaded', () => {
-        fetch('sidebar.html').then(r=>r.text()).then(html=>{
+    const showError = (message) => {
+        $('#loadingState').style.display = 'none';
+        $('#emptyState').style.display = 'none';
+        $('#errorState').style.display = 'block';
+        $('#errorMessage').textContent = message || 'There was an error loading your products. Please try again.';
+    };
+
+    const showContent = () => {
+        $('#loadingState').style.display = 'none';
+        $('#errorState').style.display = 'none';
+    };
+
+    /* === Load Sidebar === */
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('sidebar.html').then(r => r.text()).then(html => {
             const el = $('#sidebar-container');
             el.innerHTML = html;
-            $$('a', el).forEach(a=>{
-                if(a.textContent.trim().toLowerCase()==='products') a.classList.add('active');
+            $$('a', el).forEach(a => {
+                if (a.textContent.trim().toLowerCase() === 'products') a.classList.add('active');
             });
+        }).catch(err => {
+            console.error('Error loading sidebar:', err);
         });
+
+        // تحميل المنتجات عند بدء التحميل
+        loadProducts();
+        loadCollections();
     });
 
-        /* === Load Products === */
+    /* === حالة التطبيق === */
+    let state = {
+        q: '',
+        collection: '',
+        status: '',
+        page: 1,
+        products: [],
+        total: 0,
+        pages: 1
+    };
 
+    /* === تحميل المنتجات === */
+    async function loadProducts() {
+        showLoading();
 
-    function loadProducts(){
-        const raw = localStorage.getItem(LS_KEY);
-        if(!raw){ localStorage.setItem(LS_KEY, JSON.stringify(seed)); return [...seed]; }
-        try { return JSON.parse(raw) || []; } catch { return []; }
+        const params = new URLSearchParams({
+            page: state.page,
+            limit: PAGE_SIZE,
+            search: state.q,
+            collection: state.collection,
+            status: state.status
+        });
+
+        try {
+            const response = await fetch(`../backend/products_api.php?${params}`);
+
+            // التحقق مما إذا كان الرد هو JSON صالح
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Server returned ${response.status}: ${response.statusText}. Response: ${text.substring(0, 100)}...`);
+            }
+
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            state.products = data.products || [];
+            state.total = data.total || 0;
+            state.pages = data.pages || 1;
+
+            showContent();
+            render();
+        } catch (error) {
+            console.error('Error loading products:', error);
+            showError(error.message);
+        }
     }
-        function saveProducts(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
-        let products = loadProducts();
 
-        /* === Filters State === */
-        let state = { q:'', collection:'', status:'', page:1 };
-        function refreshCollections(){
-        const cols = Array.from(new Set(products.map(p=>p.collection))).sort();
-        $('#collectionFilter').innerHTML = `<option value="">All Collections</option>` + cols.map(c=>`<option>${c}</option>`).join('');
+    /* === تحميل الفئات === */
+    async function loadCollections() {
+        try {
+            const response = await fetch('../backend/collections_api.php');  // نفس الرابط
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server did not return JSON');
+            }
+            if (!response.ok) throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+
+            const j = await response.json();
+
+            // لاحظي: الآن الجواب كائن فيه data = مصفوفة آباء
+            const parents = Array.isArray(j.data) ? j.data : [];
+
+            // إن بدك أسماء بس:
+            const names = parents.map(p => p.name);
+
+            $('#collectionFilter').innerHTML =
+                '<option value="">All Collections</option>' +
+                names.map(n => `<option value="${n}">${n}</option>`).join('');
+        } catch (error) {
+            console.error('Error loading collections:', error);
+        }
     }
-        refreshCollections();
 
-        /* === Render Table === */
-        function statusChipClass(st) {
-        if(st==='In Stock') return 'green';
-        if(st==='Low Stock') return 'amber';
-        if(st==='Out of Stock') return 'red';
+
+    /* === عرض المنتجات === */
+    function statusChipClass(st) {
+        if (st === 'In Stock') return 'green';
+        if (st === 'Low Stock') return 'amber';
+        if (st === 'Out of Stock') return 'red';
         return 'amber';
     }
-        function autoStatusByStock(stock){
-        if(stock <= 0) return 'Out of Stock';
-        if(stock < 20) return 'Low Stock';
-        return 'In Stock';
-    }
-        function applyFilters(){
-        let list = [...products];
-        const q = state.q.trim().toLowerCase();
-        if(q) list = list.filter(p => p.name.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q));
-        if(state.collection) list = list.filter(p => p.collection === state.collection);
-        if(state.status) list = list.filter(p => p.status === state.status);
-        return list;
-    }
-        function paginate(list){
-        const total = list.length;
-        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-        if(state.page > pages) state.page = pages;
-        const start = (state.page - 1) * PAGE_SIZE;
-        return {slice: list.slice(start, start + PAGE_SIZE), total, pages};
-    }
-    function render(){
-        const filtered = applyFilters();
-        const {slice,total,pages} = paginate(filtered);
 
-        $('#productGrid').innerHTML = slice.map(p=>`
-  <div class="product-card">
-    <div class="product-media">
-      <img src="${p.image || '../images/placeholder.jpg'}" alt="${p.name}">
-    </div>
+    function render() {
+        $('#productGrid').innerHTML = state.products.map(p => `
+            <div class="product-card">
+                <div class="product-media">
+                    <img src="${p.image_main_url || '../images/placeholder.jpg'}" alt="${p.name}" onerror="this.src='../images/placeholder.jpg'">
+                </div>
 
-    <div class="product-info">
-      <h4 class="product-title">${p.name}</h4>
-      <div class="product-sku">SKU: ${p.sku || '-'}</div>
+                <div class="product-info">
+                    <h4 class="product-title">${p.name}</h4>
+                    <div class="product-sku">SKU: ${p.sku || '-'}</div>
 
-      <div class="product-price">${currencyILS(p.price || 0)}</div>
+                    <div class="product-price">${currencyILS(p.price || 0)}</div>
 
-      <div class="product-meta">
-        <div>Collection: ${p.collection || '-'}</div>
-        <div>Stock: ${p.stock ?? 0}</div>
-      </div>
+                    <div class="product-meta">
+                        <div>Collection: ${p.collections || '-'}</div>
+                        <div>Stock: ${p.stock ?? 0}</div>
+                    </div>
 
-      <div class="product-status">
-        <span class="chip ${statusChipClass(p.status)}">${p.status}</span>
-      </div>
-    </div>
+                    <div class="product-status">
+                        <span class="chip ${statusChipClass(p.status)}">${p.status}</span>
+                    </div>
+                </div>
 
-    <div class="card-actions">
-      <button class="btn btn-ghost" data-edit="${p.id}">
-        <i class="fa-regular fa-pen-to-square"></i>
-      </button>
-      <button class="btn btn-ghost" data-del="${p.id}">
-        <i class="fa-regular fa-trash-can"></i>
-      </button>
-    </div>
-  </div>
-`).join('');
+                <div class="card-actions">
+                    <button class="btn btn-ghost" data-edit="${p.id}">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-ghost" data-del="${p.id}">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
 
-        $('#emptyState').style.display = filtered.length ? 'none' : 'block';
-        $('#pagerInfo').textContent = filtered.length
-            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1, total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} products`
+        $('#emptyState').style.display = state.products.length ? 'none' : 'block';
+        $('#pagerInfo').textContent = state.products.length
+            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1, state.total)}–${Math.min(state.page*PAGE_SIZE,state.total)} of ${state.total} products`
             : 'No results';
 
         $('#pageNums').innerHTML = '';
-        for(let i=1;i<=pages;i++){
+        for(let i = 1; i <= state.pages; i++) {
             const b = document.createElement('button');
-            b.className = 'page-btn' + (i===state.page?' active':'');
+            b.className = 'page-btn' + (i === state.page ? ' active' : '');
             b.textContent = i;
-            b.onclick = ()=>{state.page=i; render();};
+            b.onclick = () => { state.page = i; loadProducts(); };
             $('#pageNums').appendChild(b);
         }
-        $('#prevPage').disabled = state.page<=1;
-        $('#nextPage').disabled = state.page>=pages;
+        $('#prevPage').disabled = state.page <= 1;
+        $('#nextPage').disabled = state.page >= state.pages;
 
-        $$('[data-edit]').forEach(btn=>btn.onclick=()=>openDrawerForEdit(+btn.dataset.edit));
-        $$('[data-del]').forEach(btn=>btn.onclick=()=>deleteProduct(+btn.dataset.del));
+        $$('[data-edit]').forEach(btn => btn.onclick = () => openDrawerForEdit(+btn.dataset.edit));
+        $$('[data-del]').forEach(btn => btn.onclick = () => deleteProduct(+btn.dataset.del));
     }
 
-    render();
-
-        /* === Search & Filters === */
-        function bindSearchAndFilters(){
-        $('#searchInput').oninput = e=>{ state.q = e.target.value; state.page = 1; render(); };
-        $('#collectionFilter').onchange = e=>{ state.collection = e.target.value; state.page = 1; render(); };
-        $('#statusFilter').onchange = e=>{ state.status = e.target.value; state.page = 1; render(); };
-        $('#clearFilters').onclick = ()=>{ state = { q:'', collection:'', status:'', page:1 }; $('#searchInput').value=''; $('#collectionFilter').value=''; $('#statusFilter').value=''; render(); };
+    /* === البحث والتصفية === */
+    function bindSearchAndFilters() {
+        $('#searchInput').oninput = e => { state.q = e.target.value; state.page = 1; loadProducts(); };
+        $('#collectionFilter').onchange = e => { state.collection = e.target.value; state.page = 1; loadProducts(); };
+        $('#statusFilter').onchange = e => { state.status = e.target.value; state.page = 1; loadProducts(); };
+        $('#clearFilters').onclick = () => {
+            state = { q: '', collection: '', status: '', page: 1, products: [], total: 0, pages: 1 };
+            $('#searchInput').value = '';
+            $('#collectionFilter').value = '';
+            $('#statusFilter').value = '';
+            loadProducts();
+        };
+        $('#retryButton').onclick = () => loadProducts();
     }
-        bindSearchAndFilters();
+    bindSearchAndFilters();
 
-        /* === Drawer & Form === */
-        const drawer = $('#drawer');
-        const backdrop = $('#drawerBackdrop');
-        const drawerTitle = $('#drawerTitle');
-        const defaultSizes = ['NB','0-3M','3-6M','6-9M','9-12M','12-18M','18-24M','2T','3T','4T','5-6Y','7-8Y','Mom S','Mom M','Mom L','Dad M','Dad L','One Size'];
-        const sizeChips = $('#sizeChips');
-        let selectedSizes = new Set();
-        const formEls = {
+    /* === الدرج والنموذج === */
+    const drawer = $('#drawer');
+    const backdrop = $('#drawerBackdrop');
+    const drawerTitle = $('#drawerTitle');
+    const defaultSizes = ['NB','0-3M','3-6M','6-9M','9-12M','12-18M','18-24M','2T','3T','4T','5-6Y','7-8Y','Mom S','Mom M','Mom L','Dad M','Dad L','One Size'];
+    const sizeChips = $('#sizeChips');
+    let selectedSizes = new Set();
+    const formEls = {
         name: $('#pName'), sku: $('#pSKU'), price: $('#pPrice'), stock: $('#pStock'),
         collection: $('#pCollection'), status: $('#pStatus'), desc: $('#pDesc'), image: $('#pImage')
     };
-        let editingId = null;
+    let editingId = null;
 
-        function renderSizeChips(){
+    function renderSizeChips() {
         sizeChips.innerHTML = '';
-        defaultSizes.forEach(s=>{
-        const b = document.createElement('button');
-        b.type='button';
-        b.className='chip-toggle' + (selectedSizes.has(s)?' active':'');
-        b.textContent = s;
-        b.onclick = ()=>{ selectedSizes.has(s) ? selectedSizes.delete(s) : selectedSizes.add(s); renderSizeChips(); };
-        sizeChips.appendChild(b);
-    });
+        defaultSizes.forEach(s => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'chip-toggle' + (selectedSizes.has(s) ? ' active' : '');
+            b.textContent = s;
+            b.onclick = () => { selectedSizes.has(s) ? selectedSizes.delete(s) : selectedSizes.add(s); renderSizeChips(); };
+            sizeChips.appendChild(b);
+        });
     }
-        $('#customSize').onkeydown = e=>{
-        if(e.key==='Enter' && e.target.value.trim()){
-        selectedSizes.add(e.target.value.trim());
-        e.target.value=''; renderSizeChips();
-    }
+
+    $('#customSize').onkeydown = e => {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            selectedSizes.add(e.target.value.trim());
+            e.target.value = '';
+            renderSizeChips();
+        }
     };
 
-        function resetForm(){
+    function resetForm() {
         editingId = null;
         drawerTitle.textContent = 'Add Product';
-        Object.values(formEls).forEach(el=>el.value='');
+        Object.values(formEls).forEach(el => el.value = '');
         selectedSizes = new Set(['One Size']);
         renderSizeChips();
-        $('#pStatus').value='Auto (by stock)';
+        $('#pStatus').value = 'Auto (by stock)';
     }
-        function openDrawer(){ drawer.classList.add('open'); backdrop.classList.add('show'); }
-        function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); resetForm(); }
-        function openDrawerForAdd(){ resetForm(); openDrawer(); }
-        function openDrawerForEdit(id){
-        const p = products.find(x=>x.id===id); if(!p) return;
-        editingId = id;
-        drawerTitle.textContent = 'Edit Product';
-        Object.entries(formEls).forEach(([k,el])=>el.value = p[k] || '');
-        formEls.price.value = p.price || 0;
-        formEls.stock.value = p.stock || 0;
-        selectedSizes = new Set(p.sizes||[]);
-        renderSizeChips();
+
+    function openDrawer() {
+        drawer.classList.add('open');
+        backdrop.classList.add('show');
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove('open');
+        backdrop.classList.remove('show');
+        resetForm();
+    }
+
+    function openDrawerForAdd() {
+        resetForm();
         openDrawer();
     }
 
-        function persistFromForm(){
+    async function openDrawerForEdit(id) {
+        try {
+            const response = await fetch(`../backend/products_api.php?id=${id}`);
+
+            // التحقق من أن الرد هو JSON صالح
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server did not return JSON');
+            }
+
+            const product = await response.json();
+
+            editingId = id;
+            drawerTitle.textContent = 'Edit Product';
+
+            formEls.name.value = product.name || '';
+            formEls.sku.value = product.sku || '';
+            formEls.price.value = product.price || 0;
+            formEls.stock.value = product.stock || 0;
+            formEls.collection.value = product.collections || '';
+            formEls.status.value = product.status || 'Auto (by stock)';
+            formEls.desc.value = product.description || '';
+            formEls.image.value = product.image_main_url || '';
+
+            selectedSizes = new Set(product.sizes || []);
+            renderSizeChips();
+
+            openDrawer();
+        } catch (error) {
+            console.error('Error loading product:', error);
+            alert('Failed to load product details.');
+        }
+    }
+
+    function validateForm() {
         const name = formEls.name.value.trim();
         const sku = formEls.sku.value.trim();
-        const price = Number(formEls.price.value||0);
-        const stock = Math.max(0, Number(formEls.stock.value||0));
-        const collection = formEls.collection.value;
-        let status = formEls.status.value;
-        const desc = formEls.desc.value.trim();
-        const image = formEls.image.value.trim();
-        const sizes = Array.from(selectedSizes);
-        if(!name || !sku) { alert('Please enter product name and SKU'); return null; }
-        if(price<0) { alert('Price cannot be negative'); return null; }
-        if(status==='Auto (by stock)') status = autoStatusByStock(stock);
-        return {name, sku, price, stock, collection, status, desc, image, sizes};
+        const price = Number(formEls.price.value || 0);
+
+        if (!name) { alert('Please enter product name'); return false; }
+        if (!sku) { alert('Please enter product SKU'); return false; }
+        if (price < 0) { alert('Price cannot be negative'); return false; }
+
+        return true;
     }
 
-        $('#saveProduct').onclick = ()=>{
-        const payload = persistFromForm(); if(!payload) return;
-        if(editingId){ products = products.map(p=>p.id===editingId ? {...p, ...payload} : p); }
-        else { const nextId = (products.reduce((m,p)=>Math.max(m,p.id),0) || 0) + 1; products.push({id: nextId, ...payload}); }
-        saveProducts(products); refreshCollections(); closeDrawer(); render();
-    };
-        $('#addProductBtn').onclick = openDrawerForAdd;
-        $('#emptyAddBtn').onclick = openDrawerForAdd;
-        backdrop.onclick = closeDrawer;
-        $('#cancelDrawer').onclick = closeDrawer;
+    async function saveProduct() {
+        if (!validateForm()) return;
 
-        function deleteProduct(id){
-        const p = products.find(x=>x.id===id);
-        if(p && confirm(`Delete "${p.name}"?`)){
-        products = products.filter(x=>x.id!==id);
-        saveProducts(products); refreshCollections(); render();
+        const payload = {
+            id: editingId,
+            name: formEls.name.value.trim(),
+            sku: formEls.sku.value.trim(),
+            price: Number(formEls.price.value || 0),
+            stock: Math.max(0, Number(formEls.stock.value || 0)),
+            collection: formEls.collection.value,
+            status: formEls.status.value,
+            description: formEls.desc.value.trim(),
+            image: formEls.image.value.trim(),
+            sizes: Array.from(selectedSizes)
+        };
+
+        try {
+            const response = await fetch('../backend/products_api.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            // التحقق من أن الرد هو JSON صالح
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Server returned ${response.status}: ${response.statusText}. Response: ${text.substring(0, 100)}...`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                closeDrawer();
+                loadProducts();
+                loadCollections();
+            } else {
+                alert('Failed to save product: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error saving product:', error);
+            alert('Failed to save product. Please try again.');
+        }
     }
+
+    async function deleteProduct(id) {
+        const product = state.products.find(p => p.id === id);
+        if (!product || !confirm(`Delete "${product.name}"?`)) return;
+
+        try {
+            const response = await fetch(`../backend/products_api.php?id=${id}`, {
+                method: 'DELETE'
+            });
+
+            // التحقق من أن الرد هو JSON صالح
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Server returned ${response.status}: ${response.statusText}. Response: ${text.substring(0, 100)}...`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                loadProducts();
+                loadCollections();
+            } else {
+                alert('Failed to delete product: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('Failed to delete product. Please try again.');
+        }
     }
-        $('#checkAll').onchange = e=>$$('tbody input[type="checkbox"]').forEach(cb=>cb.checked=e.target.checked);
 
-
-
-
-
+    $('#saveProduct').onclick = saveProduct;
+    $('#addProductBtn').onclick = openDrawerForAdd;
+    $('#emptyAddBtn').onclick = openDrawerForAdd;
+    backdrop.onclick = closeDrawer;
+    $('#cancelDrawer').onclick = closeDrawer;
 </script>
+<script>
+    (function setupUpload(){
+        const dz   = document.getElementById('dropzone');
+        const fi   = document.getElementById('fileInput');
+        const urlI = document.getElementById('pImage');
+        const prev = document.getElementById('dzPreview');
+        const img  = document.getElementById('dzImg');
+
+        const pick = ()=> fi.click();
+        const stop = e => { e.preventDefault(); e.stopPropagation(); };
+
+        ['click'].forEach(ev => dz.addEventListener(ev, pick));
+        ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => {
+            stop(e); dz.style.background = '#E4CFC333';
+        }));
+        ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => {
+            stop(e); dz.style.background = '#F9F8F3';
+        }));
+
+        dz.addEventListener('drop', e => {
+            const f = e.dataTransfer.files?.[0]; if (f) upload(f);
+        });
+        fi.addEventListener('change', e => {
+            const f = e.target.files?.[0]; if (f) upload(f);
+        });
+
+        async function upload(file){
+            const fd = new FormData();
+            fd.append('file', file);
+            try{
+                const res = await fetch('../backend/upload_image.php', { method:'POST', body:fd });
+                const j   = await res.json();
+                if (!j.ok) throw new Error(j.error || 'Upload failed');
+                urlI.value = j.url;               // save URL for your existing payload
+                img.src = j.url; prev.style.display='block';
+            }catch(err){
+                alert(err.message);
+            }
+        }
+    })();
+</script>
+
+
 <script src="../js/adminbar.js" defer></script>
 <script src="../js/includeadminBar.js" defer></script>
-
 
 </body>
 </html>
