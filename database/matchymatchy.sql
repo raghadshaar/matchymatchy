@@ -113,85 +113,83 @@
 -- --
 -- --
 -- --
--- -- ===== TYPES: قيمة واحدة لكل منتج =====
--- CREATE TABLE IF NOT EXISTS product_types (
---                                              id INT AUTO_INCREMENT PRIMARY KEY,
---                                              name VARCHAR(50) NOT NULL UNIQUE
---     );
---
--- ALTER TABLE products
---     ADD COLUMN type_id INT NULL,
---   ADD CONSTRAINT fk_products_type
---     FOREIGN KEY (type_id) REFERENCES product_types(id)
---     ON DELETE SET NULL;
---
--- -- أمثلة أنواع
--- INSERT IGNORE INTO product_types (name) VALUES
--- ('Blouse'), ('Pajama'), ('Pants'), ('Skirt'), ('Dress'), ('T-shirt'), ('Set');
---
--- -- ===== FABRICS: متعدد =====
--- CREATE TABLE IF NOT EXISTS fabric_options (
---                                               id INT AUTO_INCREMENT PRIMARY KEY,
---                                               name VARCHAR(50) NOT NULL UNIQUE
---     );
---
--- CREATE TABLE IF NOT EXISTS product_fabrics (
---                                                product_id INT NOT NULL,
---                                                fabric_id  INT NOT NULL,
---                                                PRIMARY KEY (product_id, fabric_id),
---     CONSTRAINT fk_pf_p FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
---     CONSTRAINT fk_pf_f FOREIGN KEY (fabric_id)  REFERENCES fabric_options(id) ON DELETE CASCADE
---     );
---
--- -- أمثلة أقمشة
--- INSERT IGNORE INTO fabric_options (name) VALUES
--- ('Cotton'), ('Organic Cotton'), ('Bamboo'), ('Modal'), ('Polyester');
---
--- -- ===== COLORS: متعدد =====
--- CREATE TABLE IF NOT EXISTS color_options (
---                                              id INT AUTO_INCREMENT PRIMARY KEY,
---                                              name VARCHAR(40) NOT NULL UNIQUE,
---     hex  CHAR(7) NULL
---     );
---
--- CREATE TABLE IF NOT EXISTS product_colors (
---                                               product_id INT NOT NULL,
---                                               color_id   INT NOT NULL,
---                                               PRIMARY KEY (product_id, color_id),
---     CONSTRAINT fk_pc_p FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
---     CONSTRAINT fk_pc_c FOREIGN KEY (color_id)   REFERENCES color_options(id) ON DELETE CASCADE
---     );
---
--- -- أمثلة ألوان
--- INSERT IGNORE INTO color_options (name, hex) VALUES
--- ('White','#FFFFFF'),('Black','#000000'),('Pink','#FFC0CB'),
--- ('Blue','#0000FF'),('Green','#008000'),('Ivory','#FFFFF0');
--- -- type
--- UPDATE products SET type_id = (SELECT id FROM product_types WHERE name='Set')
--- WHERE slug IN ('baby-boy-casual-outfit-set','toddler-disney-pajama-set-boys','family-matching-pajama-set');
---
--- UPDATE products SET type_id = (SELECT id FROM product_types WHERE name='Dress')
--- WHERE slug IN ('baby-girl-ruffle-dress','yellow-ruffle-party-dress','girls-summer-floral-dress');
---
--- UPDATE products SET type_id = (SELECT id FROM product_types WHERE name='T-shirt')
--- WHERE slug IN ('baby-boy-striped-pocket-tee-green');
---
--- -- fabrics
--- INSERT IGNORE INTO product_fabrics(product_id, fabric_id)
--- SELECT p.id, f.id
--- FROM products p JOIN fabric_options f ON f.name='Cotton'
--- WHERE p.slug IN ('baby-boy-casual-outfit-set','baby-boy-striped-pocket-tee-green',
---                  'baby-girl-ruffle-dress','toddler-disney-pajama-set-boys','family-matching-pajama-set');
---
--- -- colors
--- INSERT IGNORE INTO product_colors(product_id, color_id)
--- SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Green'
--- WHERE p.slug='baby-boy-striped-pocket-tee-green';
---
--- INSERT IGNORE INTO product_colors(product_id, color_id)
--- SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Ivory'
--- WHERE p.slug='family-matching-pajama-set';
---
+CREATE TABLE IF NOT EXISTS product_types (
+                                             id INT AUTO_INCREMENT PRIMARY KEY,
+                                             name VARCHAR(50) NOT NULL UNIQUE
+    );
+
+ALTER TABLE products
+    ADD COLUMN type_id INT NULL,
+  ADD CONSTRAINT fk_products_type
+    FOREIGN KEY (type_id) REFERENCES product_types(id)
+    ON DELETE SET NULL;
+
+INSERT IGNORE INTO product_types (name) VALUES
+('Blouse'), ('Pajama'), ('Pants'), ('Skirt'), ('Dress'), ('T-shirt'), ('Set');
+
+-- ===== FABRICS: متعدد =====
+CREATE TABLE IF NOT EXISTS fabric_options (
+                                              id INT AUTO_INCREMENT PRIMARY KEY,
+                                              name VARCHAR(50) NOT NULL UNIQUE
+    );
+
+CREATE TABLE IF NOT EXISTS product_fabrics (
+                                               product_id INT NOT NULL,
+                                               fabric_id  INT NOT NULL,
+                                               PRIMARY KEY (product_id, fabric_id),
+    CONSTRAINT fk_pf_p FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    CONSTRAINT fk_pf_f FOREIGN KEY (fabric_id)  REFERENCES fabric_options(id) ON DELETE CASCADE
+    );
+
+-- أمثلة أقمشة
+INSERT IGNORE INTO fabric_options (name) VALUES
+('Cotton'), ('Organic Cotton'), ('Bamboo'), ('Modal'), ('Polyester');
+
+-- ===== COLORS: متعدد =====
+CREATE TABLE IF NOT EXISTS color_options (
+                                             id INT AUTO_INCREMENT PRIMARY KEY,
+                                             name VARCHAR(40) NOT NULL UNIQUE,
+    hex  CHAR(7) NULL
+    );
+
+CREATE TABLE IF NOT EXISTS product_colors (
+                                              product_id INT NOT NULL,
+                                              color_id   INT NOT NULL,
+                                              PRIMARY KEY (product_id, color_id),
+    CONSTRAINT fk_pc_p FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    CONSTRAINT fk_pc_c FOREIGN KEY (color_id)   REFERENCES color_options(id) ON DELETE CASCADE
+    );
+
+-- أمثلة ألوان
+INSERT IGNORE INTO color_options (name, hex) VALUES
+('White','#FFFFFF'),('Black','#000000'),('Pink','#FFC0CB'),
+('Blue','#0000FF'),('Green','#008000'),('Ivory','#FFFFF0');
+-- type
+UPDATE products SET type_id = (SELECT id FROM product_types WHERE name='Set')
+WHERE slug IN ('baby-boy-casual-outfit-set','toddler-disney-pajama-set-boys','family-matching-pajama-set');
+
+UPDATE products SET type_id = (SELECT id FROM product_types WHERE name='Dress')
+WHERE slug IN ('baby-girl-ruffle-dress','yellow-ruffle-party-dress','girls-summer-floral-dress');
+
+UPDATE products SET type_id = (SELECT id FROM product_types WHERE name='T-shirt')
+WHERE slug IN ('baby-boy-striped-pocket-tee-green');
+
+-- fabrics
+INSERT IGNORE INTO product_fabrics(product_id, fabric_id)
+SELECT p.id, f.id
+FROM products p JOIN fabric_options f ON f.name='Cotton'
+WHERE p.slug IN ('baby-boy-casual-outfit-set','baby-boy-striped-pocket-tee-green',
+                 'baby-girl-ruffle-dress','toddler-disney-pajama-set-boys','family-matching-pajama-set');
+
+-- colors
+INSERT IGNORE INTO product_colors(product_id, color_id)
+SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Green'
+WHERE p.slug='baby-boy-striped-pocket-tee-green';
+
+INSERT IGNORE INTO product_colors(product_id, color_id)
+SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Ivory'
+WHERE p.slug='family-matching-pajama-set';
+
 -- ========== Product Types ==========
 UPDATE products SET type_id = (SELECT id FROM product_types WHERE name = 'Set')
 WHERE slug IN ('baby-boy-casual-outfit-set', 'toddler-disney-pajama-set-boys', 'family-matching-pajama-set');

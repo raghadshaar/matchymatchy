@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About Us • Matchy Matchy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script>
+
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary:'#008080', secondary:'#FADADD' },
+          borderRadius: { 'button':'8px' }
+        }
+      }
+    }
+  </script>
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+
+  <!-- Project styles -->
+  <link rel="stylesheet" href="../styles/style.css"/>
+
+  <style>
+    :root{
+      --baby: #F9F8F3;
+      --jet: #383838;
+      --teal: #008080;
+      --pink: #E4CFC3;
+      --umber: #715E51;
+      --white: #f7f7f7; /* بديل ناعم بدلاً من pure white */
+    }
+
+    body{ background: var(--baby); color: var(--jet); font-family: "Poppins", system-ui, sans-serif; }
+
+    .container{
+      max-width: 1200px;
+      margin-inline: auto;
+      padding-inline: clamp(24px, 6vw, 96px);
+      box-sizing: border-box;
+    }
+
+
+
+
+    .hero{
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      background:
+              radial-gradient(1200px 480px at 10% -10%, rgba(0,128,128,.08), transparent),
+              radial-gradient(900px 420px at 100% 0%, rgba(228,207,195,.23), transparent),
+              var(--baby);
+    }
+    .hero-inner{ padding: 70px 0 40px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 24px; align-items: center; }
+    @media (max-width: 900px){ .hero-inner{ grid-template-columns: 1fr; padding: 56px 0 24px; } }
+
+    .brand-mark{
+      display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+    }
+    .brand-mark img{ height: 52px; width: 52px; object-fit: contain; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.05); background: var(--white); }
+    .brand-mark .word{
+      font-family: "Pacifico", cursive; font-size: 38px; color: var(--teal); letter-spacing: .3px;
+      text-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+
+    .hero h1{ font-size: 36px; line-height: 1.18; margin: 6px 0 12px; }
+    .hero p.lead{ font-size: 16px; color: #4b4b4b; max-width: 58ch; }
+
+    .hero-card{
+      background: linear-gradient(135deg, rgba(0,128,128,.08), rgba(228,207,195,.25));
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 18px; padding: 22px; box-shadow: 0 12px 30px rgba(0,0,0,.06);
+    }
+    .hero-points{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+    @media (max-width: 520px){ .hero-points{ grid-template-columns: 1fr; } }
+    .point{
+      background: var(--white); border: 1px dashed rgba(0,0,0,.08); border-radius: 14px;
+      padding: 14px; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .point i{ font-size: 20px; color: var(--teal); margin-top: 2px; }
+
+    .wave{ height: 24px; background: linear-gradient(to right, rgba(0,128,128,.18), rgba(228,207,195,.25)); mask: radial-gradient(12px 12px at 12px 12px, #000 99%, transparent 101%) repeat-x;  mask-size: 24px 24px;  }
+
+    /* ===== Values ===== */
+    .section{ padding: 48px 0; }
+    .section h2{ font-size: 28px; margin-bottom: 16px; }
+    .muted{ color: #666; }
+
+    .values{ display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+    @media (max-width: 1000px){ .values{ grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 560px){ .values{ grid-template-columns: 1fr; } }
+
+    .value{
+      background: var(--white);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px; padding: 18px;
+      display: grid; gap: 8px;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .value:hover{ transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.08); }
+    .value i{ color: var(--teal); font-size: 22px; }
+
+    /* ===== Story strip ===== */
+    .story{
+      background: linear-gradient(180deg, rgba(228,207,195,.25), rgba(0,128,128,.08));
+      border-top: 1px solid rgba(0,0,0,.06);
+      border-bottom: 1px solid rgba(0,0,0,.06);
+    }
+    .story .grid{ display: grid; grid-template-columns: 1.2fr .8fr; gap: 20px; align-items: center; }
+    @media (max-width: 900px){ .story .grid{ grid-template-columns: 1fr; } }
+    .story-card{
+      background: var(--baby); border: 1px solid rgba(0,0,0,.06); border-radius: 16px; padding: 18px;
+    }
+    .badge{ display: inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius: 999px; background: rgba(0,128,128,.12); color: var(--teal); font-weight: 600; font-size: 12px; border: 1px solid rgba(0,128,128,.18); }
+
+    /* ===== Stats / CTA ===== */
+    .stats{ display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 14px; }
+    @media (max-width: 700px){ .stats{ grid-template-columns: 1fr; } }
+    .stat{
+      background: var(--white); border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 16px; text-align: center;
+    }
+    .stat .big{ font-size: 26px; color: var(--teal); font-weight: 700; }
+
+    .cta{
+      background: linear-gradient(135deg, rgba(0,128,128,.14), rgba(228,207,195,.28));
+      border: 1px solid rgba(0,0,0,.06); border-radius: 18px; padding: 20px;
+      display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin-top: 22px;
+    }
+    @media (max-width: 680px){ .cta{ grid-template-columns: 1fr; } }
+    .btn{
+      background: var(--teal); color: #f2f2f2; border: 1px solid rgba(0,0,0,.08);
+      border-radius: 12px; padding: 10px 16px; font-weight: 600; cursor: pointer;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.02); }
+
+    .mock{
+      aspect-ratio: 4/3; border-radius: 16px; background:
+            linear-gradient(135deg, rgba(0,128,128,.2), rgba(228,207,195,.4)),
+            url('../images/matching.jpg') center/cover no-repeat;
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 16px 40px rgba(0,0,0,.08);
+    }
+    .hero-inner{
+      padding: 70px 0 40px;
+      padding-inline: clamp(16px, 5vw, 64px);
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 24px;
+      align-items: center;
+    }
+    @media (max-width: 900px){
+      .hero-inner{
+        grid-template-columns: 1fr;
+        padding: 56px 0 24px;
+        padding-inline: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER include -->
+<div id="header-slot"></div>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="container hero-inner">
+    <div>
+      <div class="brand-mark">
+        <div class="word">Matchy Matchy</div>
+      </div>
+
+      <h1>Comfort-first fashion for babies, toddlers & kids.</h1>
+      <p class="lead">We design pieces that are soft, safe, and easy to mix-and-match—so every morning starts with a smile.</p>
+    </div>
+
+    <aside class="hero-card">
+      <strong>What families love</strong>
+      <div class="hero-points">
+        <div class="point"><i class="ri-leaf-line"></i><div><b>Gentle fabrics</b><br>Soft, breathable, and skin‑friendly.</div></div>
+        <div class="point"><i class="ri-heart-2-line"></i><div><b>Comfort fit</b><br>Move, jump, and nap with ease.</div></div>
+        <div class="point"><i class="ri-drop-line"></i><div><b>Pastel palette</b><br>Modern, calm colors that kids love.</div></div>
+        <div class="point"><i class="ri-shield-check-line"></i><div><b>Durable & safe</b><br>Made to last and tested for quality.</div></div>
+      </div>
+    </aside>
+  </div>
+  <div class="wave"></div>
+</header>
+
+<!-- ===== VALUES ===== -->
+<section class="section">
+  <div class="container">
+    <h2>Our Values</h2>
+    <p class="muted">Four pillars guide everything we make at Matchy Matchy.</p>
+
+    <div class="values">
+      <div class="value">
+        <i class="ri-star-smile-line"></i>
+        <h3>Quality First</h3>
+        <p>Carefully selected materials and thoughtful construction for everyday wear.</p>
+      </div>
+      <div class="value">
+        <i class="ri-hand-heart-line"></i>
+        <h3>Comfort & Safety</h3>
+        <p>Soft seams, safe dyes, and sizes that feel just right from day one.</p>
+      </div>
+      <div class="value">
+        <i class="ri-seedling-line"></i>
+        <h3>Sustainability</h3>
+        <p>We prefer eco‑friendly fabrics and mindful packaging whenever possible.</p>
+      </div>
+      <div class="value">
+        <i class="ri-group-line"></i>
+        <h3>For Every Stage</h3>
+        <p>From newborn essentials to big‑kid favorites—styles that grow with them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STORY ===== -->
+<section class="story section">
+  <div class="container grid">
+    <div class="story-card">
+      <span class="badge"><i class="ri-sparkling-2-line"></i> Our Story</span>
+      <h2 style="margin:10px 0 8px;">Born from family moments</h2>
+      <p class="muted">
+        We started with matching pajamas and a simple goal: bring families closer with
+        pieces that feel good and look even better. Today, we create baby, toddler, and kids
+        collections inspired by calm pastels and cozy textures—made to be worn, loved, and passed on.
+      </p>
+
+      <div class="stats">
+        <div class="stat"><div class="big">50k+</div><div>Happy items worn</div></div>
+        <div class="stat"><div class="big">4.7★</div><div>Average rating</div></div>
+        <div class="stat"><div class="big">30+</div><div>Comfort-first designs</div></div>
+      </div>
+
+      <div class="cta">
+        <div>
+          <strong>Have questions?</strong><br>
+          Our team is here to help with sizes, fits, and orders.
+        </div>
+        <a class="btn" href="contact.html"><i class="ri-message-3-line" style="margin-right:8px;"></i>Contact Us</a>
+      </div>
+    </div>
+
+    <div class="mock" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ===== LOOKING AHEAD ===== -->
+<section class="section">
+  <div class="container">
+    <h2>Looking Ahead</h2>
+    <p class="muted">
+      We’re constantly sketching new ideas—from family matching sets to everyday staples—without
+      losing the heart of our brand: celebrating the joy of childhood and supporting parents with
+      thoughtful, reliable designs.
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER include -->
+<div id="foot"></div>
+
+<script>
+  fetch('header.html').then(r=>r.text()).then(h=>{
+    document.getElementById('header-slot').innerHTML = h;
+  });
+  fetch('footer.html').then(r=>r.text()).then(f=>{
+    document.getElementById('foot').innerHTML = f;
+  });
+</script>
+<script src="../js/header.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Settings • Matchy Matchy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        :root{ --baby:#F9F8F3; --teal:#008080; --pink:#FADADD; --jet:#383838; }
+        body{
+            font-family:'Poppins',sans-serif;
+            background: linear-gradient(135deg, var(--pink), var(--baby), var(--teal));
+            color:var(--jet);
+        }
+        .card{ background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:18px; box-shadow:0 16px 40px rgba(0,0,0,.08); }
+        .input{ width:100%; padding:12px; border:1px solid rgba(0,0,0,.12); border-radius:10px; }
+        .btn{ background:var(--teal); color:#fff; padding:12px 16px; border-radius:12px; font-weight:600; cursor:pointer; }
+        .btn:hover{ filter:brightness(1.03); }
+        .logout{ background:#e74c3c; }
+        .logout:hover{ filter:brightness(1.05); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+
+<main class="w-full max-w-lg card p-6">
+    <!-- Logo -->
+    <div class="text-center mb-4">
+        <div style="font-family:'Pacifico',cursive; font-size:34px; color:var(--teal);">Matchy Matchy</div>
+    </div>
+
+    <!-- Avatar -->
+    <div class="flex flex-col items-center mb-6">
+        <img id="avatar" src="" alt="Avatar"
+             class="w-24 h-24 rounded-full border shadow object-cover mb-2"
+             onerror="this.src='https://ui-avatars.com/api/?name=User&background=FADADD&color=008080'">
+        <label class="text-sm text-gray-600 cursor-pointer">
+            Change Image
+            <input type="file" id="avatar_file" accept="image/*" class="hidden">
+        </label>
+    </div>
+
+    <!-- Logout -->
+    <div class="text-center mb-6">
+        <button type="button" class="btn logout" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Form -->
+    <form id="settings-form" class="grid gap-3">
+        <input type="hidden" id="id" name="id" value="6"><!-- استبدليه بقيمة Session -->
+
+        <div>
+            <label class="block text-sm mb-1">First Name</label>
+            <input class="input" id="first_name" name="first_name" placeholder="First Name" required>
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Last Name</label>
+            <input class="input" id="last_name" name="last_name" placeholder="Last Name" required>
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Email</label>
+            <input class="input" id="email" name="email" readonly style="background:#eef5ff; color:#555;">
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Avatar URL</label>
+            <input class="input" id="avatar_url" name="avatar" placeholder="https://...">
+        </div>
+        <div>
+            <label class="block text-sm mb-1">New Password (optional)</label>
+            <input class="input" type="password" id="password" name="password" placeholder="••••••••" style="background:#eef5ff;">
+        </div>
+        <button type="submit" class="btn w-full mt-1">Save Changes</button>
+        <p id="response" class="text-center text-sm mt-2"></p>
+    </form>
+</main>
+
+<script>
+    const uid = document.getElementById('id').value;
+
+    // جلب البيانات
+    fetch(`../backend/settings.php?user_id=${uid}`)
+        .then(r => r.json())
+        .then(u => {
+            document.getElementById('first_name').value = u.first_name || '';
+            document.getElementById('last_name').value  = u.last_name  || '';
+            document.getElementById('email').value      = u.email      || '';
+            document.getElementById('avatar').src       = u.avatar     || '';
+            document.getElementById('avatar_url').value = u.avatar     || '';
+        });
+
+    document.getElementById('avatar_file').addEventListener('change', (e)=>{
+        const file = e.target.files[0];
+        if(file){
+            const url = URL.createObjectURL(file);
+            document.getElementById('avatar').src = url;
+        }
+    });
+
+    // حفظ التغييرات
+    document.getElementById('settings-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        fetch('../backend/settings.php', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(j => {
+                document.getElementById('response').textContent = j.message || 'Saved.';
+                document.getElementById('avatar').src = document.getElementById('avatar_url').value;
+            });
+    });
+
+    function logout(){ window.location.href = 'login.html'; }
+</script>
+</body>
+</html>

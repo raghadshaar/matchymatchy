@@ -558,7 +558,6 @@
         try {
             const response = await fetch(`../backend/products_api.php?id=${id}`);
 
-            // التحقق من أن الرد هو JSON صالح
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('Server did not return JSON');

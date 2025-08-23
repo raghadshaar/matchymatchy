@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #F9F8F3; color: #383838; }
+        .input-style { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; }
+        .btn { background-color: #008080; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body class="min-h-screen flex justify-center items-center">
+<div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl">
+    <div class="text-center">
+        <img id="avatar" src="" class="w-24 h-24 rounded-full mx-auto mb-4" alt="Avatar">
+        <h2 id="fullname" class="text-xl font-semibold mb-2"></h2>
+        <p id="email" class="text-gray-600 mb-4"></p>
+        <button onclick="logout()" class="btn bg-red-500 hover:bg-red-600 mb-6">Logout</button>
+    </div>
+
+    <form id="update-form">
+        <input type="hidden" name="id" value="1" id="user_id">
+        <input type="text" name="first_name" id="first_name" placeholder="First Name" class="input-style">
+        <input type="text" name="last_name" id="last_name" placeholder="Last Name" class="input-style">
+        <input type="url" name="avatar" id="avatar_url" placeholder="Avatar URL" class="input-style">
+        <input type="password" name="password" placeholder="New Password" class="input-style">
+        <button type="submit" class="btn w-full">Save Changes</button>
+        <p id="message" class="mt-3 text-center text-sm"></p>
+    </form>
+</div>
+
+<script>
+    const userId = 1; // Replace this with session if needed
+
+    // Fetch user info
+    fetch(`../PHP/settings.php?user_id=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('first_name').value = data.first_name;
+            document.getElementById('last_name').value = data.last_name;
+            document.getElementById('avatar_url').value = data.avatar;
+            document.getElementById('email').textContent = data.email;
+            document.getElementById('fullname').textContent = `${data.first_name} ${data.last_name}`;
+            document.getElementById('avatar').src = data.avatar;
+        });
+
+    // Submit updated info
+    document.getElementById('update-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('../PHP/settings.php', {
+            method: 'POST',
+            body: formData
+        }).then(res => res.json())
+            .then(data => {
+                document.getElementById('message').textContent = data.message;
+            });
+    });
+
+    function logout() {
+        window.location.href = 'login.html'; // Redirect or destroy session
+    }
+</script>
+</body>
+</html>
