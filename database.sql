@@ -153,59 +153,121 @@ CREATE TABLE IF NOT EXISTS coupons (
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Carts are per session (works for anonymous users; attach user_id if you have login)
-CREATE TABLE IF NOT EXISTS carts (
-                                     id          INT AUTO_INCREMENT PRIMARY KEY,
-                                     session_id  VARCHAR(64) NOT NULL UNIQUE,
-    user_id     INT NULL,
-    coupon_id   INT NULL,
-    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (coupon_id) REFERENCES coupons(id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS carts;
+SET FOREIGN_KEY_CHECKS = 1;
 
--- Cart items snapshot the price/currency at the time they’re added
-CREATE TABLE IF NOT EXISTS cart_items (
-                                          id            INT AUTO_INCREMENT PRIMARY KEY,
-                                          cart_id       INT NOT NULL,
-                                          product_id    INT NOT NULL,
-                                          unit_price    DECIMAL(10,2) NOT NULL,
-    unit_currency CHAR(3) NOT NULL DEFAULT 'ILS',
-    quantity      INT NOT NULL,
-    line_total    DECIMAL(10,2) NOT NULL,
-    UNIQUE KEY uniq_cart_line (cart_id, product_id),
-    FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+CREATE TABLE carts (
+                       id INT AUTO_INCREMENT PRIMARY KEY,
+                       user_id INT NOT NULL UNIQUE,  -- must match users.id type/sign
+                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                       CONSTRAINT fk_carts_user
+                           FOREIGN KEY (user_id) REFERENCES users(id)
+                               ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Orders (summary) + order_items (snapshots)
+CREATE TABLE cart_items (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            cart_id INT NOT NULL,
+                            product_id INT NOT NULL,
+                            size VARCHAR(64) NOT NULL DEFAULT '',
+                            quantity INT NOT NULL,
+                            unit_price DECIMAL(10,2) NOT NULL,
+                            added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            UNIQUE KEY uniq_cart_product (cart_id, product_id, size),
+                            CONSTRAINT fk_items_cart
+                                FOREIGN KEY (cart_id) REFERENCES carts(id)
+                                    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ORDERS: رأس الطلب
 CREATE TABLE IF NOT EXISTS orders (
                                       id              INT AUTO_INCREMENT PRIMARY KEY,
-                                      public_id       VARCHAR(32) NOT NULL UNIQUE,          -- e.g., ORD-2025-001
-    order_date      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    customer_name   VARCHAR(120) NOT NULL,
+                                      public_id       VARCHAR(32) NOT NULL UNIQUE,               -- مثل: ORD-2025-000123
+    user_id         INT NULL,                                   -- ربط اختياري مع جدول users
+    order_date      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    customer_name   VARCHAR(100) NOT NULL,
     customer_email  VARCHAR(255) NOT NULL,
-    customer_phone  VARCHAR(40),
-    customer_address TEXT,
+    customer_phone  VARCHAR(30)  NULL,
+    customer_address TEXT        NULL,
+
     subtotal        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     shipping        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     tax             DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     total           DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    currency        CHAR(3) NOT NULL DEFAULT 'ILS',
+
     payment_status  ENUM('Paid','Pending','Failed','Refunded','COD') NOT NULL DEFAULT 'Pending',
     order_status    ENUM('Pending','Processing','Shipped','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
-    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    KEY idx_date (order_date),
+    KEY idx_status (order_status),
+    KEY idx_payment (payment_status),
+    KEY idx_public_id (public_id),
+    CONSTRAINT fk_orders_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+                                                                 ON DELETE SET NULL ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ORDER ITEMS: تفاصيل العناصر
 CREATE TABLE IF NOT EXISTS order_items (
-                                           id            INT AUTO_INCREMENT PRIMARY KEY,
-                                           order_id      INT NOT NULL,
-                                           product_id    INT NOT NULL,
-                                           product_name  VARCHAR(160) NOT NULL,      -- snapshot
-    unit_price    DECIMAL(10,2) NOT NULL,     -- snapshot
-    unit_currency CHAR(3) NOT NULL DEFAULT 'ILS',
-    quantity      INT NOT NULL,
-    line_total    DECIMAL(10,2) NOT NULL,
+                                           id           INT AUTO_INCREMENT PRIMARY KEY,
+                                           order_id     INT NOT NULL,
+                                           product_id   INT NULL,                        -- اختياري (لو عندك جدول products)
+                                           product_name VARCHAR(255) NOT NULL,           -- نخزن الاسم كما هو لحظة الشراء
+    size         VARCHAR(64)  NOT NULL DEFAULT '',-- نخزن المقاس المختار
+    unit_price   DECIMAL(10,2) NOT NULL,          -- السعر وقت الشراء
+    quantity     INT NOT NULL,
+    line_total   DECIMAL(10,2) NOT NULL,          -- unit_price * quantity
+
+    CONSTRAINT fk_items_order
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+    KEY idx_order (order_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+ALTER TABLE product_reviews
+    ADD COLUMN hidden TINYINT(1) NOT NULL DEFAULT 0 AFTER comment,
+  ADD COLUMN hidden_by INT UNSIGNED NULL AFTER hidden,
+  ADD COLUMN hidden_at DATETIME NULL AFTER hidden_by,
+  ADD COLUMN updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP AFTER created_at;
+
+CREATE INDEX idx_reviews_hidden  ON product_reviews(hidden);
+CREATE INDEX idx_reviews_created ON product_reviews(created_at);
+CREATE INDEX idx_reviews_product ON product_reviews(product_id);
+
+
+ALTER TABLE product_reviews
+    ADD COLUMN flagged TINYINT(1) NOT NULL DEFAULT 0 AFTER hidden,
+  ADD COLUMN flag_reason VARCHAR(255) NULL AFTER flagged,
+  ADD COLUMN flagged_by INT UNSIGNED NULL AFTER flag_reason,
+  ADD COLUMN flagged_at DATETIME NULL AFTER flagged_by;
+
+
+
+ALTER TABLE products
+    ADD FULLTEXT ft_products_name_desc (name, description),
+  ADD FULLTEXT ft_products_sku (sku);
+
+
+
+CREATE TABLE IF NOT EXISTS product_embeddings (
+                                                  product_id INT PRIMARY KEY,
+                                                  model VARCHAR(64) NOT NULL,
+    embedding_json MEDIUMTEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_prod_emb_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+
+
+
+ALTER TABLE products
+    ADD FULLTEXT ft_products_name_desc_sku (name, description, sku);
 

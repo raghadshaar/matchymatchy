@@ -3,21 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Matchy Matchy • Product</title>
-    <!-- Tailwind (نفس الكاتيجوري) -->
-    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
-    <script>
-        tailwind.config = {
-            theme: { extend: { colors:{ primary:'#008080', secondary:'#FADADD' }, borderRadius:{ 'button':'8px' } } }
-        }
-    </script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../styles/productStyle.css" />
+    <link rel="stylesheet" href="../styles/style.css" />
 
 
-    <!-- نفس الأيقونات المستعملة -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
-
-    <!-- نفس ترتيب الستايلات -->
-    <link rel="stylesheet" href="../styles/productStyle.css"/>
-    <link rel="stylesheet" href="../styles/style.css"/>
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
@@ -96,16 +87,18 @@
 
     <script>
         // cart helpers
-        function getCart(){try{return JSON.parse(localStorage.getItem('cart')||'[]')}catch{return[]}}
-        function setCart(n){localStorage.setItem('cart',JSON.stringify(n));window.dispatchEvent(new Event('cart:updated'))}
-        function getCartCount(){return getCart().reduce((a,i)=>a+(+i.quantity||0),0)}
-        function updateHeaderCartCount(){const el=document.querySelector('#header #cart-count,#header-slot #cart-count,#cart-count,.main-header .cart .badge');if(el)el.textContent=getCartCount()}
-        // change main image
+        // function getCart(){try{return JSON.parse(localStorage.getItem('cart')||'[]')}catch{return[]}}
+        // function setCart(n){localStorage.setItem('cart',JSON.stringify(n));window.dispatchEvent(new Event('cart:updated'))}
+        // function getCartCount(){return getCart().reduce((a,i)=>a+(+i.quantity||0),0)}
+        // function updateHeaderCartCount(){const el=document.querySelector('#header #cart-count,#header-slot #cart-count,#cart-count,.main-header .cart .badge');if(el)el.textContent=getCartCount()}
+        // // change main image
         function changeImage(src,el){document.getElementById('main-product-image').src=src;document.querySelectorAll('.image-thumbnail').forEach(t=>t.classList.remove('active'));el?.classList.add('active')}
     </script>
+
+
 </head>
 <body>
-<div id="header-slot"></div>
+<div id="header"></div>
 <nav id="breadcrumb" style="margin:10px 0;color:#6b7280;font-size:14px"></nav>
 
 <section class="product-detail">
@@ -192,27 +185,98 @@
 </section>
 
 <div id="foot"></div>
-
-    // inject header
-    <script>
-        (async () => {
-        const host = document.getElementById('header-slot');
-        if (!host) return;
-
-        const html = await (await fetch('header.html')).text();
-        host.innerHTML = html;
-
-        // نفس تهيئة الكاتيجوري
-        updateHeaderCartCount?.();
-        window.addEventListener('storage', e => { if (e.key === 'cart') updateHeaderCartCount?.(); });
-        window.addEventListener('cart:updated', () => updateHeaderCartCount?.());
-
-        // لو عندك دوال في header.js
-        window.setupHeaderMenu?.();
-        window.setupHeaderSearch?.();
-    })();
-</script>
 <script>
+    let CSRF = null;
+
+    async function cartApi(action, method='GET', body=null){
+        const url = `/matchymatchy/api/cart.php?action=${encodeURIComponent(action)}`;
+        const opts = { method, headers: { Accept: 'application/json' } };
+        if (method !== 'GET') {
+            opts.headers['Content-Type'] = 'application/json';
+            if (CSRF) opts.headers['X-CSRF-Token'] = CSRF;
+            if (body)  opts.body = JSON.stringify(body);
+        }
+
+        let res, text;
+        try { res = await fetch(url, opts); }
+        catch (e) { console.error('Cart API network error:', e); return null; }
+
+        try { text = await res.text(); } catch { text = ''; }
+
+        if (!res.ok) {                       // 4xx / 5xx
+            console.error('Cart API HTTP', res.status, text.slice(0,400));
+            return null;
+        }
+
+        let data;
+        try { data = JSON.parse(text); }     // قد يرمي SyntaxError لو النص ليس JSON
+        catch (e) {
+            console.error('Cart API invalid JSON. Body:', text.slice(0,400));
+            return null;
+        }
+
+        if (data && data.csrf) CSRF = data.csrf;
+        return data;
+    }
+</script>
+
+<script>
+    // let CSRF = null;
+    //
+    // async function cartApi(action, method='GET', body=null){
+    //     try {
+    //         const opts = { method, headers: { 'Accept':'application/json' } };
+    //         if (method !== 'GET'){
+    //             opts.headers['Content-Type'] = 'application/json';
+    //             if (CSRF) opts.headers['X-CSRF-Token'] = CSRF;
+    //             if (body) opts.body = JSON.stringify(body);
+    //         }
+    //
+    //         const res = await fetch(`/matchymatchy/api/cart.php?action=${encodeURIComponent(action)}`, opts); // Fetch API
+    //         if (!res.ok) {                           // يشمل 500
+    //             console.warn('Cart API status:', res.status);
+    //             return null;
+    //         }
+    //
+    //         const ct = res.headers.get('content-type') || '';
+    //         if (!ct.includes('application/json')) {
+    //             console.error('Cart API non-JSON response');
+    //             return null;
+    //         }
+    //
+    //         const data = await res.json();           // Response as JSON
+    //         if (data && data.csrf) CSRF = data.csrf;
+    //         return data;
+    //     } catch (err) {
+    //         console.error('Cart API error:', err);
+    //         return null;
+    //     }
+    // }
+
+    async function refreshHeaderCartCount(){
+        const d = await cartApi('list');
+        // حارس حتى لو الداتا null ما يصير reduce error
+        if (!d || !Array.isArray(d.items)) {
+            document.querySelectorAll('#cart-count').forEach(el => el.textContent = 0);
+            return;
+        }
+        const count = d.items.reduce((s,i)=> s + Number(i.quantity||0), 0); // Array.reduce
+        document.querySelectorAll('#cart-count').forEach(el => el.textContent = count);
+    }
+</script>
+
+<script>
+    // inject header
+    // fetch('header.html').then(r=>r.text()).then(h=>{
+    //     document.getElementById('header').innerHTML=h;updateHeaderCartCount();
+    //     addEventListener('storage',e=>{if(e.key==='cart')updateHeaderCartCount()});
+    //     addEventListener('cart:updated',updateHeaderCartCount);
+    // });
+    fetch('header.html').then(r=>r.text()).then(async h=>{
+        document.getElementById('header').innerHTML = h;
+        await refreshHeaderCartCount();       // read count from SERVER, not localStorage
+    });
+
     fetch('footer.html')
         .then(response => response.text())
         .then(data => {
@@ -369,20 +433,34 @@
         };
 
 
-        function buildSizeTable(target, group='toddler', unit='US'){
-            const data=(SIZE_GUIDES[group]||SIZE_GUIDES.toddler)[unit];
-            target.innerHTML=
+        // function buildSizeTable(target, group='toddler', unit='US'){
+        //     const data=(SIZE_GUIDES[group]||SIZE_GUIDES.toddler)[unit];
+        //     target.innerHTML=
+        //         `<table><thead><tr><th>Size</th><th>Height</th><th>Weight</th></tr></thead>
+        //   <tbody>${data.map(r=>`<tr><td>${r.size}</td><td>${r.height}</td><td>${r.weight}</td></tr>`).join('')}</tbody>
+        // </table>`;
+        // }
+
+        function buildSizeTable(target, group='toddler', unit='Metric'){
+            const g = (SIZE_GUIDES[group] || SIZE_GUIDES.toddler);
+            const data = g[unit] || g['Metric']; // fallback أكيد
+            if (!data) { target.innerHTML = '<p style="color:#666">No size data.</p>'; return; }
+
+            target.innerHTML =
                 `<table><thead><tr><th>Size</th><th>Height</th><th>Weight</th></tr></thead>
-          <tbody>${data.map(r=>`<tr><td>${r.size}</td><td>${r.height}</td><td>${r.weight}</td></tr>`).join('')}</tbody>
-        </table>`;
+      <tbody>${data.map(r=>`<tr><td>${r.size}</td><td>${r.height}</td><td>${r.weight}</td></tr>`).join('')}</tbody>
+    </table>`;
         }
+
 
         async function init() {
             const id = Number(new URLSearchParams(location.search).get('id') || 0);
-            if (!id) {
-                location.href = 'category.html';
-                return;
-            }
+            if (!id) { location.href = 'category.html'; return; }
+
+            // لا تخلي أي فشل هنا يوقف بقية التهيئة (صور، سايز جايد..)
+            try { await cartApi('list'); } catch(e){ console.warn(e); }
+            try { await refreshHeaderCartCount(); } catch(e){ console.warn(e); }
+
 
             const res = await fetch(`/matchymatchy/backend/products.php?id=${id}`, {headers: {Accept: 'application/json'}});
             if (!res.ok) {
@@ -516,45 +594,65 @@
                     alert("Error: " + (result.error || "Unable to submit review."));
                 }
             });
+            // const addBtn = document.querySelector('.add-to-cart');
+            // addBtn.addEventListener('click', () => {
+            //     const userEmail = localStorage.getItem('rememberedEmail');
+            //     if (!userEmail) {
+            //         alert("You must be logged in to submit a review.");
+            //         return;
+            //     }
+            //
+            //
+            //     if (!selected) {
+            //         alert("Please select a size before adding to cart.");
+            //         return;
+            //     }
+            //
+            //     const cart = getCart();
+            //     const i = cart.findIndex(x => x.id === p.id && (x.size || null) === (selected || null));
+            //     if (i >= 0) {
+            //         cart[i].quantity += 1;
+            //     } else {
+            //         cart.push({
+            //             id: p.id,
+            //             name: p.name,
+            //             price: +p.price,
+            //             image: p.image_main_url || imgs[0],
+            //             size: selected || null,
+            //             quantity: 1
+            //         });
+            //     }
+            //
+            //     setCart(cart);
+            //     addBtn.textContent = 'Added ✓';
+            //     setTimeout(() => addBtn.textContent = 'Add to Cart', 1100);
+            // });
             const addBtn = document.querySelector('.add-to-cart');
-            addBtn.addEventListener('click', () => {
-                const userEmail = localStorage.getItem('rememberedEmail');
-                if (!userEmail) {
-                    alert("You must be logged in to submit a review.");
-                    return;
+            addBtn.addEventListener('click', async () => {
+                if (!selected) { alert("Please select a size before adding to cart."); return; }
+                addBtn.disabled = true;
+
+                if (!CSRF) await cartApi('list');   // make sure we have a CSRF token
+                const resp = await cartApi('add', 'POST', {
+                    product_id: p.id,
+                    size: selected,         // <— the selected size is sent to the server
+                    quantity: 1
+                });
+
+                if (resp){
+                    addBtn.textContent = 'Added ✓';
+                    await refreshHeaderCartCount();   // header badge reflects the DB cart (per-user)
+                    setTimeout(()=> addBtn.textContent = 'Add to Cart', 1100);
                 }
-
-
-                if (!selected) {
-                    alert("Please select a size before adding to cart.");
-                    return;
-                }
-
-                const cart = getCart();
-                const i = cart.findIndex(x => x.id === p.id && (x.size || null) === (selected || null));
-                if (i >= 0) {
-                    cart[i].quantity += 1;
-                } else {
-                    cart.push({
-                        id: p.id,
-                        name: p.name,
-                        price: +p.price,
-                        image: p.image_main_url || imgs[0],
-                        size: selected || null,
-                        quantity: 1
-                    });
-                }
-
-                setCart(cart);
-                addBtn.textContent = 'Added ✓';
-                setTimeout(() => addBtn.textContent = 'Add to Cart', 1100);
+                addBtn.disabled = false;
             });
+
         }
         init();
     })();
 </script>
 
-<script src="../js/indexscript.js"></script>
-<script defer src="../js/header.js"></script>
+<!--<script src="../js/indexscript.js"></script>-->
+<!--<script defer src="../js/headerjs.js"></script>-->
 </body>
 </html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Search • Matchy Matchy</title>
+    <link rel="stylesheet" href="../styles/style.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root{
+            --baby:#F9F8F3; --jet:#383838; --teal:#008080; --pink:#E4CFC3; --umber:#715E51; --white:#ffffff;
+        }
+        body{ background:var(--baby); color:var(--jet);}
+        .page-wrap{ max-width:1100px; margin:24px auto; padding:0 12px;}
+        .q-title{ font-size:18px; margin:8px 0 16px; color:var(--umber);}
+        .results-grid{
+            display:grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+            gap:14px;
+        }
+        .card{
+            background:#FCFAF6; border:1px solid var(--pink); border-radius:14px; overflow:hidden;
+            display:flex; flex-direction:column;
+            transition: transform .15s ease;
+        }
+        .card:hover{ transform: translateY(-2px); }
+        .thumb{ width:100%; aspect-ratio:1/1; object-fit:cover; background:#eee; }
+        .item-body{ padding:10px 12px; display:flex; flex-direction:column; gap:6px;}
+        .name{ font-size:14px; line-height:1.3; min-height:36px;}
+        .price{ font-weight:600;}
+        .empty, .error, .loading{ padding:18px; background:#FFF7F0; border:1px dashed var(--pink); border-radius:12px;}
+        .toolbar{ display:flex; gap:8px; align-items:center; margin:10px 0 18px;}
+        .toolbar .badge{ background:#F2ECE6; border-radius:999px; padding:6px 10px; font-size:12px;}
+        .toolbar .muted{ color:#7a6a5e; font-size:12px; }
+        .pagination{ display:flex; gap:8px; justify-content:center; margin:20px 0 40px;}
+        .btn{
+            border:1px solid var(--pink); background:#fff; color:var(--jet);
+            padding:8px 12px; border-radius:10px; cursor:pointer;
+        }
+        .btn[disabled]{ opacity:.5; cursor:not-allowed;}
+    </style>
+</head>
+<body>
+<!-- Header include -->
+<div id="header-slot"></div>
+
+<div class="page-wrap">
+    <h1>Search Results</h1>
+    <div class="q-title" id="q-title"></div>
+
+    <div class="toolbar">
+        <span class="badge" id="count-badge">…</span>
+        <span class="muted" id="mode-badge"></span>
+    </div>
+
+    <div id="state" class="loading">Loading results…</div>
+    <div id="results" class="results-grid" hidden></div>
+
+    <div class="pagination">
+        <button id="prev" class="btn" disabled>Prev</button>
+        <button id="next" class="btn" disabled>Next</button>
+    </div>
+</div>
+
+<script>
+    /* ===== header include (لا نلمس header.html) ===== */
+    fetch('header.html').then(r=>r.text()).then(html=>{
+        document.getElementById('header-slot').innerHTML = html;
+    });
+
+    /* ===== helpers ===== */
+    const qs = new URLSearchParams(location.search);
+    const q  = (qs.get('q')||'').trim();
+    const pageFromUrl = Math.max(1, parseInt(qs.get('page')||'1',10));
+    const limit = 24;
+
+    document.getElementById('q-title').textContent =
+        q ? `Showing results for: “${q}”` : 'Please enter a search term';
+
+    const $state   = document.getElementById('state');
+    const $grid    = document.getElementById('results');
+    const $count   = document.getElementById('count-badge');
+    const $mode    = document.getElementById('mode-badge');
+    const $prevBtn = document.getElementById('prev');
+    const $nextBtn = document.getElementById('next');
+
+    if(!q){
+        $state.className='empty';
+        $state.textContent='Start by typing in the search bar above.';
+    }else{
+        load(pageFromUrl);
+    }
+
+    async function load(page=1){
+        $state.hidden=false;
+        $grid.hidden=true;
+        $state.className='loading';
+        $state.textContent='Loading results…';
+
+        try{
+            const url = `/matchymatchy/api/search.php?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if(!data.success){
+                throw new Error(data.error || 'Unknown error');
+            }
+
+            render(data, page);
+        }catch(err){
+            console.error(err);
+            $state.className='error';
+            $state.textContent = 'Something went wrong while fetching results.';
+        }
+    }
+
+    function render(data, page){
+        const items = data.products||[];
+        $count.textContent = `${data.meta.total} result(s)`;
+        $mode.textContent  = data.meta.mode==='fulltext' ? 'Mode: MySQL FULLTEXT' : 'Mode: LIKE fallback';
+
+        if(items.length === 0){
+            $state.className='empty';
+            $state.textContent='No results. Try different keywords.';
+            $grid.innerHTML='';
+            $grid.hidden=true;
+        }else{
+            $grid.innerHTML = items.map(p=>`
+          <a class="card" href="/matchymatchy/product.php?slug=${encodeURIComponent(p.slug)}" aria-label="${p.name}">
+            <img class="thumb" src="${p.image_main_url||'../images/placeholder.png'}" alt="${p.name}">
+            <div class="item-body">
+              <div class="name">${p.name}</div>
+              <div class="price">NIS ${Number(p.price).toFixed(2)}</div>
+            </div>
+          </a>
+        `).join('');
+            $grid.hidden=false;
+            $state.hidden=true;
+        }
+
+        const pages = Math.max(1, data.meta.pages||1);
+        $prevBtn.disabled = page<=1;
+        $nextBtn.disabled = page>=pages;
+
+        $prevBtn.onclick = ()=>{ qs.set('page', String(page-1)); location.search = qs.toString(); };
+        $nextBtn.onclick = ()=>{ qs.set('page', String(page+1)); location.search = qs.toString(); };
+    }
+</script>
+</body>
+</html>

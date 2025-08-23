@@ -16,56 +16,53 @@
 
     <style>
         :root{
-            /* fallback tokens in case theme doesn't define them */
-            --umber:#715E51;
-            --border:#e7e0d9;
-            --bg-soft:#faf9f7;
+            --badge-w: 96px;      /* عرض موحّد للبادج */
+            --badge-h: 32px;      /* ارتفاع موحّد */
+            /* تدرجات قريبة من الباليت */
             --teal-ink:#006d6d;   --teal-bg:#e5f4f4;   --teal-br:#cdeaea;   /* success */
             --amber-ink:#8a6000;  --amber-bg:#fff3d9;  --amber-br:#ffe2a6;  /* pending */
-            --rose-ink:#a23c3c;   --rose-bg:#ffe7e7;   --rose-br:#ffd1d1;  /* error */
-            --blue-ink:#1b63c7;  --blue-bg:#eaf3ff;  --blue-br:#cfe3ff;   /* shipped */
+            --rose-ink:#a23c3c;   --rose-bg:#ffe7e7;   --rose-br:#ffd1d1;   /* error */
         }
 
-        .muted{ color:#6b7280; }
-
-        /* toolbar small tweaks */
-        .toolbar .field { min-width:260px; }
-
-        /* consistent status/payment chips */
+        /* نفس الكلاس الموجود عندك، بس بمقاس ثابت وتوسيط */
         .chip{
             display:inline-flex; align-items:center; justify-content:center;
-            min-width:96px; height:32px; padding:0 10px; border-radius:999px;
-            font-weight:600; font-size:.85rem; border:1px solid transparent; white-space:nowrap;
+            min-width:var(--badge-w); height:var(--badge-h);
+            padding:0 10px; border-radius:999px; font-weight:600; font-size:.85rem;
+            border:1px solid transparent; white-space:nowrap;
         }
-        .chip.green { background:var(--teal-bg);  color:var(--teal-ink);  border-color:var(--teal-br); }
-        .chip.blue  { background:var(--blue-bg);  color:var(--blue-ink);  border-color:var(--blue-br); }
+
+        /* قلّلنا الألوان: الأخضر والأزرق نفس الشكل (Teal) */
+        .chip.green, .chip.blue { background:var(--teal-bg); color:var(--teal-ink); border-color:var(--teal-br); }
         .chip.amber { background:var(--amber-bg); color:var(--amber-ink); border-color:var(--amber-br); }
-        .chip.red   { background:var(--rose-bg);  color:var(--rose-ink);  border-color:var(--rose-br); }
+        .chip.red   { background:var(--rose-bg); color:var(--rose-ink);  border-color:var(--rose-br); }
 
-        /* fixed table styling for items section */
-        .order-items{ width:100%; border-collapse:separate; border-spacing:0; }
-        .order-items th,.order-items td{ padding:10px; border-bottom:1px solid var(--border); }
-        .order-items th{ text-align:left; color:#6b7280; background:var(--bg-soft); }
+        /* تمنع تكسّر في الخلايا اللي فيها البادج */
         td:nth-child(6), td:nth-child(7){ white-space:nowrap; }
-
-        .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        @media (max-width:900px){ .grid-2{ grid-template-columns:1fr; } }
-
-        /* drawer a11y focus ring for clarity */
-        .drawer [tabindex="0"]:focus{ outline:2px solid #aac9ff; outline-offset:2px; }
-
-        /* small UI helpers for pager */
-        .page-btn.active{ background:#e5f4f4; color:#0f5; }
+        /* small tweaks on top of your theme */
+        .toolbar .field { min-width: 260px; }
+        .chip{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-weight:600;font-size:.8rem;border:1px solid transparent}
+        .chip.green{background:#e9f8f1;color:#1b8e57;border-color:#cdeedd}
+        .chip.amber{background:#fff6e6;color:#ad8100;border-color:#ffe1ad}
+        .chip.red{background:#ffecec;color:#b23535;border-color:#ffc9c9}
+        .chip.blue{background:#eaf3ff;color:#1b63c7;border-color:#cfe3ff}
+        .muted{color:#6b7280}
+        .drawer .section-title{margin:18px 0 6px;font-weight:600;color:#715E51}
+        .order-items{width:100%;border-collapse:separate;border-spacing:0}
+        .order-items th,.order-items td{padding:10px;border-bottom:1px solid var(--border)}
+        .order-items th{text-align:left;color:#6b7280;background:#faf9f7}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        @media (max-width:900px){.grid-2{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
 <div class="layout">
-    <!-- Sidebar include -->
+    <!-- Sidebar -->
     <div id="sidebar-container"></div>
 
     <!-- Main -->
     <main class="main">
-        <!-- Topbar include -->
+        <!-- Topbar -->
         <div data-include="topBarAdmin.html"></div>
 
         <!-- Page header -->
@@ -80,7 +77,7 @@
         <div class="toolbar">
             <div class="field" style="flex:1">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input id="searchInput" type="search" placeholder="Search by Order ID, Customer Name, or Email…" aria-label="Search orders">
+                <input id="searchInput" type="search" placeholder="Search by Order ID, Customer Name, or Email…">
             </div>
             <div class="field">
                 <i class="fa-solid fa-signal"></i>
@@ -104,20 +101,19 @@
                     <option>COD</option>
                 </select>
             </div>
-            <button class="btn btn-ghost" id="clearFilters" aria-label="Clear filters"><i class="fa-solid fa-rotate-left"></i> Clear Filters</button>
-            <button class="btn btn-teal" id="exportCsv" aria-label="Export CSV"><i class="fa-solid fa-file-export"></i> Export</button>
+            <button class="btn btn-ghost" id="clearFilters"><i class="fa-solid fa-rotate-left"></i> Clear Filters</button>
         </div>
 
         <!-- Table -->
         <section class="card">
-            <table aria-label="Orders table">
+            <table>
                 <thead>
                 <tr>
-                    <th style="width:40px;"><input type="checkbox" id="checkAll" aria-label="Check all"/></th>
-                    <th data-sort="id" aria-sort="none" style="cursor:pointer">Order ID</th>
-                    <th data-sort="customer" aria-sort="none" style="cursor:pointer">Customer</th>
-                    <th data-sort="date" aria-sort="descending" style="cursor:pointer">Date</th>
-                    <th data-sort="total" aria-sort="none" style="cursor:pointer">Total</th>
+                    <th style="width:40px;"><input type="checkbox" id="checkAll"/></th>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
                     <th>Payment</th>
                     <th>Status</th>
                     <th style="width:120px;">Actions</th>
@@ -128,38 +124,39 @@
 
             <div id="emptyState" class="empty" style="display:none">
                 <div class="emoji">📦</div>
-                <h3 style="margin:0 0 6px;color:var(--umber)">No orders found</h3>
-                <p style="margin:0 0 14px" class="muted">Try a different search or filter.</p>
+                <h3 style="margin:0 0 6px;color:var(--umber)">No orders yet</h3>
+                <p style="margin:0 0 14px" class="muted">Start selling to see orders here.</p>
+                <button class="btn btn-teal" id="emptyAddBtn"><i class="fa-solid fa-plus"></i> Add Order</button>
             </div>
 
             <!-- Pagination -->
             <div class="pager">
                 <div class="pager-info" id="pagerInfo"></div>
-                <button class="page-btn" id="prevPage" aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="page-btn" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
                 <div id="pageNums" style="display:flex;gap:6px"></div>
-                <button class="page-btn" id="nextPage" aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button>
+                <button class="page-btn" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </section>
     </main>
 </div>
 
 <!-- Drawer: Order Details -->
-<div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
-<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" tabindex="0">
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="drawer" id="drawer">
     <h3 id="drawerTitle">Order Details</h3>
 
-    <div class="section-title" style="margin:18px 0 6px;font-weight:600;color:var(--umber)">Customer</div>
+    <div class="section-title">Customer</div>
     <div class="grid-2">
-        <div><label class="muted" for="cName">Name</label><input class="input" id="cName"/></div>
-        <div><label class="muted" for="cEmail">Email</label><input class="input" id="cEmail"/></div>
-        <div><label class="muted" for="cPhone">Phone</label><input class="input" id="cPhone"/></div>
-        <div><label class="muted" for="oId">Order ID</label><input class="input" id="oId" disabled/></div>
+        <div><label class="muted">Name</label><input class="input" id="cName"/></div>
+        <div><label class="muted">Email</label><input class="input" id="cEmail"/></div>
+        <div><label class="muted">Phone</label><input class="input" id="cPhone"/></div>
+        <div><label class="muted">Order ID</label><input class="input" id="oId" disabled/></div>
     </div>
 
-    <div class="section-title" style="margin:18px 0 6px;font-weight:600;color:var(--umber)">Shipping Address</div>
+    <div class="section-title">Shipping Address</div>
     <textarea class="textarea" id="cAddress" placeholder="Street, City, ZIP, Country"></textarea>
 
-    <div class="section-title" style="margin:18px 0 6px;font-weight:600;color:var(--umber)">Items</div>
+    <div class="section-title">Items</div>
     <table class="order-items" id="itemsTable">
         <thead><tr><th>Product</th><th>Price (₪)</th><th>Qty</th><th>Subtotal (₪)</th></tr></thead>
         <tbody></tbody>
@@ -167,25 +164,25 @@
 
     <div class="grid-2" style="margin-top:10px">
         <div>
-            <label class="muted" for="paymentStatus">Payment Status</label>
+            <label class="muted">Payment Status</label>
             <select class="select" id="paymentStatus">
                 <option>Paid</option><option>Pending</option><option>Failed</option><option>Refunded</option><option>COD</option>
             </select>
         </div>
         <div>
-            <label class="muted" for="orderStatus">Order Status</label>
+            <label class="muted">Order Status</label>
             <select class="select" id="orderStatus">
                 <option>Pending</option><option>Processing</option><option>Shipped</option><option>Delivered</option><option>Cancelled</option>
             </select>
         </div>
     </div>
 
-    <div class="section-title" style="margin:18px 0 6px;font-weight:600;color:var(--umber)">Summary</div>
+    <div class="section-title">Summary</div>
     <div class="grid-2">
-        <div><label class="muted" for="sumSubtotal">Subtotal</label><input class="input" id="sumSubtotal" disabled/></div>
-        <div><label class="muted" for="sumShipping">Shipping</label><input class="input" id="sumShipping"/></div>
-        <div><label class="muted" for="sumTax">Tax</label><input class="input" id="sumTax"/></div>
-        <div><label class="muted" for="sumTotal">Total</label><input class="input" id="sumTotal" disabled/></div>
+        <div><label class="muted">Subtotal</label><input class="input" id="sumSubtotal" disabled/></div>
+        <div><label class="muted">Shipping</label><input class="input" id="sumShipping"/></div>
+        <div><label class="muted">Tax</label><input class="input" id="sumTax"/></div>
+        <div><label class="muted">Total</label><input class="input" id="sumTotal" disabled/></div>
     </div>
 
     <div class="drawer-actions">
@@ -195,21 +192,13 @@
 </div>
 
 <script>
-    /* ===== Constants & helpers ===== */
-    const API_URL = '/matchymatchy/api/admin/orders.php';
+    /* ===== helpers & config ===== */
+    const API_BASE = '/matchymatchy/api/Admin/orders.php';
     const PAGE_SIZE = 8;
-    const $ = (s,c=document)=>c.querySelector(s);
+    const $  = (s,c=document)=>c.querySelector(s);
     const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));
+    const money = n => `₪${Number(n||0).toFixed(2)}`;
 
-    // Formatters
-    const ILS = new Intl.NumberFormat('he-IL', { style:'currency', currency:'ILS' });
-    const fmtMoney = n => ILS.format(Number(n||0));
-    const fmtDate  = iso => new Date(iso).toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' });
-
-    // Debounce helper
-    function debounce(fn, ms=200){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); } }
-
-    // Chip class chooser
     function chipClass(kind,val){
         const v=(val||'').toLowerCase();
         if(kind==='payment'){ if(v==='paid') return 'green'; if(v==='pending'||v==='cod') return 'amber'; if(v==='failed'||v==='refunded') return 'red'; }
@@ -217,262 +206,450 @@
         return 'amber';
     }
 
-    // Simple CSV export of the currently loaded page
-    function exportCSV(rows){
-        const data = [['Order ID','Customer','Email','Date','Total','Payment','Status']]
-            .concat(rows.map(o=>[o.public_id, o.customer_name, o.customer_email, o.date, o.total, o.payment_status, o.order_status]));
-        const csv = data.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-        const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='orders.csv'; a.click();
+    /* ===== API calls ===== */
+    async function apiList({q='',status='',payment='',page=1,page_size=PAGE_SIZE}={}){
+        const qs = new URLSearchParams({
+            action:'list', q, status, payment, page:String(page), page_size:String(page_size)
+        });
+        const res = await fetch(`${API_BASE}?${qs.toString()}`, {headers:{'Accept':'application/json'}});
+        const data = await res.json().catch(()=>({ok:false}));
+        return data;
+    }
+    async function apiGet(id){
+        const qs = new URLSearchParams({action:'get', id:String(id)});
+        const res = await fetch(`${API_BASE}?${qs.toString()}`, {headers:{'Accept':'application/json'}});
+        const data = await res.json().catch(()=>({ok:false}));
+        return data;
+    }
+    async function apiUpdate(payload){
+        const res = await fetch(API_BASE+'?action=update', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Accept':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(()=>({ok:false}));
+        return data;
+    }
+    async function apiDelete(id){
+        const res = await fetch(API_BASE+'?action=delete', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Accept':'application/json'},
+            body: JSON.stringify({id})
+        });
+        const data = await res.json().catch(()=>({ok:false}));
+        return data;
     }
 
-    // Sidebar include & active link
+    /* ===== state ===== */
+    let state = { q:'', status:'', payment:'', page:1 };
+    let cachedPage = { rows:[], total:0, pages:1, page:1 };  // آخر نتيجة list
+
+    /* ===== render table & pager ===== */
+    function renderTable(){
+        const rows = cachedPage.rows;
+        $('#tbody').innerHTML = rows.map(o=>`
+    <tr>
+      <td><input type="checkbox" data-id="${o.id}"></td>
+      <td><span class="muted">#</span>${o.public_id}</td>
+      <td>
+        <div style="display:flex;flex-direction:column">
+          <strong>${o.customer_name||''}</strong>
+          <span class="muted" style="font-size:.9rem">${o.customer_email||''}</span>
+        </div>
+      </td>
+      <td>${o.order_date ? new Date(o.order_date.replace(' ', 'T')).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</td>
+      <td>${money(o.total)}</td>
+      <td><span class="chip ${chipClass('payment',o.payment_status)}">${o.payment_status}</span></td>
+      <td><span class="chip ${chipClass('status',o.order_status)}">${o.order_status}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-link" title="View" data-view="${o.id}"><i class="fa-regular fa-eye"></i></button>
+          <button class="icon-link" title="Edit" data-edit="${o.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+          <button class="icon-link" title="Delete" data-del="${o.id}"><i class="fa-regular fa-trash-can"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+        // empty state
+        $('#emptyState').style.display = rows.length ? 'none' : 'block';
+
+        // pager info
+        const start = rows.length ? ( (cachedPage.page-1)*PAGE_SIZE + 1 ) : 0;
+        const end   = rows.length ? ( (cachedPage.page-1)*PAGE_SIZE + rows.length ) : 0;
+        $('#pagerInfo').textContent = rows.length
+            ? `Showing ${start}–${end} of ${cachedPage.total} orders`
+            : 'No results';
+
+        // page buttons
+        const pages = Math.max(1, cachedPage.pages||1);
+        $('#pageNums').innerHTML='';
+        for(let i=1;i<=pages;i++){
+            const b=document.createElement('button');
+            b.className='page-btn'+(i===cachedPage.page?' active':'');
+            b.textContent=i;
+            b.onclick=()=>{ state.page=i; loadAndRender(); };
+            $('#pageNums').appendChild(b);
+        }
+        $('#prevPage').disabled = cachedPage.page<=1;
+        $('#nextPage').disabled = cachedPage.page>=pages;
+
+        // row actions
+        $$('[data-view]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.view,false));
+        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.edit,true));
+        $$('[data-del]').forEach(b=>b.onclick=()=>removeOrder(b.dataset.del));
+    }
+
+    /* ===== load & render list ===== */
+    async function loadAndRender(){
+        const resp = await apiList({
+            q: state.q, status: state.status, payment: state.payment,
+            page: state.page, page_size: PAGE_SIZE
+        });
+        if(!resp || !resp.ok){
+            cachedPage = {rows:[], total:0, pages:1, page:1};
+        }else{
+            const d = resp.data || {};
+            cachedPage = {
+                rows: d.rows || d.orders || [],
+                total: Number(d.total||0),
+                pages: Number(d.pages||1),
+                page: Number(d.page||1)
+            };
+        }
+        renderTable();
+    }
+
+    /* ===== drawer (view/edit) ===== */
+    const drawer=$('#drawer'), backdrop=$('#drawerBackdrop');
+    const els={
+        oId:$('#oId'), cName:$('#cName'), cEmail:$('#cEmail'), cPhone:$('#cPhone'), cAddress:$('#cAddress'),
+        pStat:$('#paymentStatus'), oStat:$('#orderStatus'),
+        tBody:$('#itemsTable tbody'),
+        sub:$('#sumSubtotal'), ship:$('#sumShipping'), tax:$('#sumTax'), total:$('#sumTotal')
+    };
+    let currentId=null, editMode=false;
+
+    function setDrawerEnabled(editable){
+        [els.cName,els.cEmail,els.cPhone,els.cAddress,els.pStat,els.oStat,els.ship,els.tax].forEach(el=>el.disabled=!editable);
+        $('#saveOrder').style.display = editable ? '' : 'none';
+    }
+
+    async function openDrawer(id, editable){
+        const j = await apiGet(id);
+        if(!j || !j.ok){ alert('Failed to load order'); return; }
+        const o = j.order || {};
+        const items = j.items || [];
+
+        currentId = o.id;
+        editMode  = editable;
+        $('#drawerTitle').textContent = editable ? 'Edit Order' : 'Order Details';
+
+        els.oId.value = o.public_id || '';
+        els.cName.value = o.customer_name || '';
+        els.cEmail.value = o.customer_email || '';
+        els.cPhone.value = o.customer_phone || '';
+        els.cAddress.value = o.customer_address || '';
+
+        els.pStat.value = o.payment_status || 'Pending';
+        els.oStat.value = o.order_status   || 'Pending';
+
+        els.tBody.innerHTML = items.map(it=>{
+            const sub = Number(it.line_total ?? (Number(it.unit_price||0)*Number(it.quantity||0)));
+            return `<tr>
+      <td>${it.product_name||''}${it.size?` <span class="muted">• ${it.size}</span>`:''}</td>
+      <td>${Number(it.unit_price||0).toFixed(2)}</td>
+      <td>${Number(it.quantity||0)}</td>
+      <td>${sub.toFixed(2)}</td>
+    </tr>`;
+        }).join('');
+
+        // summary
+        const subtotal = Number(o.subtotal|| items.reduce((s,it)=> s + Number(it.unit_price||0)*Number(it.quantity||0),0));
+        els.sub.value  = money(subtotal);
+        els.ship.value = Number(o.shipping||0);
+        els.tax.value  = Number(o.tax||0);
+        els.total.value= money( Number(o.total|| (subtotal + Number(o.shipping||0) + Number(o.tax||0))) );
+
+        setDrawerEnabled(editMode);
+        drawer.classList.add('open'); backdrop.classList.add('show');
+    }
+    function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); currentId=null; }
+    backdrop.onclick=closeDrawer; $('#cancelDrawer').onclick=closeDrawer;
+
+    $('#saveOrder').onclick = async ()=>{
+        if(!currentId) return;
+        const payload = {
+            id: currentId,
+            customer_name:  els.cName.value.trim(),
+            customer_email: els.cEmail.value.trim(),
+            customer_phone: els.cPhone.value.trim(),
+            customer_address: els.cAddress.value.trim(),
+            payment_status:  els.pStat.value,
+            order_status:    els.oStat.value,
+            shipping: Number(els.ship.value||0),
+            tax:      Number(els.tax.value||0)
+        };
+        const j = await apiUpdate(payload);
+        if(!j || !j.ok){ alert(j?.error || 'Failed to save'); return; }
+        closeDrawer();
+        await loadAndRender();
+    };
+
+    async function removeOrder(id){
+        const row = (cachedPage.rows||[]).find(x=>String(x.id)===String(id));
+        const label = row?.public_id || id;
+        if(!confirm(`Delete order ${label}? This cannot be undone.`)) return;
+        const j = await apiDelete(id);
+        if(!j || !j.ok){ alert(j?.error || 'Failed to delete'); return; }
+        // لو حذفنا آخر عنصر بالصفحة الحالية، ارجعي صفحة واحدة
+        if(cachedPage.rows.length===1 && state.page>1) state.page--;
+        await loadAndRender();
+    }
+
+    /* ===== filters wiring ===== */
+    $('#searchInput').oninput = e=>{ state.q=e.target.value; state.page=1; loadAndRender(); };
+    $('#statusFilter').onchange = e=>{ state.status=e.target.value; state.page=1; loadAndRender(); };
+    $('#paymentFilter').onchange = e=>{ state.payment=e.target.value; state.page=1; loadAndRender(); };
+    $('#clearFilters').onclick = ()=>{
+        state={q:'',status:'',payment:'',page:1};
+        $('#searchInput').value=''; $('#statusFilter').value=''; $('#paymentFilter').value='';
+        loadAndRender();
+    };
+    $('#prevPage').onclick=()=>{ if(state.page>1){state.page--; loadAndRender();} };
+    $('#nextPage').onclick=()=>{ state.page++; loadAndRender(); };
+
+    /* ===== sidebar include & initial load ===== */
     document.addEventListener('DOMContentLoaded', async () => {
         try{
-            const html = await fetch('sidebar.html',{credentials:'same-origin'}).then(r=>r.text());
+            const html = await fetch('sidebar.html').then(r=>r.text());
             $('#sidebar-container').innerHTML = html;
             $$('a', $('#sidebar-container')).forEach(a=>{
                 if((a.textContent||'').trim().toLowerCase()==='orders') a.classList.add('active');
             });
         }catch{}
+        await loadAndRender();
     });
 
-    /* ===== State ===== */
-    let orders = [];
-    let meta   = { page:1, page_size:PAGE_SIZE, pages:1, total:0 };
-    let state  = { q:'', status:'', payment:'', page:1, page_size:PAGE_SIZE, sort_by:'date', sort_dir:'desc' };
-
-    /* ===== API ===== */
-    async function fetchOrders(){
-        const qs = new URLSearchParams({
-            action: 'list',
-            q: state.q, status: state.status, payment: state.payment,
-            page: String(state.page), page_size: String(state.page_size),
-            sort_by: state.sort_by, sort_dir: state.sort_dir
-        });
-        const res = await fetch(`${API_URL}?${qs}`, { credentials:'same-origin' });
-        if(!res.ok){ console.error('List failed'); return; }
-        const json = await res.json();
-        orders = json.data || [];
-        meta   = json.meta || meta;
-        render();
-    }
-
-    async function fetchOrderDetails(publicId){
-        const res = await fetch(`${API_URL}?action=get&id=${encodeURIComponent(publicId)}`, { credentials:'same-origin' });
-        if(!res.ok) throw new Error('Order not found');
-        return await res.json(); // {order: {...}, items:[...]}
-    }
-
-    async function updateOrder(payload){
-        const res = await fetch(`${API_URL}?action=update`,{
-            method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify(payload)
-        });
-        if(!res.ok) throw new Error('Update failed');
-        return await res.json();
-    }
-
-    async function deleteOrder(publicId){
-        const res = await fetch(`${API_URL}?action=delete`,{
-            method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify({ public_id: publicId })
-        });
-        if(!res.ok) throw new Error('Delete failed');
-        return await res.json();
-    }
-
-    /* ===== Rendering ===== */
-    function render(){
-        // table rows
-        $('#tbody').innerHTML = orders.map(o=>`
-      <tr>
-        <td><input type="checkbox" aria-label="Select order ${o.public_id}" data-id="${o.public_id}"></td>
-        <td><span class="muted">#</span>${o.public_id}</td>
-        <td>
-          <div style="display:flex;flex-direction:column">
-            <strong>${o.customer_name}</strong>
-            <span class="muted" style="font-size:.9rem">${o.customer_email}</span>
-          </div>
-        </td>
-        <td>${fmtDate(o.date)}</td>
-        <td>${fmtMoney(o.total)}</td>
-        <td><span class="chip ${chipClass('payment',o.payment_status)}">${o.payment_status}</span></td>
-        <td><span class="chip ${chipClass('status',o.order_status)}">${o.order_status}</span></td>
-        <td>
-          <div class="row-actions">
-            <button class="icon-link" aria-label="View order" data-view="${o.public_id}"><i class="fa-regular fa-eye"></i></button>
-            <button class="icon-link" aria-label="Edit order" data-edit="${o.public_id}"><i class="fa-regular fa-pen-to-square"></i></button>
-            <button class="icon-link" aria-label="Delete order" data-del="${o.public_id}"><i class="fa-regular fa-trash-can"></i></button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
-
-        // empty state
-        $('#emptyState').style.display = orders.length ? 'none' : 'block';
-
-        // pager text
-        const start = orders.length ? ( (state.page-1)*state.page_size + 1 ) : 0;
-        const end   = orders.length ? Math.min(state.page*state.page_size, meta.total) : 0;
-        $('#pagerInfo').textContent = meta.total ? `Showing ${start}–${end} of ${meta.total} orders` : 'No results';
-
-        // page numbers
-        $('#pageNums').innerHTML='';
-        for(let i=1;i<=meta.pages;i++){
-            const b=document.createElement('button');
-            b.className='page-btn'+(i===state.page?' active':'');
-            b.textContent=i; b.ariaLabel = `Page ${i}`;
-            b.onclick=()=>{ state.page=i; fetchOrders(); };
-            $('#pageNums').appendChild(b);
-        }
-        $('#prevPage').disabled = state.page<=1;
-        $('#nextPage').disabled = state.page>=meta.pages;
-
-        // actions
-        $$('[data-view]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.view,false));
-        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.edit,true));
-        $$('[data-del]').forEach(b=>b.onclick=()=>confirmDelete(b.dataset.del));
-    }
-
-    // pager buttons
-    $('#prevPage').onclick=()=>{ if(state.page>1){ state.page--; fetchOrders(); } };
-    $('#nextPage').onclick=()=>{ if(state.page<meta.pages){ state.page++; fetchOrders(); } };
-
-    // search & filters
-    $('#searchInput').oninput = debounce(e=>{ state.q=e.target.value; state.page=1; fetchOrders(); },200);
-    $('#statusFilter').onchange = e=>{ state.status=e.target.value; state.page=1; fetchOrders(); };
-    $('#paymentFilter').onchange= e=>{ state.payment=e.target.value; state.page=1; fetchOrders(); };
-    $('#clearFilters').onclick  = ()=>{ state={...state, q:'', status:'', payment:'', page:1};
-        $('#searchInput').value=''; $('#statusFilter').value=''; $('#paymentFilter').value=''; fetchOrders(); };
-    $('#exportCsv').onclick = ()=> exportCSV(orders);
-
-    // Sorting
-    $$('th[data-sort]').forEach(th=>{
-        th.onclick = ()=>{
-            const key = th.dataset.sort;
-            if(state.sort_by === key){ state.sort_dir = (state.sort_dir==='asc'?'desc':'asc'); }
-            else { state.sort_by = key; state.sort_dir = 'asc'; }
-            // aria-sort update
-            $$('th[data-sort]').forEach(h=>h.setAttribute('aria-sort','none'));
-            th.setAttribute('aria-sort', state.sort_dir==='asc'?'ascending':'descending');
-            fetchOrders();
-        };
-    });
-
-    // Check-all
+    /* check-all (يبقى كما هو) */
     $('#checkAll').onchange = e => $$('tbody input[type="checkbox"]').forEach(cb=>cb.checked=e.target.checked);
+</script>
 
-    /* ===== Drawer (view/edit) ===== */
-    const drawer   = $('#drawer');
-    const backdrop = $('#drawerBackdrop');
-    const els = {
-        oId:$('#oId'), cName:$('#cName'), cEmail:$('#cEmail'), cPhone:$('#cPhone'), cAddress:$('#cAddress'),
-        pStat:$('#paymentStatus'), oStat:$('#orderStatus'),
-        itemsBody:$('#itemsTable tbody'),
-        sub:$('#sumSubtotal'), ship:$('#sumShipping'), tax:$('#sumTax'), total:$('#sumTotal')
-    };
-    let currentId=null, editMode=false, lastTrigger=null;
 
-    const allowedByPayment = {
-        'Paid':      ['Processing','Shipped','Delivered','Cancelled'],
-        'Pending':   ['Pending','Processing','Cancelled'],
-        'Failed':    ['Cancelled'],
-        'Refunded':  ['Cancelled'],
-        'COD':       ['Pending','Processing','Shipped','Delivered','Cancelled']
-    };
+<!--<script>-->
+<!--    /* ===== helpers ===== */-->
+<!--    const LS_KEY = 'mm_orders_v1';-->
+<!--    const PAGE_SIZE = 8;-->
+<!--    const $ = (s,c=document)=>c.querySelector(s);-->
+<!--    const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));-->
+<!--    const money = n => `₪${Number(n).toFixed(2)}`;-->
 
-    function applyStatusRules(){
-        const allowed = new Set(allowedByPayment[els.pStat.value] || []);
-        [...els.oStat.options].forEach(opt=> opt.disabled = !allowed.has(opt.value));
-        if(!allowed.has(els.oStat.value)) els.oStat.value = [...allowed][0] || 'Pending';
-    }
-    els.pStat.onchange = applyStatusRules;
+<!--    /* ===== sidebar include & active link ===== */-->
+<!--    document.addEventListener('DOMContentLoaded', async () => {-->
+<!--        try{-->
+<!--            const html = await fetch('sidebar.html').then(r=>r.text());-->
+<!--            $('#sidebar-container').innerHTML = html;-->
+<!--            $$('a', $('#sidebar-container')).forEach(a=>{-->
+<!--                if((a.textContent||'').trim().toLowerCase()==='orders') a.classList.add('active');-->
+<!--            });-->
+<!--        }catch{}-->
+<!--    });-->
 
-    async function openDrawer(publicId, editable){
-        try{
-            lastTrigger = document.activeElement;
-            const data = await fetchOrderDetails(publicId);
-            const o    = data.order; const items = data.items||[];
-            currentId = o.public_id; editMode = editable;
-            $('#drawerTitle').textContent = editable ? 'Edit Order' : 'Order Details';
+<!--    /* ===== seed data ===== */-->
+<!--    const seed = [-->
+<!--        { id:'ORD-2024-001', date:'2024-01-15', total:245.00, payment:'Paid', status:'Shipped',-->
+<!--            customer:{name:'Sarah Johnson', email:'sarah.johnson@email.com', phone:'+972-50-111-1111', address:'12 Herzl St, Tel Aviv'},-->
+<!--            items:[{name:'Family Matching Pajama Set', price:129.90, qty:1},{name:'Pastel Hair Bow Set (4 pcs)', price:34.90, qty:1},{name:'Kids Sleeveless Summer Jumpsuit', price:80.20, qty:1}],-->
+<!--            shipping:15, tax:0 },-->
+<!--        { id:'ORD-2024-002', date:'2024-01-14', total:189.50, payment:'Pending', status:'Processing',-->
+<!--            customer:{name:'Michael Chen', email:'michael.chen@email.com', phone:'+972-50-222-2222', address:'3 Rothschild Blvd, Tel Aviv'},-->
+<!--            items:[{name:'Girls Summer Floral Dress', price:99.00, qty:1},{name:'USB-C Cable 3ft', price:19.99, qty:2}], shipping:15, tax:0 },-->
+<!--        { id:'ORD-2024-003', date:'2024-01-13', total:320.75, payment:'Paid', status:'Delivered',-->
+<!--            customer:{name:'Emma Rodriguez', email:'emma.rodriguez@email.com', phone:'+972-50-333-3333', address:'HaYarkon 50, Tel Aviv'},-->
+<!--            items:[{name:'Baby Girl Ruffle Dress', price:79.90, qty:1},{name:'Yellow Ruffle Party Dress', price:89.90, qty:2}], shipping:25, tax:35.05 },-->
+<!--        { id:'ORD-2024-004', date:'2024-01-12', total:156.25, payment:'Failed', status:'Cancelled',-->
+<!--            customer:{name:'David Kim', email:'david.kim@email.com', phone:'+972-50-444-4444', address:'Dizengoff 10, Tel Aviv'},-->
+<!--            items:[{name:'Portable Bluetooth Speaker', price:79.99, qty:1},{name:'Premium Phone Case', price:29.99, qty:2}], shipping:16.28, tax:0 },-->
+<!--        { id:'ORD-2024-005', date:'2024-01-11', total:278.90, payment:'Paid', status:'Pending',-->
+<!--            customer:{name:'Lisa Thompson', email:'lisa.thompson@email.com', phone:'+972-50-555-5555', address:'King George 7, Tel Aviv'},-->
+<!--            items:[{name:'Classic Baby Girl Dress – White Lace', price:84.90, qty:1},{name:'Girls Party Dress – Pink Satin', price:119.90, qty:1}], shipping:20, tax:54.10 },-->
+<!--        { id:'ORD-2024-006', date:'2024-01-10', total:412.30, payment:'Paid', status:'Shipped',-->
+<!--            customer:{name:'Alexander Cohen', email:'alex.cohen@email.com', phone:'+972-50-666-6666', address:'Jabotinsky 4, Ramat Gan'},-->
+<!--            items:[{name:'Adjustable Laptop Stand', price:89.99, qty:2},{name:'Wireless Ergonomic Mouse', price:39.99, qty:2}], shipping:29.34, tax:123 },-->
+<!--        { id:'ORD-2024-007', date:'2024-01-09', total:167.45, payment:'Pending', status:'Processing',-->
+<!--            customer:{name:'Sophia Martinez', email:'sophia.m@email.com', phone:'+972-50-777-7777', address:'Arlozorov 18, Tel Aviv'},-->
+<!--            items:[{name:'USB-C Cable 3ft', price:19.99, qty:1},{name:'Pastel Hair Bow Set (4 pcs)', price:34.90, qty:1}], shipping:12.56, tax:0 },-->
+<!--        { id:'ORD-2024-008', date:'2024-01-08', total:298.60, payment:'Paid', status:'Delivered',-->
+<!--            customer:{name:'Daniel Levy', email:'daniel.levy@email.com', phone:'+972-50-888-8888', address:'Ibn Gabirol 90, Tel Aviv'},-->
+<!--            items:[{name:'Family Matching Pajama Set', price:129.90, qty:1},{name:'Girls Summer Floral Dress', price:99.00, qty:1}], shipping:19.7, tax:50 }-->
+<!--    ];-->
+<!--    function load(){ const raw=localStorage.getItem(LS_KEY); if(!raw){ localStorage.setItem(LS_KEY,JSON.stringify(seed)); return [...seed]; } try{return JSON.parse(raw)||[]}catch{return [...seed]}}-->
+<!--    function save(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }-->
+<!--    let orders = load();-->
 
-            els.oId.value = o.public_id;
-            els.cName.value = o.customer_name || '';
-            els.cEmail.value= o.customer_email || '';
-            els.cPhone.value= o.customer_phone || '';
-            els.cAddress.value = o.customer_address || '';
-            els.pStat.value = o.payment_status;
-            els.oStat.value = o.order_status;
+<!--    /* ===== filters & pagination ===== */-->
+<!--    let state = { q:'', status:'', payment:'', page:1 };-->
 
-            els.itemsBody.innerHTML = items.map(it=>{
-                const sub = Number(it.subtotal ?? (it.price*it.qty));
-                return `<tr><td>${it.name||it.product_name}</td><td>${Number(it.price).toFixed(2)}</td><td>${it.qty||it.quantity}</td><td>${sub.toFixed(2)}</td></tr>`;
-            }).join('');
+<!--    function chipClass(kind,val){-->
+<!--        const v=(val||'').toLowerCase();-->
+<!--        if(kind==='payment'){ if(v==='paid') return 'green'; if(v==='pending'||v==='cod') return 'amber'; if(v==='failed'||v==='refunded') return 'red'; }-->
+<!--        if(kind==='status'){ if(v==='delivered') return 'green'; if(v==='shipped') return 'blue'; if(v==='processing'||v==='pending') return 'amber'; if(v==='cancelled') return 'red'; }-->
+<!--        return 'amber';-->
+<!--    }-->
 
-            const subtotal = items.reduce((s,i)=> s + Number(i.subtotal ?? (i.price*i.qty)), 0);
-            els.sub.value   = fmtMoney(subtotal);
-            els.ship.value  = Number(o.shipping||0);
-            els.tax.value   = Number(o.tax||0);
-            els.total.value = fmtMoney(subtotal + Number(o.shipping||0) + Number(o.tax||0));
+<!--    function applyFilters(){-->
+<!--        let list=[...orders];-->
+<!--        const q=state.q.trim().toLowerCase();-->
+<!--        if(q){-->
+<!--            list=list.filter(o =>-->
+<!--                o.id.toLowerCase().includes(q) ||-->
+<!--                o.customer.name.toLowerCase().includes(q) ||-->
+<!--                o.customer.email.toLowerCase().includes(q)-->
+<!--            );-->
+<!--        }-->
+<!--        if(state.status) list=list.filter(o=>o.status===state.status);-->
+<!--        if(state.payment) list=list.filter(o=>o.payment===state.payment);-->
+<!--        return list;-->
+<!--    }-->
+<!--    function paginate(list){-->
+<!--        const total=list.length;-->
+<!--        const pages=Math.max(1, Math.ceil(total/PAGE_SIZE));-->
+<!--        if(state.page>pages) state.page=pages;-->
+<!--        const start=(state.page-1)*PAGE_SIZE;-->
+<!--        return {slice:list.slice(start,start+PAGE_SIZE), total, pages};-->
+<!--    }-->
 
-            // enable/disable for edit mode
-            [els.cName,els.cEmail,els.cPhone,els.cAddress,els.pStat,els.oStat,els.ship,els.tax].forEach(el=> el.disabled=!editable);
-            $('#saveOrder').style.display = editable ? '' : 'none';
+<!--    /* ===== render table ===== */-->
+<!--    function render(){-->
+<!--        const filtered=applyFilters();-->
+<!--        const {slice,total,pages}=paginate(filtered);-->
 
-            applyStatusRules();
+<!--        $('#tbody').innerHTML = slice.map(o=>`-->
+<!--    <tr>-->
+<!--      <td><input type="checkbox" data-id="${o.id}"></td>-->
+<!--      <td><span class="muted">#</span>${o.id}</td>-->
+<!--      <td>-->
+<!--        <div style="display:flex;flex-direction:column">-->
+<!--          <strong>${o.customer.name}</strong>-->
+<!--          <span class="muted" style="font-size:.9rem">${o.customer.email}</span>-->
+<!--        </div>-->
+<!--      </td>-->
+<!--      <td>${new Date(o.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>-->
+<!--      <td>${money(o.total)}</td>-->
+<!--      <td><span class="chip ${chipClass('payment',o.payment)}">${o.payment}</span></td>-->
+<!--      <td><span class="chip ${chipClass('status',o.status)}">${o.status}</span></td>-->
+<!--      <td>-->
+<!--        <div class="row-actions">-->
+<!--          <button class="icon-link" title="View" data-view="${o.id}"><i class="fa-regular fa-eye"></i></button>-->
+<!--          <button class="icon-link" title="Edit" data-edit="${o.id}"><i class="fa-regular fa-pen-to-square"></i></button>-->
+<!--          <button class="icon-link" title="Delete" data-del="${o.id}"><i class="fa-regular fa-trash-can"></i></button>-->
+<!--        </div>-->
+<!--      </td>-->
+<!--    </tr>-->
+<!--  `).join('');-->
 
-            // show drawer + focus management
-            drawer.classList.add('open'); backdrop.classList.add('show');
-            drawer.focus();
+<!--        $('#emptyState').style.display = filtered.length ? 'none' : 'block';-->
+<!--        $('#pagerInfo').textContent = filtered.length-->
+<!--            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1,total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} orders`-->
+<!--            : 'No results';-->
 
-            // focus trap
-            const focusables = drawer.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
-            const first = focusables[0], last = focusables[focusables.length-1];
-            drawer.onkeydown = (e)=>{
-                if(e.key==='Tab'){
-                    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
-                    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
-                }
-                if(e.key==='Escape'){ closeDrawer(); }
-            };
+<!--        // page buttons-->
+<!--        $('#pageNums').innerHTML='';-->
+<!--        for(let i=1;i<=pages;i++){-->
+<!--            const b=document.createElement('button');-->
+<!--            b.className='page-btn'+(i===state.page?' active':'');-->
+<!--            b.textContent=i;-->
+<!--            b.onclick=()=>{ state.page=i; render(); };-->
+<!--            $('#pageNums').appendChild(b);-->
+<!--        }-->
+<!--        $('#prevPage').disabled=state.page<=1;-->
+<!--        $('#nextPage').disabled=state.page>=pages;-->
 
-        }catch(err){ console.error(err); alert('Failed to load order'); }
-    }
+<!--        // row actions-->
+<!--        $$('[data-view]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.view,false));-->
+<!--        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawer(b.dataset.edit,true));-->
+<!--        $$('[data-del]').forEach(b=>b.onclick=()=>removeOrder(b.dataset.del));-->
+<!--    }-->
+<!--    render();-->
 
-    function closeDrawer(){
-        drawer.classList.remove('open'); backdrop.classList.remove('show');
-        currentId=null; editMode=false; drawer.onkeydown=null;
-        if(lastTrigger) lastTrigger.focus();
-    }
-    backdrop.onclick = closeDrawer; $('#cancelDrawer').onclick = closeDrawer;
+<!--    /* ===== search & filters wiring ===== */-->
+<!--    $('#searchInput').oninput = e=>{ state.q=e.target.value; state.page=1; render(); };-->
+<!--    $('#statusFilter').onchange = e=>{ state.status=e.target.value; state.page=1; render(); };-->
+<!--    $('#paymentFilter').onchange = e=>{ state.payment=e.target.value; state.page=1; render(); };-->
+<!--    $('#clearFilters').onclick = ()=>{ state={q:'',status:'',payment:'',page:1}; $('#searchInput').value=''; $('#statusFilter').value=''; $('#paymentFilter').value=''; render(); };-->
+<!--    $('#prevPage').onclick=()=>{ if(state.page>1){state.page&#45;&#45;; render();} };-->
+<!--    $('#nextPage').onclick=()=>{ state.page++; render(); };-->
 
-    $('#saveOrder').onclick = async () => {
-        if(!currentId) return;
-        try{
-            const payload = {
-                public_id: currentId,
-                customer_name:  els.cName.value.trim(),
-                customer_email: els.cEmail.value.trim(),
-                customer_phone: els.cPhone.value.trim(),
-                customer_address: els.cAddress.value.trim(),
-                payment_status:  els.pStat.value,
-                order_status:    els.oStat.value,
-                shipping: Number(els.ship.value||0),
-                tax:      Number(els.tax.value||0)
-            };
-            await updateOrder(payload);
-            await fetchOrders();
-            closeDrawer();
-        }catch(err){ console.error(err); alert('Save failed'); }
-    };
+<!--    /* ===== drawer (view/edit) ===== */-->
+<!--    const drawer=$('#drawer'), backdrop=$('#drawerBackdrop');-->
+<!--    const els={-->
+<!--        oId:$('#oId'), cName:$('#cName'), cEmail:$('#cEmail'), cPhone:$('#cPhone'), cAddress:$('#cAddress'),-->
+<!--        pStat:$('#paymentStatus'), oStat:$('#orderStatus'),-->
+<!--        tBody:$('#itemsTable tbody'),-->
+<!--        sub:$('#sumSubtotal'), ship:$('#sumShipping'), tax:$('#sumTax'), total:$('#sumTotal')-->
+<!--    };-->
+<!--    let currentId=null, editMode=false;-->
 
-    async function confirmDelete(publicId){
-        const ok = confirm(`Delete order ${publicId}? This cannot be undone.`);
-        if(!ok) return;
-        try{ await deleteOrder(publicId); await fetchOrders(); }catch(err){ console.error(err); alert('Delete failed'); }
-    }
+<!--    function openDrawer(id, editable){-->
+<!--        const o=orders.find(x=>x.id===id); if(!o) return;-->
+<!--        currentId=id; editMode=editable;-->
+<!--        $('#drawerTitle').textContent = editable ? 'Edit Order' : 'Order Details';-->
 
-    // Initial load
-    fetchOrders();
+<!--        els.oId.value=o.id;-->
+<!--        els.cName.value=o.customer.name;-->
+<!--        els.cEmail.value=o.customer.email;-->
+<!--        els.cPhone.value=o.customer.phone||'';-->
+<!--        els.cAddress.value=o.customer.address||'';-->
+<!--        els.pStat.value=o.payment;-->
+<!--        els.oStat.value=o.status;-->
+
+<!--        els.tBody.innerHTML=o.items.map(it=>{-->
+<!--            const sub=it.price*it.qty;-->
+<!--            return `<tr><td>${it.name}</td><td>${Number(it.price).toFixed(2)}</td><td>${it.qty}</td><td>${sub.toFixed(2)}</td></tr>`;-->
+<!--        }).join('');-->
+
+<!--        const subtotal=o.items.reduce((s,i)=>s+i.price*i.qty,0);-->
+<!--        els.sub.value=money(subtotal);-->
+<!--        els.ship.value=o.shipping ?? 0;-->
+<!--        els.tax.value=o.tax ?? 0;-->
+<!--        els.total.value=money(subtotal + Number(o.shipping||0) + Number(o.tax||0));-->
+
+<!--        // enable/disable-->
+<!--        [els.cName,els.cEmail,els.cPhone,els.cAddress,els.pStat,els.oStat,els.ship,els.tax].forEach(el=>el.disabled=!editable);-->
+<!--        $('#saveOrder').style.display = editable ? '' : 'none';-->
+
+<!--        drawer.classList.add('open'); backdrop.classList.add('show');-->
+<!--    }-->
+<!--    function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); currentId=null; }-->
+<!--    backdrop.onclick=closeDrawer; $('#cancelDrawer').onclick=closeDrawer;-->
+
+<!--    $('#saveOrder').onclick=()=>{-->
+<!--        const idx=orders.findIndex(o=>o.id===currentId); if(idx<0) return;-->
+<!--        const o={...orders[idx]};-->
+<!--        o.customer={name:els.cName.value.trim(), email:els.cEmail.value.trim(), phone:els.cPhone.value.trim(), address:els.cAddress.value.trim()};-->
+<!--        o.payment=els.pStat.value; o.status=els.oStat.value;-->
+<!--        o.shipping=Number(els.ship.value||0); o.tax=Number(els.tax.value||0);-->
+<!--        const subtotal=o.items.reduce((s,i)=>s+i.price*i.qty,0);-->
+<!--        o.total=Number((subtotal + o.shipping + o.tax).toFixed(2));-->
+<!--        orders[idx]=o; save(orders); render(); closeDrawer();-->
+<!--    };-->
+
+<!--    function removeOrder(id){-->
+<!--        const o=orders.find(x=>x.id===id); if(!o) return;-->
+<!--        if(confirm(`Delete order ${o.id}? This cannot be undone.`)){-->
+<!--            orders=orders.filter(x=>x.id!==id); save(orders); render();-->
+<!--        }-->
+<!--    }-->
+
+<!--    /* add order (quick dummy) */-->
+<!--    $('#emptyAddBtn').onclick = ()=> {-->
+<!--        const n = orders.length+1;-->
+<!--        const od = { ...seed[0], id:`ORD-2024-${String(100+n).slice(1)}` };-->
+<!--        orders.unshift(od); save(orders); render();-->
+<!--    };-->
+
+<!--    /* check-all */-->
+<!--    $('#checkAll').onchange = e => $$('tbody input[type="checkbox"]').forEach(cb=>cb.checked=e.target.checked);-->
 </script>
 
 <!-- keep your existing includes -->
