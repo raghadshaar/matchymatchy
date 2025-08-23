@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../styles/sidebar.css" />
     <link rel="stylesheet" href="../styles/products.css" />
     <link rel="stylesheet" href="../styles/topbarAdmin.css" />
+
 </head>
 <body>
 
@@ -162,6 +163,30 @@
             <textarea class="textarea" id="pDesc" placeholder="Short description…"></textarea>
         </div>
         <div class="form-item">
+            <label for="pType">Product Type</label>
+            <select class="select" id="pType">
+                <option value="">— Select type —</option>
+                <option value="Blouse">Blouse</option>
+                <option value="Pajama">Pajama</option>
+                <option value="Pants">Pants</option>
+                <option value="Skirt">Skirt</option>
+                <option value="Dress">Dress</option>
+                <option value="T-shirt">T-shirt</option>
+                <option value="Set">Set</option>
+            </select>
+        </div>
+        <div class="form-item">
+            <label>Fabrics</label>
+            <div id="fabricChips" class="chip-multi"></div>
+        </div>
+        <div class="form-item">
+            <label>Colors</label>
+            <div id="colorChips" class="chip-multi"></div>
+        </div>
+
+
+
+        <div class="form-item">
             <label>Sizes</label>
             <div class="size-chips" id="sizeChips"></div>
             <input class="input" id="customSize" placeholder="Add custom size and press Enter" style="margin-top:8px"/>
@@ -213,12 +238,33 @@
     </div>
 </div>
 
+<!-- Add Color Dialog -->
+<div id="addColorDialog" class="modal">
+    <div class="modal-content">
+        <h3>Add New Color</h3>
+        <label>
+            Color Name:
+            <input type="text" id="newColorName" placeholder="e.g. Lavender"/>
+        </label>
+        <label>
+            Color Picker:
+            <input type="color" id="newColorHex" value="#DDA0DD"/>
+        </label>
+        <div class="modal-actions">
+            <button class="btn btn-teal" onclick="submitNewColor()">Add</button>
+            <button class="btn btn-ghost" onclick="closeAddColorDialog()">Cancel</button>
+        </div>
+    </div>
+</div>
 <script>
     const PAGE_SIZE = 8;
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
     const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
     const currencyILS = (n) => `₪${Number(n).toFixed(2)}`;
     let gallery = []; // [{url, alt, sort}]
+    let selectedFabrics = new Set();
+    let selectedColors = new Set();
+
 
     // حالات التحميل والعرض
     const showLoading = () => {
@@ -361,6 +407,9 @@
                     <div class="product-meta">
                         <div>Collection: ${p.collections || '-'}</div>
                         <div>Stock: ${p.stock ?? 0}</div>
+                        <div>Type: ${p.type || '-'}</div>
+                        <div>Fabrics: ${p.fabrics?.join(', ') || '-'}</div>
+                         <div>Colors: ${p.colors?.join(', ') || '-'}</div>
                     </div>
 
                     <div class="product-status">
@@ -462,7 +511,6 @@
         selectedSizes = new Set(['One Size']);
         renderSizeChips();
 
-        // الصورة الأساسية: اخفي المعاينة وارجعي الخلفية الافتراضية
         const dzPrev = document.getElementById('dzPreview');
         const dzImg  = document.getElementById('dzImg');
         const dz     = document.getElementById('dropzone');
@@ -480,6 +528,13 @@
         // (اختياري) مرّري الدرج لأعلى
         const drw = document.getElementById('drawer');
         if (drw) drw.scrollTop = 0;
+
+
+        selectedFabrics = new Set();
+        selectedColors = new Set();
+        renderFabricChips();
+        renderColorChips();
+
     }
 
 
@@ -533,6 +588,11 @@
             }));
             gallery.sort((a,b)=>a.sort-b.sort);
             renderGallery();
+            document.getElementById('pType').value = product.type || '';
+            selectedFabrics = new Set(product.fabrics || []);
+            selectedColors  = new Set(product.colors || []);
+            renderFabricChips();
+            renderColorChips();
 
 
             openDrawer();
@@ -569,7 +629,11 @@
             description: formEls.desc.value.trim(),
             image: formEls.image.value.trim(),
             sizes: Array.from(selectedSizes),
-            gallery: gallery
+            gallery: gallery,
+            type: document.getElementById('pType').value,
+            fabrics: Array.from(selectedFabrics),
+            colors: Array.from(selectedColors)
+
         };
 
         try {
@@ -756,6 +820,56 @@
         e.target.value = '';
         renderGallery();
     });
+    function renderFabricChips(){
+        const wrap = document.getElementById('fabricChips');
+        wrap.innerHTML = ['Cotton','Organic Cotton','Bamboo','Modal','Polyester'].map(f => `
+    <button type="button" class="chip-toggle${selectedFabrics.has(f) ? ' active' : ''}" onclick="
+      selectedFabrics.has('${f}') ? selectedFabrics.delete('${f}') : selectedFabrics.add('${f}');
+      renderFabricChips();
+    ">${f}</button>
+  `).join('');
+    }
+
+    async function renderColorChips() {
+        const wrap = document.getElementById('colorChips');
+        wrap.innerHTML = '';
+
+        try {
+            const res = await fetch('../backend/color_options_api.php');
+            const j = await res.json();
+            if (!j.success) throw new Error(j.error || 'Error loading colors');
+
+            j.colors.forEach(c => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'chip-toggle' + (selectedColors.has(c.name) ? ' active' : '');
+                b.textContent = c.name;
+                b.style.backgroundColor = c.hex || '#ccc';
+                b.onclick = () => {
+                    selectedColors.has(c.name)
+                        ? selectedColors.delete(c.name)
+                        : selectedColors.add(c.name);
+                    renderColorChips();
+                };
+                wrap.appendChild(b);
+            });
+
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'chip-toggle';
+            addBtn.innerHTML = '<i class="fa fa-plus"></i> Add color';
+            addBtn.onclick = showAddColorDialog;
+            wrap.appendChild(addBtn);
+
+        } catch (err) {
+            wrap.innerHTML = '<div style="color:red">Error loading colors</div>';
+            console.error(err);
+        }
+    }
+
+
+
+
 
     async function loadCategoryTreeForDrawer() {
         try {
@@ -800,12 +914,47 @@
             document.getElementById('pParentCat').value = parentName;
         }
     });
+    function showAddColorDialog() {
+        document.getElementById('addColorDialog').style.display = 'flex';
+        document.getElementById('newColorName').value = '';
+        document.getElementById('newColorHex').value = '#DDA0DD';
+    }
+
+    function closeAddColorDialog() {
+        document.getElementById('addColorDialog').style.display = 'none';
+    }
+
+    async function submitNewColor() {
+        const name = document.getElementById('newColorName').value.trim();
+        const hex = document.getElementById('newColorHex').value.trim();
+
+        if (!name || !/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+            alert('Please enter a valid color name and pick a valid color.');
+            return;
+        }
+
+        try {
+            const res = await fetch('../backend/color_options_api.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, hex })
+            });
+
+            const result = await res.json();
+            if (!result.success) throw new Error(result.error || 'Failed to add color');
+
+            closeAddColorDialog();
+            await renderColorChips(); // reload list
+        } catch (err) {
+            alert('Error adding color: ' + err.message);
+        }
+    }
 
 </script>
 
 
+
 <script src="../js/adminbar.js" defer></script>
 <script src="../js/includeadminBar.js" defer></script>
-
 </body>
 </html>

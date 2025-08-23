@@ -185,13 +185,10 @@ LEFT JOIN (
 WHERE 1";
 
 $args = [
-    // لاحظ: استخدمت أسماء مختلفة لتفادي تكرار نفس placeholder
     ':uid1' => $userId, ':uid2' => $userId, ':dvc1' => $device, ':uid3' => $userId,
     ':uid4' => $userId, ':uid5' => $userId, ':dvc2' => $device, ':uid6' => $userId,
 ];
 
-// ===== filters (كلها بمسماة) =====
-// ===== filters (كلها بمسماة) =====
 if ($q !== '') {
     $sqlBase .= " AND (p.name LIKE :qname OR p.sku LIKE :qsku)";
     $args[':qname'] = "%{$q}%";
@@ -206,7 +203,6 @@ if ($categoryId > 0) {
     $args[':catId'] = $categoryId;
 }
 if ($categorySlug !== '') {
-    // الحصول على ID التصنيف من الـ slug
     $catStmt = $pdo->prepare("SELECT id, parent_id FROM categories WHERE slug = ?");
     $catStmt->execute([$categorySlug]);
     $category = $catStmt->fetch(PDO::FETCH_ASSOC);
@@ -214,7 +210,6 @@ if ($categorySlug !== '') {
     if ($category) {
         $categoryIds = [$category['id']];
 
-        // إذا كان هذا تصنيف أب، نحتاج للحصول على جميع التصنيفات الأبناء
         if ($category['parent_id'] === null) {
             $childStmt = $pdo->prepare("SELECT id FROM categories WHERE parent_id = ?");
             $childStmt->execute([$category['id']]);
@@ -282,6 +277,18 @@ if (!empty($colors)) {
         WHERE pc.product_id = p.id AND co.name IN ($in)
     )";
 }
+$sizes = isset($_GET['size']) ? (array)$_GET['size'] : [];
+
+if ($type !== '') {
+    $in = makeIn('size_', $sizes, $args);
+    $sqlBase .= " AND EXISTS (
+        SELECT 1 FROM product_sizes ps
+        WHERE ps.product_id = p.id AND ps.size_label IN ($in)
+    )";
+}
+
+
+
 // ===== sort =====
 $orderBy = 'p.created_at DESC';
 switch ($sort) {
@@ -325,12 +332,18 @@ $sql = "SELECT
              JOIN color_options co ON co.id = pc.color_id
             WHERE pc.product_id = p.id) AS colors_csv
 
+      
         $sqlBase
         ORDER BY $orderBy
-        LIMIT $size OFFSET $off";
+        LIMIT :limit OFFSET :offset";
+
+
+$args[':limit'] = $size;
+$args[':offset'] = $off;
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($args);
+
 $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Category • Matchy Matchy</title>
 
-    <!-- Tailwind (للتطوير فقط) -->
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script>
         tailwind.config = {
@@ -88,51 +87,48 @@
 <!-- HEADER -->
 <div id="header-slot"></div>
 
-<!-- شريط عنوان وبريدكرَمب -->
 <section class="w-full px-6 py-6 border-b" style="background-color:#F9F8F3;">
     <div class="mb-4 max-w-6xl mx-auto">
         <nav class="text-sm text-gray-500 mb-2" id="breadcrumb">Home / <span>Category</span></nav>
         <h1 class="text-2xl font-bold text-gray-800" id="page-title">Loading…</h1>
     </div>
 
-    <!-- فلاتر UI (حالياً واجهة فقط – الربط في الـ backend جاهز بكود الجلب) -->
     <div class="max-w-6xl mx-auto flex flex-wrap items-center gap-4">
-        <button class="filter-btn flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50">
-            <span>All Filters</span>
-            <span class="bg-primary text-white text-xs px-2 py-1 rounded-full">5</span>
-        </button>
 
         <div class="relative">
-            <select class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
-                <option>Size</option><option>Newborn</option><option>0-3M</option><option>3-6M</option>
-                <option>6-9M</option><option>9-12M</option><option>12-18M</option><option>18-24M</option>
+            <select id="flt-size" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+                <option value="">Size</option>
             </select>
             <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
                 <i class="ri-arrow-down-s-line text-gray-500"></i>
             </div>
         </div>
-
+        <div class="relative">
         <select id="flt-type" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
-            <option>Type</option>
-            <option>Dress</option><option>Set</option><option>Pajama</option>
-            <option>Blouse</option><option>Pants</option><option>Skirt</option><option>T-shirt</option>
+            <option value="">Type</option>
         </select>
-
-        <select id="flt-fabric" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
-            <option>Fabric</option>
-            <option>Cotton</option><option>Organic Cotton</option><option>Bamboo</option><option>Modal</option><option>Polyester</option>
-        </select>
-
-        <select id="flt-color" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
-            <option>Color</option>
-            <option>White</option><option>Black</option><option>Pink</option>
-            <option>Blue</option><option>Green</option><option>Ivory</option>
-        </select>
-
-        <div class="flex items-center gap-2 ml-auto">
-            <input type="checkbox" id="pickup" class="custom-checkbox">
-            <label for="pickup" class="text-sm text-gray-700 cursor-pointer">Free 1-hour pickup</label>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <i class="ri-arrow-down-s-line text-gray-500"></i>
+            </div>
         </div>
+        <div class="relative">
+        <select id="flt-fabric" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+            <option value="">Fabric</option>
+        </select>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <i class="ri-arrow-down-s-line text-gray-500"></i>
+            </div>
+        </div>
+        <div class="relative">
+        <select id="flt-color" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+            <option value="">Color</option>
+        </select>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <i class="ri-arrow-down-s-line text-gray-500"></i>
+            </div>
+        </div>
+
+
     </div>
 </section>
 
@@ -168,7 +164,6 @@
 <script>
     const gridEl = document.getElementById('products-grid');
 
-    // كارد المنتج (مع إضاءة حسب تقييمي)
     function card(p){
         const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
         const cnt      = Number(p.rating_count || 0);
@@ -205,65 +200,20 @@
           </button>
         </div>
 
-        <div class="add-row" style="margin-top:12px;display:flex;justify-content:flex-end;">
-          <button type="button" class="add-btn"
-                  data-id="${p.id}"
-                  data-name="${p.name.replace(/"/g,'&quot;')}"
-                  data-price="${p.price}"
-                  data-image="${p.image_main_url || '../images/placeholder.jpg'}">
-            <i class="ri-add-line"></i>
-          </button>
-        </div>
+
       </div>
     `;
     }
+    // <div class="add-row" style="margin-top:12px;display:flex;justify-content:flex-end;">
+    //     <button type="button" class="add-btn"
+    //             data-id="${p.id}"
+    //             data-name="${p.name.replace(/"/g,'&quot;')}"
+    //     data-price="${p.price}"
+    //     data-image="${p.image_main_url || '../images/placeholder.jpg'}">
+    //     <i class="ri-add-line"></i>
+    // </button>
+    // </div>
 
-    async function renderPLP(){
-        // Params
-        const params = new URLSearchParams(location.search);
-        const slug = params.get('slug') || 'baby-girl';
-        const q    = params.get('q') || '';
-        const page = Math.max(1, +(params.get('page') || 1));
-        const size = Math.max(1, +(params.get('size') || 24));
-
-        // Loading
-        gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Loading…</div>`;
-
-        // API
-        const apiBase = '/matchymatchy/backend/products.php';
-        let url = `${apiBase}?page=${page}&size=${size}`;
-        if (q) url += `&q=${encodeURIComponent(q)}`;
-        else if (slug && slug !== 'all-products') url += `&category_slug=${encodeURIComponent(slug)}`;
-
-        // Fetch
-        let ok=false, data=[], total=0;
-        try{
-            const res = await fetch(url, { headers: { 'Accept':'application/json' } });
-            if (!res.ok){ throw new Error(`API ${res.status}`); }
-            const json = await res.json();
-            ok    = !!json.ok;
-            data  = json.data  || [];
-            total = json.total || 0;
-        }catch(err){
-            console.error('Fetch failed:', err);
-        }
-        if (!ok){
-            gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Error loading products</div>`;
-            return;
-        }
-
-        // Title + breadcrumb
-        const pretty = q ? `Results for “${q}”` : slug.replace(/-/g,' ').replace(/\b\w/g, s => s.toUpperCase());
-        const titleEl = document.getElementById('page-title');
-        if (titleEl) titleEl.innerHTML = `${pretty} <span class="text-lg font-normal text-gray-600">(${total} items)</span>`;
-        const bc = document.getElementById('breadcrumb');
-        if (bc) bc.innerHTML = `Home / <span class="text-gray-800">${pretty}</span>`;
-
-        // Render
-        gridEl.innerHTML = data.length
-            ? data.map(card).join('')
-            : `<div class="col-span-full text-center py-10 text-gray-500">No products found</div>`;
-    }
 
     // أول تحميل
     renderPLP();
@@ -355,6 +305,381 @@
                 starWrap.classList.remove('is-busy');
             }
         }
+    });
+
+    async function getParentCategoryFromSlug(slug) {
+        // 1. افحص إذا هو أصلاً أب رئيسي
+        const primary = ['baby', 'toddler', 'kids'];
+        if (primary.includes(slug)) return slug;
+
+        try {
+            const res = await fetch('../backend/collections_api.php?withChildren=1');
+            const j = await res.json();
+            const parents = Array.isArray(j.data) ? j.data : [];
+
+            for (const parent of parents) {
+                if (!parent.children) continue;
+                for (const child of parent.children) {
+                    if (child.slug === slug) return parent.slug;
+                }
+            }
+            return null;
+        } catch (e) {
+            console.error('getParentCategoryFromSlug', e);
+            return null;
+        }
+    }
+
+
+    async function loadFilterOptions() {
+        const slug = new URLSearchParams(location.search).get('slug') || '';
+
+        const parentSlug = await getParentCategoryFromSlug(slug);
+
+        const categoryType = parentSlug?.includes('toddler') ? 'toddler'
+            : parentSlug?.includes('kid') ? 'kids'
+                : 'baby'; // default
+
+        const SIZE_GUIDES = {
+            baby: ['Newborn', '0-3M', '3-6M', '6-9M', '9-12M', '12-18M'],
+            toddler: ['2T', '3T', '4T', '5T'],
+            kids: ['5', '6', '7', '8', '10', '12', '14']
+        };
+
+        const sizes = SIZE_GUIDES[categoryType] || [];
+
+        const sizeSelect = document.getElementById('flt-size');
+        if (sizeSelect) {
+            sizeSelect.innerHTML = '<option value="">Size</option>';
+            sizes.forEach(size => {
+                const opt = document.createElement('option');
+                opt.value = size;
+                opt.textContent = size;
+                sizeSelect.appendChild(opt);
+            });
+        }
+        try {
+            const response = await fetch('/matchymatchy/backend/filters.php');
+            const result = await response.json();
+
+            if (result.ok) {
+                populateFilterOptions(result.data);
+            } else {
+                console.error('Failed to load filter options:', result.error);
+                populateFilterOptions({
+                    sizes: ['Newborn', '0-3M', '3-6M', '6-9M', '9-12M', '12-18M', '18-24M'],
+                    types: ['Dress', 'Set', 'Pajama', 'Blouse', 'Pants', 'Skirt', 'T-shirt'],
+                    fabrics: ['Cotton', 'Organic Cotton', 'Bamboo', 'Modal', 'Polyester'],
+                    colors: ['White', 'Black', 'Pink', 'Blue', 'Green', 'Ivory']
+                });
+            }
+        } catch (error) {
+            console.error('Error loading filter options:', error);
+        }
+    }
+
+    function populateFilterOptions(options) {
+        const sizeSelect = document.getElementById('flt-size');
+        if (sizeSelect && options.sizes) {
+            options.sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+        }
+
+        const typeSelect = document.getElementById('flt-type');
+        if (typeSelect && options.types) {
+            options.types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                typeSelect.appendChild(option);
+            });
+        }
+
+        // ملء خيارات الأقمشة
+        const fabricSelect = document.getElementById('flt-fabric');
+        if (fabricSelect && options.fabrics) {
+            options.fabrics.forEach(fabric => {
+                const option = document.createElement('option');
+                option.value = fabric;
+                option.textContent = fabric;
+                fabricSelect.appendChild(option);
+            });
+        }
+
+        // ملء خيارات الألوان
+        const colorSelect = document.getElementById('flt-color');
+        if (colorSelect && options.colors) {
+            options.colors.forEach(color => {
+                const option = document.createElement('option');
+                option.value = color;
+                option.textContent = color;
+                colorSelect.appendChild(option);
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFilterOptions().then(() => {
+            setupFilters();
+            setFilterValuesFromURL();
+            updateActiveFiltersCount();
+        });
+    });
+
+    // دالة لتعيين قيم الفلاتر من URL
+    function setFilterValuesFromURL() {
+        const params = new URLSearchParams(location.search);
+
+        const sizeSelect = document.getElementById('flt-size');
+        const typeSelect = document.getElementById('flt-type');
+        const fabricSelect = document.getElementById('flt-fabric');
+        const colorSelect = document.getElementById('flt-color');
+        const pickupCheckbox = document.getElementById('pickup');
+
+        if (sizeSelect && params.has('size')) {
+            sizeSelect.value = params.get('size');
+        }
+
+        if (typeSelect && params.has('type')) {
+            typeSelect.value = params.get('type');
+        }
+
+        if (fabricSelect && params.has('fabric')) {
+            fabricSelect.value = params.get('fabric');
+        }
+
+        if (colorSelect && params.has('color')) {
+            colorSelect.value = params.get('color');
+        }
+
+        if (pickupCheckbox && params.has('pickup')) {
+            pickupCheckbox.checked = params.get('pickup') === 'true';
+        }
+    }
+
+    async function renderPLP(){
+        // Params
+        const params = new URLSearchParams(location.search);
+        const slug = params.get('slug') || 'baby-girl';
+        const q    = params.get('q') || '';
+        const page = Math.max(1, +(params.get('page') || 1));
+        const size = Math.max(1, +(params.get('size') || 24));
+
+        gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Loading…</div>`;
+        // API
+        const apiBase = '/matchymatchy/backend/products.php';
+        let url = `${apiBase}?page=${page}&size=${size}`;
+        if (q) url += `&q=${encodeURIComponent(q)}`;
+        else if (slug && slug !== 'all-products') url += `&category_slug=${encodeURIComponent(slug)}`;
+
+        const filters = {
+            type: params.get('type'),
+            fabric: params.get('fabric'),
+            color: params.get('color'),
+            pickup: params.get('pickup'),
+            size: params.get('size'),
+        };
+
+        for (const [key, value] of Object.entries(filters)) {
+            if (value && value !== '') {
+                if (['fabric', 'color'].includes(key)) {
+                    url += `&${key}[]=${encodeURIComponent(value)}`;
+                } else {
+                    url += `&${key}=${encodeURIComponent(value)}`;
+                }
+            }
+        }
+
+
+
+        // Fetch
+        let ok=false, data=[], total=0;
+        try{
+            const res = await fetch(url, { headers: { 'Accept':'application/json' } });
+            if (!res.ok){ throw new Error(`API ${res.status}`); }
+            const json = await res.json();
+            ok    = !!json.ok;
+            data  = json.data  || [];
+            total = json.total || 0;
+        }catch(err){
+            console.error('Fetch failed:', err);
+        }
+        if (!ok){
+            gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Error loading products</div>`;
+            return;
+        }
+
+        // Title + breadcrumb
+        const pretty = q ? `Results for “${q}”` : slug.replace(/-/g,' ').replace(/\b\w/g, s => s.toUpperCase());
+        const titleEl = document.getElementById('page-title');
+        if (titleEl) titleEl.innerHTML = `${pretty} <span class="text-lg font-normal text-gray-600">(${total} items)</span>`;
+        const bc = document.getElementById('breadcrumb');
+        if (bc) bc.innerHTML = `Home / <span class="text-gray-800">${pretty}</span>`;
+
+        // Render
+        gridEl.innerHTML = data.length
+            ? data.map(card).join('')
+            : `<div class="col-span-full text-center py-10 text-gray-500">No products found</div>`;
+
+        // تحديث عدد الفلاتر النشطة
+        updateActiveFiltersCount();
+    }
+
+
+    // إعداد مستمعين للفلاتر
+    function setupFilters() {
+        // فلترة الحجم
+        const sizeSelect = document.getElementById('flt-size');
+        if (sizeSelect) {
+            sizeSelect.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+
+        // فلترة النوع
+        const typeSelect = document.getElementById('flt-type');
+        if (typeSelect) {
+            typeSelect.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+
+        // فلترة القماش
+        const fabricSelect = document.getElementById('flt-fabric');
+        if (fabricSelect) {
+            fabricSelect.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+
+        // فلترة اللون
+        const colorSelect = document.getElementById('flt-color');
+        if (colorSelect) {
+            colorSelect.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+
+        // فلترة الاستلام السريع
+        const pickupCheckbox = document.getElementById('pickup');
+        if (pickupCheckbox) {
+            pickupCheckbox.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+
+        // زر كل الفلاتر
+        const allFiltersBtn = document.getElementById('all-filters-btn');
+        if (allFiltersBtn) {
+            allFiltersBtn.addEventListener('click', function() {
+                // يمكنك إضافة منطق لعرض/إخفاء قائمة الفلاتر هنا
+                alert('عرض كل خيارات الفلترة');
+            });
+        }
+    }
+
+    // تطبيق الفلاتر
+    function applyFilters() {
+        const sizeSelect = document.getElementById('flt-size');
+        const typeSelect = document.getElementById('flt-type');
+        const fabricSelect = document.getElementById('flt-fabric');
+        const colorSelect = document.getElementById('flt-color');
+        const pickupCheckbox = document.getElementById('pickup');
+
+        const params = new URLSearchParams(location.search);
+
+        if (sizeSelect && sizeSelect.value) {
+            params.set('size', sizeSelect.value);
+        } else {
+            params.delete('size');
+        }
+
+        if (typeSelect && typeSelect.value) {
+            params.set('type', typeSelect.value);
+        } else {
+            params.delete('type');
+        }
+
+        if (fabricSelect && fabricSelect.value) {
+            params.set('fabric', fabricSelect.value);
+        } else {
+            params.delete('fabric');
+        }
+
+        if (colorSelect && colorSelect.value) {
+            params.set('color', colorSelect.value);
+        } else {
+            params.delete('color');
+        }
+
+        if (pickupCheckbox && pickupCheckbox.checked) {
+            params.set('pickup', 'true');
+        } else {
+            params.delete('pickup');
+        }
+
+        window.location.search = params.toString();
+    }
+
+    // تحديث دالة renderPLP لدعم الفلاتر
+
+
+    // تحديث عدد الفلاتر النشطة
+    function updateActiveFiltersCount() {
+        const params = new URLSearchParams(location.search);
+        let activeCount = 0;
+
+        if (params.get('type')) activeCount++;
+        if (params.get('fabric')) activeCount++;
+        if (params.get('color')) activeCount++;
+        if (params.get('pickup')) activeCount++;
+
+        const countElement = document.getElementById('active-filters-count');
+        if (countElement) {
+            countElement.textContent = activeCount;
+            countElement.style.display = activeCount > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+    // استدعاء إعداد الفلاتر بعد تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        setupFilters();
+
+        // تعيين قيم الفلاتر من معاملات URL إن وجدت
+        const params = new URLSearchParams(location.search);
+
+        const sizeSelect = document.getElementById('flt-size');
+        const typeSelect = document.getElementById('flt-type');
+        const fabricSelect = document.getElementById('flt-fabric');
+        const colorSelect = document.getElementById('flt-color');
+        const pickupCheckbox = document.getElementById('pickup');
+
+        if (sizeSelect && params.has('size')) {
+            sizeSelect.value = params.get('size');
+        }
+
+        if (typeSelect && params.has('type')) {
+            typeSelect.value = params.get('type');
+        }
+
+        if (fabricSelect && params.has('fabric')) {
+            fabricSelect.value = params.get('fabric');
+        }
+
+        if (colorSelect && params.has('color')) {
+            colorSelect.value = params.get('color');
+        }
+
+        if (pickupCheckbox && params.has('pickup')) {
+            pickupCheckbox.checked = params.get('pickup') === 'true';
+        }
+
+        // تحديث عدد الفلاتر النشطة
+        updateActiveFiltersCount();
     });
 </script>
 
