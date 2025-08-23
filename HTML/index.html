@@ -3,12 +3,24 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Matchy Matchy</title>
     <link rel="stylesheet" href="../styles/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-
+    <!-- Tailwind (للتطوير فقط) -->
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary:'#008080', secondary:'#FADADD' },
+                    borderRadius: { 'button':'8px' }
+                }
+            }
+        }
+    </script>
     <style>
         /* Search bar styles (خفيفة وتلتزم بالـ palette تبعتك) */
         :root{
@@ -213,24 +225,17 @@
 </script>
 
 <script>
-    /* Header include (مرة واحدة) + تهيئة عداد السلة */
-    const host = document.getElementById('header-slot');
-    fetch('header.html')
+        fetch('header.html')
         .then(r => r.text())
         .then(html => {
-            host.innerHTML = html;
+        document.getElementById('header-slot').innerHTML = html;
+        updateHeaderCartCount();
+        setupHeaderMenu();
+        setupHeaderSearch();
+        window.addEventListener('storage', (e)=>{ if (e.key === 'cart') updateHeaderCartCount(); });
+        window.addEventListener('cart:updated', updateHeaderCartCount);
+    });
 
-            // حدّث البادج فور الحقن
-            updateHeaderCartCount();
-
-            // تزامن بين الصفحات/التبويبات
-            window.addEventListener('storage', (e) => {
-                if (e.key === 'cart') updateHeaderCartCount();
-            });
-
-            // تزامن داخل نفس الصفحة
-            window.addEventListener('cart:updated', updateHeaderCartCount);
-        });
 </script>
 
 <script src="../js/indexscript.js"></script>
@@ -261,6 +266,7 @@
         });
     })();
 </script>
-
+<script src="../js/indexscript.js"></script>
+<script defer src="../js/header.js"></script>
 </body>
 </html>

@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Matchy Matchy • Product</title>
-
+    <!-- Tailwind (للتطوير فقط) -->
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary:'#008080', secondary:'#FADADD' },
+                    borderRadius: { 'button':'8px' }
+                }
+            }
+        }
+    </script>
     <!-- CSS -->
     <link rel="stylesheet" href="../styles/productStyle.css" />
     <link rel="stylesheet" href="../styles/style.css" />
@@ -652,7 +663,7 @@
     })();
 </script>
 
-<!--<script src="../js/indexscript.js"></script>-->
-<!--<script defer src="../js/headerjs.js"></script>-->
+<script src="../js/indexscript.js"></script>
+<script defer src="../js/header.js"></script>
 </body>
 </html>
