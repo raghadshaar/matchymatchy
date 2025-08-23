@@ -400,7 +400,6 @@
 -- -- UPDATE categories SET image_url = '../images/categories/familymatching.jpg'
 -- -- WHERE slug='family-matching';
 --
--- -- الاختيار 2 (باستعمال اسم الملف الحالي كما هو):
 -- UPDATE categories SET image_url = '../images/categories/famillymatching.jpg'
 -- WHERE slug='family-matching';
 --
@@ -424,18 +423,13 @@ UPDATE categories SET image_url = '../images/categories/BabyGear.jpg'           
 
 /* ====== Toddler children ====== */
 UPDATE categories SET image_url = '../images/categories/toddlergirl.jpg'        WHERE slug='toddler-girl';
-/* ما في صورة لِـ toddler-boy أو toddler-gear ضمن قائمتك الحالية */
 
 /* ====== Kids children ====== */
 UPDATE categories SET image_url = '../images/categories/kidsboy.jpg'            WHERE slug='kids-boys';
-/* ما في صورة لِـ kids-girls ضمن قائمتك الحالية */
 
 /* ====== Collections children ====== */
 UPDATE categories SET image_url = '../images/categories/familymatching.jpg'     WHERE slug='family-matching';
-/* ما في صور لـ new-arrivals / best-sellers حالياً */
 
-/* ====== Deals children (افترضتِ إن sales.jpg لِـ flash-sale) ====== */
 UPDATE categories SET image_url = '../images/categories/sales.jpg'              WHERE slug='flash-sale';
-/* ما في صور لـ clearance / bundle-offers / weekly-specials حالياً */
 
 COMMIT;

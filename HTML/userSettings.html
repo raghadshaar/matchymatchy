@@ -31,9 +31,12 @@
 
     <!-- Avatar -->
     <div class="flex flex-col items-center mb-6">
-        <img id="avatar" src="" alt="Avatar"
-             class="w-24 h-24 rounded-full border shadow object-cover mb-2"
-             onerror="this.src='https://ui-avatars.com/api/?name=User&background=FADADD&color=008080'">
+        <img id="avatar"
+             src=""
+             alt="Avatar"
+             referrerpolicy="no-referrer"
+             class="w-24 h-24 rounded-full border shadow object-cover mb-2">
+
         <label class="text-sm text-gray-600 cursor-pointer">
             Change Image
             <input type="file" id="avatar_file" accept="image/*" class="hidden">
@@ -95,20 +98,34 @@
             document.getElementById('avatar').src = url;
         }
     });
-
-    // حفظ التغييرات
     document.getElementById('settings-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
-        fetch('../backend/settings.php', { method: 'POST', body: formData })
+
+        fetch('../backend/settings.php', { method:'POST', body: formData })
             .then(r => r.json())
             .then(j => {
-                document.getElementById('response').textContent = j.message || 'Saved.';
-                document.getElementById('avatar').src = document.getElementById('avatar_url').value;
-            });
+                response.textContent = j.message || 'Saved.';
+                if (j.avatar) {
+                    setAvatarSrc(j.avatar);
+                    avatar.onerror = () => {
+                        avatar.onerror = null;
+                        avatar.src = setInitialsFallback(
+                            first_name.value,
+                            last_name.value
+                        );
+                    };
+
+                    avatar_url.value = j.avatar;
+                }
+            })
+            .catch(() => response.textContent = 'Network error');
     });
 
-    function logout(){ window.location.href = 'login.html'; }
+
+
+
+    function logout(){ window.location.href = '../sign-in.php'; }
 </script>
 </body>
 </html>

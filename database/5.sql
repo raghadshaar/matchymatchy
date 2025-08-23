@@ -4,7 +4,6 @@ START TRANSACTION;
 ALTER TABLE product_reviews
    ADD UNIQUE KEY uq_pr_user (product_id, user_id),
    ADD UNIQUE KEY uq_pr_dev  (product_id, device_hash);
--- مستخدم
 WITH d AS (
     SELECT id,
            ROW_NUMBER() OVER (PARTITION BY product_id, user_id ORDER BY created_at DESC, id DESC) AS rn
@@ -15,7 +14,6 @@ DELETE pr FROM product_reviews pr
 JOIN d ON pr.id = d.id
 WHERE d.rn > 1;
 
--- ضيف/جهاز
 WITH d AS (
     SELECT id,
            ROW_NUMBER() OVER (PARTITION BY product_id, device_hash ORDER BY created_at DESC, id DESC) AS rn
@@ -70,7 +68,6 @@ SELECT id,'3T' FROM products WHERE slug='toddler-boy-construction-alphabet-tee-b
 INSERT IGNORE INTO product_sizes(product_id,size_label)
 SELECT id,'4T' FROM products WHERE slug='toddler-boy-construction-alphabet-tee-blue';
 
--- صور إضافية (الترتيب مهم عبر sort_order)
 INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
 SELECT id, '../images/Toddler Boy Construction Alphabet Long-Sleeve Graphic Tee - Blue.jpg', 0, 'Front'
 FROM products WHERE slug='toddler-boy-construction-alphabet-tee-blue'
