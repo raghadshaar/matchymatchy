@@ -45,27 +45,19 @@
         .custom-checkbox:checked::after { content:'✓'; position:absolute; top:-2px; left:2px; color:#fff; font-size:12px; font-weight:bold; }
 
         :root { --pink:#E4CFC3; }
-
-        /* صف الميتا (نجوم + رقم + قلب) */
         .meta-row{ display:flex; align-items:center; justify-content:space-between; }
-
-        /* النجوم: مطفّية دائمًا، وتضيء فقط بعد تقييم المستخدم */
         .star-rating{ display:flex; align-items:center; gap:8px; line-height:1; }
         .star{ font-size:20px; color:#d1d5db; transition:transform .12s ease; }
         .star:hover{ transform:scale(1.05); }
-        .star.is-filled{ color:#facc15; }   /* أصفر بعد التقييم */
+        .star.is-filled{ color:#facc15; }
         .star-rating .avg{ min-width:2.2ch; text-align:left; font-weight:600; color:#94a3b8; }
         .star-rating .count{ margin-left:2px; color:#9ca3af; font-size:.8rem; }
-
-        /* القلب: زهري بالحالتين — Outline عند عدم الإعجاب وFilled عند الإعجاب */
         .wish-btn{ display:inline-flex; align-items:center; gap:6px; color:var(--pink) !important; }
         .wish-btn i{ font-size:20px; color:inherit !important; }
         .wish-btn .ri-heart-fill::before,
-        .wish-btn .ri-heart-line::before{ color:inherit !important; } /* يضمن بقاء اللون زهري */
+        .wish-btn .ri-heart-line::before{ color:inherit !important; }
         .wish-btn.is-liked{ color:var(--pink) !important; }
         .wish-btn.is-liked i{ color:var(--pink) !important; filter:drop-shadow(0 2px 6px rgba(228,207,195,.45)); }
-
-        /* أثناء الإرسال لمنع النقرات المكررة */
         .is-busy { opacity:.7; pointer-events:none; }
     </style>
 
@@ -103,7 +95,7 @@
         <h1 class="text-2xl font-bold text-gray-800" id="page-title">Loading…</h1>
     </div>
 
-    <!-- فلاتر شكلية -->
+    <!-- فلاتر UI (حالياً واجهة فقط – الربط في الـ backend جاهز بكود الجلب) -->
     <div class="max-w-6xl mx-auto flex flex-wrap items-center gap-4">
         <button class="filter-btn flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50">
             <span>All Filters</span>
@@ -120,25 +112,22 @@
             </div>
         </div>
 
-        <div class="relative">
-            <select class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
-                <option>Fabric</option><option>Cotton</option><option>Organic Cotton</option>
-                <option>Bamboo</option><option>Modal</option>
-            </select>
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                <i class="ri-arrow-down-s-line text-gray-500"></i>
-            </div>
-        </div>
+        <select id="flt-type" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+            <option>Type</option>
+            <option>Dress</option><option>Set</option><option>Pajama</option>
+            <option>Blouse</option><option>Pants</option><option>Skirt</option><option>T-shirt</option>
+        </select>
 
-        <div class="relative">
-            <select class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
-                <option>Style</option><option>Footie</option><option>Two-piece</option>
-                <option>Sleep Sack</option><option>Gown</option>
-            </select>
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                <i class="ri-arrow-down-s-line text-gray-500"></i>
-            </div>
-        </div>
+        <select id="flt-fabric" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+            <option>Fabric</option>
+            <option>Cotton</option><option>Organic Cotton</option><option>Bamboo</option><option>Modal</option><option>Polyester</option>
+        </select>
+
+        <select id="flt-color" class="filter-btn px-4 py-2 border border-gray-300 rounded-lg bg-white appearance-none pr-8 cursor-pointer">
+            <option>Color</option>
+            <option>White</option><option>Black</option><option>Pink</option>
+            <option>Blue</option><option>Green</option><option>Ivory</option>
+        </select>
 
         <div class="flex items-center gap-2 ml-auto">
             <input type="checkbox" id="pickup" class="custom-checkbox">
@@ -179,16 +168,14 @@
 <script>
     const gridEl = document.getElementById('products-grid');
 
-    // قالب البطاقة
-    // قالب البطاقة (مع إضاءة النجوم حسب my_rating)
+    // كارد المنتج (مع إضاءة حسب تقييمي)
     function card(p){
         const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
         const cnt      = Number(p.rating_count || 0);
         const likes    = Number(p.likes || 0);
         const myLike   = Number(p.my_like || 0) === 1;
-        const myRating = (p.my_rating == null ? null : Number(p.my_rating)); // <-- مهم
+        const myRating = (p.my_rating == null ? null : Number(p.my_rating));
 
-        // نجوم مطفّية افتراضًا، ونضيء حسب "تقييمي أنا" إن وجد
         const stars = Array.from({length:5}, (_,i)=>{
             const filled = (myRating !== null) ? (i < myRating) : false;
             return `<button type="button" class="star ${filled ? 'is-filled' : ''}" data-rating="${i+1}">★</button>`;
@@ -199,39 +186,37 @@
             : `<span class="avg">—</span>`;
 
         return `
-    <div class="similar-product-card product-card" data-id="${p.id}">
-      <a class="image-wrap" href="product.html?id=${p.id}">
-        <img src="${p.image_main_url || '../images/placeholder.jpg'}" alt="${p.name}">
-      </a>
+      <div class="similar-product-card product-card" data-id="${p.id}">
+        <a class="image-wrap" href="product.html?id=${p.id}">
+          <img src="${p.image_main_url || '../images/placeholder.jpg'}" alt="${p.name}">
+        </a>
 
-      <h3 class="similar-product-title">
-        <a href="product.html?id=${p.id}">${p.name}</a>
-      </h3>
+        <h3 class="similar-product-title">
+          <a href="product.html?id=${p.id}">${p.name}</a>
+        </h3>
 
-      <div class="price-alone">₪${Number(p.price).toFixed(2)}</div>
+        <div class="price-alone">₪${Number(p.price).toFixed(2)}</div>
 
-      <div class="meta-row">
-        <div class="star-rating">${stars} ${ratingLine}</div>
-        <button type="button" class="like-btn wish-btn ${myLike ? 'is-liked':''}" title="Wishlist">
-          <i class="${myLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
-          <span class="text-xs like-count">${likes}</span>
-        </button>
+        <div class="meta-row">
+          <div class="star-rating">${stars} ${ratingLine}</div>
+          <button type="button" class="like-btn wish-btn ${myLike ? 'is-liked':''}" title="Wishlist">
+            <i class="${myLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+            <span class="text-xs like-count">${likes}</span>
+          </button>
+        </div>
+
+        <div class="add-row" style="margin-top:12px;display:flex;justify-content:flex-end;">
+          <button type="button" class="add-btn"
+                  data-id="${p.id}"
+                  data-name="${p.name.replace(/"/g,'&quot;')}"
+                  data-price="${p.price}"
+                  data-image="${p.image_main_url || '../images/placeholder.jpg'}">
+            <i class="ri-add-line"></i>
+          </button>
+        </div>
       </div>
-
-      <div class="add-row" style="margin-top:12px;display:flex;justify-content:flex-end;">
-        <button type="button" class="add-btn"
-                data-id="${p.id}"
-                data-name="${p.name.replace(/"/g,'&quot;')}"
-                data-price="${p.price}"
-                data-image="${p.image_main_url || '../images/placeholder.jpg'}">
-          <i class="ri-add-line"></i>
-        </button>
-      </div>
-    </div>
-  `;
+    `;
     }
-
-
 
     async function renderPLP(){
         // Params
@@ -280,7 +265,7 @@
             : `<div class="col-span-full text-center py-10 text-gray-500">No products found</div>`;
     }
 
-    // شغّل الرندر مرة واحدة
+    // أول تحميل
     renderPLP();
 
     /* مستمع واحد: Add-to-cart + Like (يحفظ) + Rating (يحفظ) */
@@ -304,7 +289,7 @@
             return;
         }
 
-        // LIKE (يحفظ بالداتابيس) — لا تبديل محلي قبل نجاح الرد
+        // LIKE (يحفظ بالداتابيس)
         const likeBtn = e.target.closest('.like-btn');
         if (likeBtn) {
             if (likeBtn.classList.contains('is-busy')) return;

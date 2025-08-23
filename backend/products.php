@@ -27,7 +27,19 @@ $page         = max(1, (int)($_GET['page'] ?? 1));
 $size         = max(1, min(50, (int)($_GET['size'] ?? 24)));
 $off          = ($page - 1) * $size;
 $sort         = trim($_GET['sort'] ?? '');    // price_asc | price_desc | name_asc | name_desc
+$type     = trim($_GET['type'] ?? '');            // مثال: Dress
+$fabrics  = isset($_GET['fabric']) ? (array)$_GET['fabric'] : []; // fabric[]=Cotton&fabric[]=Modal
+$colors   = isset($_GET['color'])  ? (array)$_GET['color']  : []; // color[]=Pink&color[]=Ivory
 
+function makeIn(string $prefix, array $vals, array &$args): string {
+    $ph = [];
+    foreach ($vals as $i => $v) {
+        $k = ":{$prefix}{$i}";
+        $ph[] = $k;
+        $args[$k] = $v;
+    }
+    return $ph ? implode(',', $ph) : '';
+}
 
 
 
@@ -238,6 +250,38 @@ if ($status !== '') {
     ) = :status";
     $args[':status'] = $status;
 }
+
+
+// ===== TYPE =====
+if ($type !== '') {
+    $sqlBase .= " AND EXISTS (
+        SELECT 1 FROM product_types t
+        WHERE t.id = p.type_id AND t.name = :type_name
+    )";
+    $args[':type_name'] = $type;
+}
+
+// ===== FABRIC =====
+if (!empty($fabrics)) {
+    $in = makeIn('fab_', $fabrics, $args);
+    $sqlBase .= " AND EXISTS (
+        SELECT 1
+        FROM product_fabrics pf
+        JOIN fabric_options f ON f.id = pf.fabric_id
+        WHERE pf.product_id = p.id AND f.name IN ($in)
+    )";
+}
+
+// ===== COLOR =====
+if (!empty($colors)) {
+    $in = makeIn('col_', $colors, $args);
+    $sqlBase .= " AND EXISTS (
+        SELECT 1
+        FROM product_colors pc
+        JOIN color_options co ON co.id = pc.color_id
+        WHERE pc.product_id = p.id AND co.name IN ($in)
+    )";
+}
 // ===== sort =====
 $orderBy = 'p.created_at DESC';
 switch ($sort) {
@@ -246,6 +290,8 @@ switch ($sort) {
     case 'name_asc':   $orderBy = 'p.name ASC'; break;
     case 'name_desc':  $orderBy = 'p.name DESC'; break;
 }
+
+
 
 // ===== count =====
 $stmtCount = $pdo->prepare("SELECT COUNT(*) $sqlBase");
@@ -260,7 +306,25 @@ $sql = "SELECT
           COALESCE(m.rating_count,0)    AS rating_count,
           COALESCE(m.likes,       0)    AS likes,
           COALESCE(me_l.my_like,  0)    AS my_like,
-          me_r.my_rating                AS my_rating
+          me_r.my_rating                AS my_rating,
+
+          -- جديد: اسم النوع (قطعة/فستان/طقم..)
+          (SELECT t.name
+             FROM product_types t
+            WHERE t.id = p.type_id) AS type_name,
+
+          -- جديد: لستة الأقمشة CSV
+          (SELECT GROUP_CONCAT(f.name ORDER BY f.name SEPARATOR ', ')
+             FROM product_fabrics pf
+             JOIN fabric_options f ON f.id = pf.fabric_id
+            WHERE pf.product_id = p.id) AS fabrics_csv,
+
+          -- جديد: لستة الألوان CSV
+          (SELECT GROUP_CONCAT(co.name ORDER BY co.name SEPARATOR ', ')
+             FROM product_colors pc
+             JOIN color_options co ON co.id = pc.color_id
+            WHERE pc.product_id = p.id) AS colors_csv
+
         $sqlBase
         ORDER BY $orderBy
         LIMIT $size OFFSET $off";
