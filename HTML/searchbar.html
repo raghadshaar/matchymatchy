@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Matchy Matchy — Search</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Pacifico&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet"/>
+
+
+
+
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../styles/style.css"/>
+    <link rel="stylesheet" href="../styles/productStyle.css"/>
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme:{ extend:{
+                    colors:{ primary:'#008080', secondary:'#E4CFC3' },
+                    borderRadius:{ button:'8px' },
+                    fontFamily:{ poppins:['Poppins','sans-serif'], pacifico:['Pacifico','serif'] }
+                } }
+        }
+    </script>
+
+    <style>
+        :root{ --baby:#F9F8F3; --jet:#383838; --teal:#008080; --pink:#E4CFC3; --umber:#715E51; --white:#ffffff; }
+        body{ font-family:'Poppins',sans-serif; background:var(--baby); color:var(--jet); }
+
+        /* HERO (video fills viewport) */
+        .hero{ position:relative; min-height:100vh; display:grid; place-items:center; overflow:hidden; }
+        .hero video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+        .scrim{ position:absolute; inset:0; z-index:1; background:linear-gradient(0deg, rgba(0,0,0,.30), rgba(0,0,0,.25)); }
+        .content{ position:relative; z-index:2; text-align:center; padding:clamp(24px,5vh,48px) 16px; color:var(--baby); }
+
+        /* Transparent search (half screen, centered) */
+        .search-input{
+            background:transparent; color:var(--baby);
+            border:2px solid rgba(255,255,255,.9); transition:.25s;
+        }
+        .search-input::placeholder{ color:rgba(255,255,255,.9); }
+        .search-input:focus{
+            outline:none; border-color:var(--teal);
+            box-shadow:0 0 0 3px rgba(0,128,128,.25);
+        }
+        .btn{ background:var(--teal); color:var(--white); }
+        .btn:hover{ background:#066; }
+
+        /* Leave room if header is fixed/sticky */
+
+    </style>
+</head>
+<body>
+
+<!-- Header include (جرّبي المسارات بالتسلسل) -->
+<div id="header-slot"
+     data-include="/matchymatchy/header.html"
+     data-include-alt="../header.html, ./header.html, /matchymatchy/HTML/header.html"></div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+    <video id="bgVideo" autoplay muted loop playsinline preload="metadata" poster="../images/search-poster.jpg">
+        <!-- عدّلي المسار حسب مكان الصفحة -->
+        <source src="../images/search.mp4" type="video/mp4"/>
+    </video>
+    <div class="scrim" aria-hidden="true"></div>
+
+    <div class="content max-w-none mx-auto">
+        <h1 class="font-pacifico text-4xl md:text-6xl mb-3 drop-shadow-[0_4px_12px_rgba(0,0,0,.35)]">Matchy Matchy</h1>
+        <p class="text-lg md:text-xl opacity-95 mb-6 drop-shadow-[0_3px_10px_rgba(0,0,0,.35)]">
+            Find the perfect outfits for your little ones
+        </p>
+
+        <!-- Transparent, half-screen search (centered) -->
+        <!-- Pill group: زر دائري يندمج مع شريط البحث -->
+        <div class="inline-block w-full">
+            <div class="relative mx-auto w-[clamp(320px,50vw,980px)]">
+                <div class="relative flex items-center rounded-full overflow-hidden
+                ring-2 ring-[rgba(255,255,255,.9)] focus-within:ring-[var(--teal)]
+                transition">
+                    <i class="ri-search-line absolute left-5 top-1/2 -translate-y-1/2
+                text-[rgba(255,255,255,.9)] text-xl"></i>
+
+                    <input id="searchInput" type="text"
+                           class="flex-1 bg-transparent text-[var(--baby)]
+                    placeholder:[color:rgba(255,255,255,.9)]
+                    h-[56px] md:h-[64px] pl-14 pr-4
+                    outline-none border-0 text-[17px]"
+                           placeholder="Search baby, toddler, kids…"
+                           aria-label="Search products"/>
+
+                    <button id="searchButton"
+                            class="bg-[var(--teal)] text-white
+                     h-[48px] md:h-[56px] px-8 md:px-10
+                     rounded-full m-2 font-semibold">
+                        Search
+                    </button>
+                </div>
+
+                <p class="text-[13px] text-[rgba(255,255,255,.9)] mt-3 text-center">
+                    Try “newborn onesies”, “toddler dresses”, or “matching sets”
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="foot"></div>
+<script>
+    // Include loader with simple fallbacks
+    async function fetchFirst(paths){
+        for(const p of paths.map(s=>s.trim()).filter(Boolean)){
+            try{ const r=await fetch(p,{cache:'no-cache'}); if(r.ok) return await r.text(); }catch(_){}
+        }
+        throw new Error('header include failed');
+    }
+    async function loadIncludes(){
+        const el=document.getElementById('header-slot'); if(!el) return;
+        const main=el.getAttribute('data-include')||'';
+        const alts=(el.getAttribute('data-include-alt')||'').split(',');
+        try{ el.outerHTML = await fetchFirst([main, ...alts]); }catch(e){ console.warn(e.message); }
+    }
+    function adjustForStickyHeader(){
+        const hero=document.getElementById('hero');
+        const header=document.querySelector('header')||document.getElementById('site-header')||document.querySelector('[role="banner"]');
+        if(!hero||!header) return;
+        const cs=getComputedStyle(header);
+        const sticky=['fixed','sticky'].includes(cs.position)||header.classList.contains('fixed')||header.classList.contains('sticky');
+        if(sticky){
+            document.documentElement.style.setProperty('--header-h', (header.offsetHeight||72)+'px');
+            hero.classList.add('has-sticky-header');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+        await loadIncludes(); requestAnimationFrame(adjustForStickyHeader);
+
+        // Search redirect
+        const input=document.getElementById('searchInput');
+        const btn=document.getElementById('searchButton');
+        const go=()=>{ const q=(input.value||'').trim(); if(q) location.href=`/search.html?q=${encodeURIComponent(q)}`; };
+        btn.addEventListener('click', go);
+        input.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+
+        // Soft fallback if video fails
+        const video=document.getElementById('bgVideo'), hero=document.getElementById('hero');
+        const soft=()=>{ hero.style.background='linear-gradient(135deg, rgba(0,128,128,.15), rgba(228,207,195,.25))'; };
+        let ok=false; const t=setTimeout(()=>{ if(!ok) soft(); }, 2500);
+        video.addEventListener('loadeddata', ()=>{ ok=true; clearTimeout(t); });
+        video.addEventListener('error', soft); video.addEventListener('stalled', soft);
+    });
+</script>
+
+<script>
+    fetch('footer.html')
+        .then(r => r.text())
+        .then(t => { document.getElementById('foot').innerHTML = t; });
+
+
+</script>
+
+<script src="../js/indexscript.js"></script>
+<script defer src="../js/header.js"></script>
+</body>
+</html>
