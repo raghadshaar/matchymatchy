@@ -79,8 +79,10 @@ function record_failure(mysqli $conn, string $email, int $currentFailCount) {
 }
 
 /* --- load user by email --- */
-$stmt = $conn->prepare("SELECT id, first_name, last_name, email, password, provider, avatar
-                        FROM users WHERE email=? LIMIT 1");
+/* --- load user by email --- */
+$stmt = $conn->prepare("SELECT id, first_name, last_name, email, password, provider, avatar, role
+                        FROM users WHERE email=? LIMIT 1");  // ← added role
+
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
@@ -139,12 +141,19 @@ $_SESSION['user_id']  = (int)$user['id'];
 $_SESSION['email']    = $user['email'];
 $_SESSION['provider'] = $user['provider'] ?: 'local';
 $_SESSION['avatar']   = $user['avatar'] ?? null;
+$_SESSION['role'] = strtolower((string)$user['role']);
 
+
+$redirect = (strtolower((string)$user['role']) === 'administrator')
+    ? '/matchymatchy/HTML/admin.html'
+    : '/matchymatchy/HTML/index.html';
 
 echo json_encode([
-    'ok' => true,
-    'redirect' => '/matchymatchy/HTML/index.html',
-    'user_id' => $user['id'],  // أضف هذا
-    'first_name' => $user['first_name'],  // مثلاً
-    'email' => $user['email']
+    'ok'         => true,
+    'redirect'   => $redirect,
+    'role'       => strtolower((string)$user['role']),
+    'user_id'    => (int)$user['id'],
+    'first_name' => $user['first_name'],
+    'email'      => $user['email']
 ]);
+
