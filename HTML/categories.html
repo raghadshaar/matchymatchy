@@ -60,6 +60,14 @@
 
 
 
+        .cat-note{
+            background:#fff;
+            border-top:1px solid var(--border);
+            color:var(--umber);
+            text-align:center;
+            font-size:.85rem;
+            padding:6px 10px;
+        }
 
 
 
@@ -180,6 +188,15 @@
                     <option>Hidden</option>
                 </select>
             </div>
+            <div class="field">
+                <i class="fa-solid fa-diagram-project"></i>
+                <select id="typeFilter" aria-label="Filter by kind">
+                    <option value="">All Categories</option>
+                    <option value="main">Main Categories (Parent)</option>
+                    <option value="child">Child Categories</option>
+                </select>
+            </div>
+
             <button class="btn btn-ghost" id="clearFilters"><i class="fa-solid fa-rotate-left"></i> Clear</button>
             <div style="flex:1"></div>
             <button class="btn btn-teal" id="addCategoryBtn"><i class="fa-solid fa-plus"></i> Add Category</button>
@@ -254,10 +271,8 @@
         <button class="btn btn-teal" id="saveCategory">Save</button>
     </div>
 </div>
-
 <script>
-    const LS_KEY = 'mm_categories_v1';
-    const PAGE_SIZE = 8;
+    const PAGE_SIZE = 6;
     const $  = (s,c=document)=>c.querySelector(s);
     const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));
 
@@ -271,164 +286,267 @@
                 if((a.textContent||'').trim().toLowerCase()==='categories') a.classList.add('active');
             });
         } catch {}
+        await loadParents();   // حمّل خيارات الـParent
+        await loadCategories();// حمّل الداتا
     });
 
-    /* Seed */
-    const seed = [
-        {id:1, name:'Baby', desc:'Clothing and accessories for babies 0-24 months', count:156, status:'Active', parent:'', image:'../images/categories/baby.jpg'},
-        {id:2, name:'Toddler', desc:'Fun and comfortable clothes for toddlers 2-4 years', count:89, status:'Active', parent:'', image:'../images/categories/toddler.jpg'},
-        {id:3, name:'Kids', desc:'Stylish clothing for kids 5-12 years old', count:203, status:'Active', parent:'', image:'../images/categories/kids.jpg'},
-        {id:4, name:'Family Matching', desc:'Coordinated outfits for the whole family', count:67, status:'Active', parent:'', image:'../images/categories/famillymatching.jpg'},
-        {id:5, name:'Baby Accessories', desc:'Hats, bibs, socks and other baby essentials', count:42, status:'Active', parent:'Baby', image:'../images/categories/BabyAccessories.jpg'},
-        {id:6, name:'Kids Footwear', desc:'Comfortable shoes and sneakers for active kids', count:78, status:'Active', parent:'Kids', image:'../images/categories/kidsfootwear.jpg'},
-        {id:7, name:'Premium Brands', desc:'Designer and premium brand collections', count:34, status:'Active', parent:'', image:'../images/categories/Brands.jpg'},
-        {id:8, name:'Seasonal Deals', desc:'Special offers and seasonal promotions', count:23, status:'Hidden', parent:'', image:'../images/categories/deals.jpg'}
-    ];
-    function load(){ const raw=localStorage.getItem(LS_KEY); if(!raw){ localStorage.setItem(LS_KEY, JSON.stringify(seed)); return [...seed]; } try{ return JSON.parse(raw)||[] }catch{ return [...seed] } }
-    function save(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
-    let categories = load();
+    /* ====== State ====== */
+    let state = { q:'', status:'', kind:'', page:1, total:0, pages:1, rows:[] };
+    let editingId = null;
+    let imageBlobUrl = '';
 
-    /* State (بدون parent) */
-    let state = { q:'', status:'', page:1 };
-
-    /* Parents list فقط للدروار */
-    function parentsList(){
-        const set = new Set(categories.map(c=>c.parent).filter(Boolean));
-        categories.forEach(c=>{ if(!c.parent) set.add(c.name); });
-        return [''].concat([...set].sort());
-    }
-    function refreshParentFilters(){
-        const list = parentsList();
-        $('#cParent').innerHTML = '<option value="">None (Top Level)</option>' + list.filter(Boolean).map(p=>`<option>${p}</option>`).join('');
-    }
-    refreshParentFilters();
-
-    /* Filters + pagination */
-    function applyFilters(){
-        let list=[...categories];
-        const q=state.q.trim().toLowerCase();
-        if(q) list=list.filter(c=> c.name.toLowerCase().includes(q) || (c.desc||'').toLowerCase().includes(q));
-        if(state.status) list=list.filter(c=>c.status===state.status);
-        return list;
-    }
-    function paginate(list){
-        const total=list.length; const pages=Math.max(1, Math.ceil(total/PAGE_SIZE));
-        if(state.page>pages) state.page=pages; const start=(state.page-1)*PAGE_SIZE;
-        return {slice:list.slice(start,start+PAGE_SIZE), total, pages};
+    /* ====== Load parents for <select> ====== */
+    async function loadParents(){
+        try{
+            const res = await fetch('../backend/categories_api.php?parents=1');
+            const j   = await res.json();
+            const opts = (j.parents||[]).sort((a,b)=>a.name.localeCompare(b.name));
+            $('#cParent').innerHTML =
+                '<option value="">None (Top Level)</option>' +
+                opts.map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
+        }catch(e){ console.warn('loadParents', e); }
     }
 
-    function statusBadgeClass(s){ return s==='Active'?'badge st-active':'badge st-hidden'; }
+    /* ====== Fetch list ====== */
+    async function loadCategories(){
+        const PAGE_SIZE = 8; // أو استخدمي الموجود عندك
+        const params = new URLSearchParams({
+            page: state.page,
+            limit: PAGE_SIZE,
+            search: state.q,
+            status: state.status,
+            kind: state.kind  // <-- هذا الجديد
+        });
+
+        const res = await fetch(`../backend/categories_api.php?${params}`);
+        const ct  = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            const t = await res.text();
+            throw new Error(`Server did not return JSON: ${t.substring(0,120)}...`);
+        }
+        const j = await res.json();
+        if (!j.success && !Array.isArray(j.categories)) {
+            throw new Error(j.error || 'Failed to load categories');
+        }
+
+        state.rows  = j.categories || [];
+        state.total = j.total ?? 0;
+        state.pages = j.pages ?? 1;
+
+        render();
+    }
+
+
+    /* ====== Render ====== */
+    function statusBadgeClass(s){
+        const t = (s||'').toLowerCase();
+        return t==='hidden' || t==='hidden' ? 'badge st-hidden' : 'badge st-active';
+    }
+    function humanStatus(s){ return (s && s[0]) ? (s[0].toUpperCase()+s.slice(1)) : 'Active'; }
 
     function render(){
-        const filtered=applyFilters();
-        const {slice,total,pages}=paginate(filtered);
-        $('#grid').innerHTML = slice.map(c=>`
-      <div class="cat-card">
-        <div class="cat-media">${c.image?`<img src="${c.image}" alt="${c.name}">`:'<span class="muted">No image</span>'}</div>
-        <div class="cat-body">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
-            <h4 class="cat-title">${c.name}</h4>
-            <span class="${statusBadgeClass(c.status)}">${c.status}</span>
-          </div>
-          <p class="cat-desc">${c.desc||''}</p>
+        const grid = $('#grid');
+        grid.innerHTML = state.rows.map(c => {
+            const note = c.parent_id
+                ? `Child of ${c.parent_name || '—'}`
+                : 'Main category';
+
+            return `
+    <div class="cat-card">
+      <div class="cat-media">
+        ${c.image_url ? `<img src="${c.image_url}" alt="${c.name}">` : '<span class="muted">No image</span>'}
+      </div>
+
+      <div class="cat-note">${note}</div>
+
+      <div class="cat-body">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+          <h4 class="cat-title">${c.name}</h4>
+          <span class="${statusBadgeClass(c.status)}">${c.statusTitle || humanStatus(c.status||'active')}</span>
         </div>
-        <div class="cat-foot">
-          <div class="stat"><i class="fa-regular fa-box"></i> ${c.count||0} products</div>
-          <div class="cat-actions">
-            <button class="icon-link" title="Edit" data-edit="${c.id}"><i class="fa-regular fa-pen-to-square"></i></button>
-            <button class="icon-link" title="Delete" data-del="${c.id}"><i class="fa-regular fa-trash-can"></i></button>
-          </div>
+        <p class="cat-desc">${c.description||''}</p>
+      </div>
+
+      <div class="cat-foot">
+<div class="stat">
+  <i class="fa-solid fa-box"></i> ${c.product_count || 0} products
+</div>
+        <div class="cat-actions">
+          <button class="icon-link" title="Edit" data-edit="${c.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+          <button class="icon-link" title="Delete" data-del="${c.id}"><i class="fa-regular fa-trash-can"></i></button>
         </div>
       </div>
-    `).join('');
+    </div>
+  `;
+        }).join('');
 
-        $('#emptyState').style.display = filtered.length ? 'none' : 'block';
-        $('#pagerInfo').textContent = filtered.length
-            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1,total)}–${Math.min(state.page*PAGE_SIZE,total)} of ${total} categories`
+        $('#emptyState').style.display = state.rows.length ? 'none' : 'block';
+        $('#pagerInfo').textContent = state.rows.length
+            ? `Showing ${Math.min((state.page-1)*PAGE_SIZE+1, state.total)}–${Math.min(state.page*PAGE_SIZE,state.total)} of ${state.total} categories`
             : 'No results';
 
-        const pageNums = $('#pageNums'); pageNums.innerHTML='';
-        for(let i=1;i<=pages;i++){
-            const b=document.createElement('button'); b.className='page-btn'+(i===state.page?' active':'');
-            b.textContent=i; b.onclick=()=>{state.page=i; render();}; pageNums.appendChild(b);
+        const pn = $('#pageNums'); pn.innerHTML='';
+        for(let i=1;i<=state.pages;i++){
+            const b=document.createElement('button');
+            b.className='page-btn' + (i===state.page?' active':'');
+            b.textContent=i; b.onclick=()=>{ state.page=i; loadCategories(); };
+            pn.appendChild(b);
         }
-        $('#prevPage').disabled=state.page<=1; $('#nextPage').disabled=state.page>=pages;
+        $('#prevPage').disabled = state.page<=1;
+        $('#nextPage').disabled = state.page>=state.pages;
 
-        $$('[data-edit]').forEach(b=>b.onclick=()=>openDrawerForEdit(+b.dataset.edit));
-        $$('[data-del]').forEach(b=>b.onclick=()=>removeCategory(+b.dataset.del));
+        $$('[data-edit]').forEach(b=> b.onclick = ()=> openDrawerForEdit(+b.dataset.edit));
+        $$('[data-del]').forEach(b=> b.onclick = ()=> deleteCategory(+b.dataset.del));
     }
-    render();
 
-    /* Toolbar bindings */
-    $('#searchInput').oninput = e=>{ state.q=e.target.value; state.page=1; render(); };
-    $('#statusFilter').onchange = e=>{ state.status=e.target.value; state.page=1; render(); };
-    $('#clearFilters').onclick = ()=>{ state={q:'', status:'', page:1}; $('#searchInput').value=''; $('#statusFilter').value=''; render(); };
-    $('#prevPage').onclick=()=>{ if(state.page>1){state.page--; render();} };
-    $('#nextPage').onclick=()=>{ state.page++; render(); };
+    /* ====== Filters ====== */
+    $('#searchInput').oninput = e => { state.q = e.target.value; state.page=1; loadCategories(); };
+    $('#statusFilter').onchange = e => { state.status = e.target.value; state.page=1; loadCategories(); };
+    $('#typeFilter').onchange = e => {
+        state.kind = e.target.value;   // '' | 'main' | 'child'
+        state.page = 1;
+        loadCategories();
+    };
+    $('#clearFilters').onclick = () => {
+        state = { q:'', status:'', kind:'', page:1, total:0, pages:1, rows:[] };
+        $('#searchInput').value = '';
+        $('#statusFilter').value = '';
+        $('#typeFilter').value  = '';
+        loadCategories();
+    };
 
-    /* Drawer */
-    const drawer=$('#drawer'), backdrop=$('#drawerBackdrop');
-    const els={ name:$('#cName'), desc:$('#cDesc'), parent:$('#cParent'), status:$('#cStatus'), count:$('#cCount'), imageUrl:$('#imageUrl') };
-    const dropzone=$('#dropzone'), fileInput=$('#fileInput'), dzPrev=$('#dzPreview'), dzImg=$('#dzImg');
-    let editingId=null, imageBlobUrl='';
+
+    $('#prevPage').onclick = ()=>{ if (state.page>1){ state.page--; loadCategories(); } };
+    $('#nextPage').onclick = ()=>{ if (state.page<state.pages){ state.page++; loadCategories(); } };
+
+    /* ====== Drawer ====== */
+    const drawer   = $('#drawer'), backdrop = $('#drawerBackdrop');
+    const dz       = $('#dropzone'), fi = $('#fileInput'), dzPrev = $('#dzPreview'), dzImg = $('#dzImg');
+    const els = {
+        name: $('#cName'), desc: $('#cDesc'), parent: $('#cParent'),
+        status: $('#cStatus'), count: $('#cCount'), imageUrl: $('#imageUrl')
+    };
 
     function resetForm(){
-        editingId=null; $('#drawerTitle').textContent='Add New Category';
-        Object.values(els).forEach(el=>{ if(el.tagName==='SELECT') return; el.value=''; });
-        els.status.value='Active'; els.parent.value=''; els.count.value='0'; imageBlobUrl=''; dzPrev.style.display='none'; dzImg.src='';
-        refreshParentFilters();
+        editingId = null;
+        $('#drawerTitle').textContent = 'Add New Category';
+        els.name.value=''; els.desc.value=''; els.parent.value='';
+        els.status.value='Active'; els.count.value='0';
+        els.imageUrl.value=''; imageBlobUrl=''; dzPrev.style.display='none'; dzImg.src='';
     }
     function openDrawer(){ drawer.classList.add('open'); backdrop.classList.add('show'); }
     function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); resetForm(); }
     $('#cancelDrawer').onclick=closeDrawer; backdrop.onclick=closeDrawer;
 
-    function openDrawerForAdd(){ resetForm(); openDrawer(); }
-    function openDrawerForEdit(id){
-        const c=categories.find(x=>x.id===id); if(!c) return;
-        resetForm(); editingId=id; $('#drawerTitle').textContent='Edit Category';
-        els.name.value=c.name; els.desc.value=c.desc||''; els.parent.value=c.parent||''; els.status.value=c.status; els.count.value=c.count||0;
-        if(c.image){ dzPrev.style.display='block'; dzImg.src=c.image; imageBlobUrl=c.image; }
-        openDrawer();
-    }
+    $('#addCategoryBtn').onclick = ()=>{ resetForm(); openDrawer(); };
+    $('#emptyAddBtn').onclick    = ()=>{ resetForm(); openDrawer(); };
 
-    function persistFromForm(){
-        const name=els.name.value.trim(); if(!name){ alert('Please enter a category name'); return null; }
-        return {
-            name,
-            desc:els.desc.value.trim(),
-            parent:els.parent.value,
-            status:els.status.value,
-            count: Math.max(0, Number(els.count.value||0)),
-            image: imageBlobUrl || els.imageUrl.value.trim()
-        };
-    }
+    /* load single for edit */
+    async function openDrawerForEdit(id){
+        try{
+            const res = await fetch(`../backend/categories_api.php?id=${id}`);
+            const ct  = res.headers.get('content-type')||'';
+            if (!ct.includes('application/json')) throw new Error('Server did not return JSON');
+            const c = await res.json();
 
-    $('#saveCategory').onclick=()=>{
-        const payload=persistFromForm(); if(!payload) return;
-        if(editingId){ categories=categories.map(c=>c.id===editingId?{...c, ...payload}:c); }
-        else { const nextId=(categories.reduce((m,c)=>Math.max(m,c.id),0)||0)+1; categories=[{id:nextId, ...payload}, ...categories]; }
-        save(categories); refreshParentFilters(); closeDrawer(); render();
-    };
-
-    $('#addCategoryBtn').onclick=openDrawerForAdd; $('#emptyAddBtn').onclick=openDrawerForAdd;
-
-    function removeCategory(id){
-        const c=categories.find(x=>x.id===id); if(!c) return;
-        if(confirm(`Delete category "${c.name}"?`)){
-            categories=categories.filter(x=>x.id!==id);
-            save(categories); refreshParentFilters(); render();
+            editingId = id;
+            $('#drawerTitle').textContent = 'Edit Category';
+            els.name.value = c.name || '';
+            els.desc.value = c.description || '';
+            els.parent.value = c.parent_id || '';
+            els.status.value = c.statusTitle || 'Active';
+            els.count.value  = c.product_count || 0;
+            els.imageUrl.value = c.image_url || '';
+            if (c.image_url){ dzPrev.style.display='block'; dzImg.src=c.image_url; imageBlobUrl=c.image_url; }
+            openDrawer();
+        }catch(e){
+            console.error('openDrawerForEdit', e);
+            alert('Failed to load category');
         }
     }
 
-    /* Dropzone */
+    /* save (create/update) */
+    function collectPayload(){
+        const name = els.name.value.trim();
+        if (!name){ alert('Please enter a category name'); return null; }
+        const parent_id = parseInt(els.parent.value||'0',10) || 0;
+        const status = els.status.value || 'Active';
+        const img = imageBlobUrl || els.imageUrl.value.trim();
+        return {
+            id: editingId || undefined,
+            name,
+            parent_id,
+            description: els.desc.value.trim(),
+            status,                 // Active/Hidden (السيرفر يحوّلها lower)
+            image_url: img
+        };
+    }
+    async function saveCategory(){
+        const payload = collectPayload(); if (!payload) return;
+        try{
+            const res = await fetch('../backend/categories_api.php', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const ct = res.headers.get('content-type')||'';
+            if (!ct.includes('application/json')) {
+                const t = await res.text(); throw new Error(`Bad response: ${t.substring(0,120)}...`);
+            }
+            const j = await res.json();
+            if (!j.success) throw new Error(j.error||'save failed');
+            closeDrawer();
+            await loadParents();  // يمكن الاسم تغيّر → حدّث القائمة
+            await loadCategories();
+        }catch(e){
+            console.error('saveCategory', e);
+            alert('Failed to save category: ' + e.message);
+        }
+    }
+    $('#saveCategory').onclick = saveCategory;
+
+    /* delete */
+    async function deleteCategory(id){
+        if (!confirm('Delete this category?')) return;
+        try{
+            const res = await fetch(`../backend/categories_api.php?id=${id}`, { method:'DELETE' });
+            const j   = await res.json();
+            if (!j.success) throw new Error(j.error||'delete failed');
+            await loadParents();
+            await loadCategories();
+        }catch(e){
+            alert('Failed to delete: ' + e.message);
+        }
+    }
+
+    /* ====== Dropzone upload (re-use backend/upload_image.php) ====== */
     function setPreview(src){ if(src){ dzImg.src=src; dzPrev.style.display='block'; imageBlobUrl=src; } }
-    dropzone.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', e=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>setPreview(ev.target.result); r.readAsDataURL(f); });
-    ;['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag'); }));
-    ;['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('drag'); }));
-    dropzone.addEventListener('drop', e=>{ const f=e.dataTransfer.files?.[0]; if(f){ const r=new FileReader(); r.onload=ev=>setPreview(ev.target.result); r.readAsDataURL(f); } });
+    dz.addEventListener('click', ()=> fi.click());
+    fi.addEventListener('change', async e=>{
+        const f = e.target.files?.[0]; if (!f) return;
+        const fd = new FormData(); fd.append('file', f);
+        try{
+            const res = await fetch('../backend/upload_image.php', {method:'POST', body:fd});
+            const j = await res.json();
+            if (!j.ok) throw new Error(j.error||'upload failed');
+            setPreview(j.url);
+        }catch(err){ alert(err.message); }
+    });
+    ['dragenter','dragover'].forEach(ev=> dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('drag'); }));
+    ['dragleave','drop'].forEach(ev=> dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove('drag'); }));
+    dz.addEventListener('drop', async e=>{
+        const f = e.dataTransfer.files?.[0]; if (!f) return;
+        const fd = new FormData(); fd.append('file', f);
+        try{
+            const res = await fetch('../backend/upload_image.php', {method:'POST', body:fd});
+            const j = await res.json();
+            if (!j.ok) throw new Error(j.error||'upload failed');
+            setPreview(j.url);
+        }catch(err){ alert(err.message); }
+    });
     $('#imageUrl').addEventListener('change', e=>{ const url=e.target.value.trim(); if(url) setPreview(url); });
 </script>
+
 
 <script src="../js/adminbar.js" defer></script>
 <script src="../js/includeadminBar.js" defer></script>

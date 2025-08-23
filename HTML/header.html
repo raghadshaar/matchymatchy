@@ -1,6 +1,4 @@
 <!-- header.html -->
-<link rel="stylesheet" href="../styles/style.css" />
-
 <header class="main-header">
     <div class="backdrop" id="backdrop" onclick="closeAllDropdowns()"></div>
     <div class="top-header">
@@ -10,126 +8,30 @@
             <input type="text" placeholder="Find your product" />
         </div>
         <div class="icons">
-
-                <a href="../sign-in.php" class="icon login" aria-label="Login">
-                    <i class="fa-regular fa-user"></i> <span>Login</span>
-                </a>
-
+            <a href="../sign-in.php" class="icon login" aria-label="Login">
+                <i class="fa-regular fa-user"></i> <span>Login</span>
+            </a>
             <a href="wishlist.html" class="icon" aria-label="Wishlist">
                 <i class="fa-regular fa-heart"></i>
             </a>
-<!--                <span class="icon login"><i class="fa-regular fa-user"></i> Login</span>-->
-<!--            <span class="icon cart">-->
-<!--        <i class="fa-solid fa-cart-shopping"></i>-->
-<!--       <span class="badge" id="cart-count"></span>-->
             <a href="Cart.html" class="icon cart" aria-label="Cart">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span class="badge" id="cart-count">0</span>
             </a>
-
         </div>
     </div>
 
     <!-- Main nav -->
     <nav class="nav-menu">
-        <ul>
-            <li class="menu-item" onclick="toggleDropdown('babyDropdown')">Baby</li>
-            <li class="menu-item" onclick="toggleDropdown('toddlerDropdown')">Toddler</li>
-            <li class="menu-item" onclick="toggleDropdown('kidsDropdown')">Kids</li>
-            <li class="menu-item" onclick="toggleDropdown('toysDropdown')">Toys</li>
-            <li class="menu-item" onclick="toggleDropdown('dealsDropdown')">Deals</li>
-            <li class="menu-item" onclick="toggleDropdown('collectionsDropdown')">Collections</li>
+        <ul id="main-category-list">
+            <!-- العنصر الافتراضي "Shop All" يجب أن يبقى -->
             <li class="menu-item"><a href="category.html?slug=all-products">Shop All</a></li>
+
         </ul>
     </nav>
 
-    <!-- BABY -->
-    <div class="dropdown-panel" id="babyDropdown">
-        <div class="dropdown-header">
-            <strong>Baby</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li><a href="category.html?slug=baby">Shop All</a></li>
-            <li><a href="category.html?slug=baby-girl">Baby Girl</a></li>
-            <li><a href="category.html?slug=baby-boy">Baby Boy</a></li>
-            <li><a href="category.html?slug=baby-neutral">Baby Neutral</a></li>
-            <li><a href="category.html?slug=baby-gear">Baby Gear</a></li>
-            <li><a href="category.html?slug=baby-gifts">Baby Gifts</a></li>
-        </ul>
+    <div id="category-dropdowns">
+        <!-- Dropdowns will be dynamically injected here -->
     </div>
 
-    <!-- TODDLER -->
-    <div class="dropdown-panel" id="toddlerDropdown">
-        <div class="dropdown-header">
-            <strong>Toddler</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li><a href="category.html?slug=toddler">Shop All</a></li>
-            <li><a href="category.html?slug=toddler-girl">Toddler Girl</a></li>
-            <li><a href="category.html?slug=toddler-boy">Toddler Boy</a></li>
-            <li><a href="category.html?slug=toddler-gear">Toddler Gear</a></li>
-        </ul>
-    </div>
-
-    <!-- KIDS -->
-    <div class="dropdown-panel" id="kidsDropdown">
-        <div class="dropdown-header">
-            <strong>Kids</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li><a href="category.html?slug=kids">Shop All </a></li>
-            <li><a href="category.html?slug=kids-girls">Girls</a></li>
-            <li><a href="category.html?slug=kids-boys">Boys</a></li>
-        </ul>
-
-    </div>
-
-    <!-- TOYS -->
-    <div class="dropdown-panel" id="toysDropdown">
-        <div class="dropdown-header">
-            <strong>Toys</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li><a href="category.html?slug=toys">Shop All</a></li>
-            <li><a href="category.html?slug=toys-learning">Learning &amp; Educational</a></li>
-            <li><a href="category.html?slug=toys-outdoor">Outdoor Toys</a></li>
-            <li><a href="category.html?slug=toys-puzzles-games">Puzzles &amp; Games</a></li>
-        </ul>
-
-    </div>
-
-    <!-- DEALS -->
-    <div class="dropdown-panel" id="dealsDropdown">
-        <div class="dropdown-header">
-            <strong>Deals</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul class="mega-menu-list">
-            <li><a href="category.html?slug=flash-sale">Flash Sale</a></li>
-            <li><a href="category.html?slug=clearance">Clearance</a></li>
-            <li><a href="category.html?slug=bundle-offers">Bundle Offers</a></li>
-            <li><a href="category.html?slug=weekly-specials">Weekly Specials</a></li>
-        </ul>
-
-    </div>
-
-    <!-- COLLECTIONS -->
-    <div class="dropdown-panel" id="collectionsDropdown">
-        <div class="dropdown-header">
-            <strong>Collections</strong>
-            <span class="close-btn" onclick="closeAllDropdowns()">&times;</span>
-        </div>
-        <ul>
-            <li><a href="category.html?slug=collections">Shop All</a></li>
-            <li><a href="category.html?slug=family-matching">Family Matching</a></li>
-            <li><a href="category.html?slug=new-arrivals">New Arrivals</a></li>
-            <li><a href="category.html?slug=best-sellers">Best Sellers</a></li>
-            <li><a href="category.html?slug=gifts">Gifts</a></li>
-            <li><a href="category.html?slug=essentials">Essentials</a></li>
-        </ul>
-    </div>
 </header>

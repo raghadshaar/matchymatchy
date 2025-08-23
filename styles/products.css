@@ -396,3 +396,11 @@ tbody td{ padding:16px;border-bottom:1px solid var(--border);vertical-align:midd
 }
 
 
+ .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.gallery-item{background:#F9F8F3;border:1px dashed var(--teal);border-radius:10px;padding:8px;position:relative}
+.gallery-item img{width:100%;height:90px;object-fit:cover;border-radius:8px}
+.gallery-item .tools{display:flex;gap:6px;margin-top:6px;align-items:center}
+.gallery-item input[type="text"]{width:100%;font-size:12px;padding:6px;border:1px solid #ddd;border-radius:6px}
+.gallery-item .drag{cursor:grab;position:absolute;top:6px;left:6px;font-size:12px;color:#008080}
+.gallery-item .del {position:absolute;top:6px;right:6px;background:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer}
+.gallery-item .main {position:absolute;bottom:6px;left:6px;font-size:11px;background:#fff;border:1px solid #ddd;border-radius:6px;padding:2px 6px;cursor:pointer}

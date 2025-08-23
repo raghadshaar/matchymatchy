@@ -1,10 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Wishlist • Matchy Matchy</title>
+
+    <!-- Tailwind (للتطوير فقط) -->
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary:'#008080', secondary:'#FADADD' },
+                    borderRadius: { 'button':'8px' }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../styles/style.css"/>
+    <link rel="stylesheet" href="../styles/productStyle.css"/>
+
+    <style>
+        body { background-color:#FEFEFA }
+        .product-card { transition: transform .2s ease, box-shadow .2s ease; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.1); }
+        .add-btn { transition: all .2s ease; }
+        .add-btn:hover { transform: scale(1.1); }
+        .filter-btn { transition: all .2s ease; }
+        .filter-btn:hover { background-color: rgba(0,128,128,.1); }
+        .similar-product-title { font-size:.9rem; margin-bottom:5px; color:var(--jet); }
+        .similar-product-price { font-weight:bold; color:var(--teal); margin-bottom:8px; }
+        .custom-checkbox { appearance:none; width:18px; height:18px; border:2px solid #ccc; border-radius:4px; position:relative; cursor:pointer; }
+        .custom-checkbox:checked { background:#008080; border-color:#008080; }
+        .custom-checkbox:checked::after { content:'✓'; position:absolute; top:-2px; left:2px; color:#fff; font-size:12px; font-weight:bold; }
+
+        :root { --pink:#E4CFC3; }
+
+        .meta-row{ display:flex; align-items:center; justify-content:space-between; }
+        .star-rating{ display:flex; align-items:center; gap:8px; line-height:1; }
+        .star{ font-size:20px; color:#d1d5db; transition:transform .12s ease; }
+        .star:hover{ transform:scale(1.05); }
+        .star.is-filled{ color:#facc15; }
+        .star-rating .avg{ min-width:2.2ch; text-align:left; font-weight:600; color:#94a3b8; }
+        .star-rating .count{ margin-left:2px; color:#9ca3af; font-size:.8rem; }
+
+        .wish-btn{ display:inline-flex; align-items:center; gap:6px; color:var(--pink) !important; }
+        .wish-btn i{ font-size:20px; color:inherit !important; }
+        .wish-btn .ri-heart-fill::before,
+        .wish-btn .ri-heart-line::before{ color:inherit !important; }
+        .wish-btn.is-liked{ color:var(--pink) !important; }
+        .wish-btn.is-liked i{ color:var(--pink) !important; filter:drop-shadow(0 2px 6px rgba(228,207,195,.45)); }
+
+        .is-busy { opacity:.7; pointer-events:none; }
+    </style>
+
+    <script>
+        /* Helpers: cart + header badge + search */
+        function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
+        function setCart(next){ localStorage.setItem('cart', JSON.stringify(next)); window.dispatchEvent(new Event('cart:updated')); }
+        function getCartCount(){ return getCart().reduce((n,i)=> n + (Number(i.quantity)||0), 0); }
+        function updateHeaderCartCount(){
+            const el = document.querySelector('#header #cart-count, #header-slot #cart-count, #cart-count, .main-header .cart .badge');
+            if (el) el.textContent = getCartCount();
+        }
+        function setupHeaderMenu(){ /* hook لو عندك منيو */ }
+        function setupHeaderSearch(){
+            const input = document.querySelector('.search-box input');
+            if (!input) return;
+            input.addEventListener('keydown', (e)=>{
+                if (e.key === 'Enter') {
+                    const q = input.value.trim();
+                    if (q) location.href = `category.html?q=${encodeURIComponent(q)}&page=1`;
+                }
+            });
+        }
+    </script>
 </head>
 <body>
+
+<!-- HEADER -->
+<div id="header-slot"></div>
+
+<!-- شريط عنوان وبريدكرَمب -->
+<section class="w-full px-6 py-6 border-b" style="background-color:#F9F8F3;">
+    <div class="mb-4 max-w-6xl mx-auto">
+        <nav class="text-sm text-gray-500 mb-2" id="breadcrumb">Home / <span>Wishlist</span></nav>
+        <h1 class="text-2xl font-bold text-gray-800" id="page-title">My Wishlist</h1>
+    </div>
+
+    <!-- أزرار شكلية (نفس الشكل عشان الاتساق) -->
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center gap-4">
+        <button class="filter-btn flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50" disabled>
+            <span>All Filters</span>
+            <span class="bg-primary text-white text-xs px-2 py-1 rounded-full">—</span>
+        </button>
+        <div class="text-sm text-gray-600">Items you’ve liked will appear here.</div>
+    </div>
+</section>
+
+<!-- GRID -->
+<main class="w-full px-6 py-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="products-grid"></div>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<div id="foot"></div>
+
+<!-- Inject header/footer -->
+<script>
+    fetch('header.html')
+        .then(r => r.text())
+        .then(html => {
+            document.getElementById('header-slot').innerHTML = html;
+            updateHeaderCartCount();
+            setupHeaderMenu();
+            setupHeaderSearch();
+            window.addEventListener('storage', (e)=>{ if (e.key === 'cart') updateHeaderCartCount(); });
+            window.addEventListener('cart:updated', updateHeaderCartCount);
+        });
+
+    fetch('footer.html')
+        .then(r => r.text())
+        .then(t => { document.getElementById('foot').innerHTML = t; });
+</script>
+
+<!-- Page script -->
+<script>
+    const gridEl = document.getElementById('products-grid');
+
+    function card(p){
+        const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
+        const cnt      = Number(p.rating_count || 0);
+        const likes    = Number(p.likes || 0);
+        const myLike   = Number(p.my_like || 0) === 1;
+        const myRating = (p.my_rating == null ? null : Number(p.my_rating));
+
+        const stars = Array.from({length:5}, (_,i)=>{
+            const filled = (myRating !== null) ? (i < myRating) : false;
+            return `<button type="button" class="star ${filled ? 'is-filled' : ''}" data-rating="${i+1}">★</button>`;
+        }).join('');
+
+        const ratingLine = (cnt > 0)
+            ? `<span class="avg">${avg.toFixed(1)}</span><span class="count">(${cnt})</span>`
+            : `<span class="avg">—</span>`;
+
+        return `
+      <div class="similar-product-card product-card" data-id="${p.id}">
+        <a class="image-wrap" href="product.html?id=${p.id}">
+          <img src="${p.image_main_url || '../images/placeholder.jpg'}" alt="${p.name}">
+        </a>
+
+        <h3 class="similar-product-title">
+          <a href="product.html?id=${p.id}">${p.name}</a>
+        </h3>
+
+        <div class="price-alone">₪${Number(p.price).toFixed(2)}</div>
+
+        <div class="meta-row">
+          <div class="star-rating">${stars} ${ratingLine}</div>
+          <button type="button" class="like-btn wish-btn ${myLike ? 'is-liked':''}" title="Wishlist">
+            <i class="${myLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+            <span class="text-xs like-count">${likes}</span>
+          </button>
+        </div>
+
+        <div class="add-row" style="margin-top:12px;display:flex;justify-content:flex-end;">
+          <button type="button" class="add-btn"
+                  data-id="${p.id}"
+                  data-name="${p.name.replace(/"/g,'&quot;')}"
+                  data-price="${p.price}"
+                  data-image="${p.image_main_url || '../images/placeholder.jpg'}">
+            <i class="ri-add-line"></i>
+          </button>
+        </div>
+      </div>
+    `;
+    }
+    renderWishlist();
+
+    // نفس لوجيك الكاتيجوري: إضافة للسلة + Like + Rating
+    gridEl.addEventListener('click', async (e) => {
+        // ADD TO CART
+        const addBtn = e.target.closest('.add-btn');
+        if (addBtn) {
+            const item = {
+                id: Number(addBtn.dataset.id),
+                name: addBtn.dataset.name,
+                price: Number(addBtn.dataset.price),
+                image: addBtn.dataset.image,
+                quantity: 1
+            };
+            const cart = getCart();
+            const i = cart.findIndex(x => x.id === item.id);
+            if (i >= 0) cart[i].quantity += 1; else cart.push(item);
+            setCart(cart);
+            addBtn.style.transform = 'scale(1.1)';
+            setTimeout(() => addBtn.style.transform = 'scale(1)', 160);
+            return;
+        }
+
+        // LIKE toggle — وإذا صارت Unliked نشيل البطاقة من الـWishlist مباشرة
+        const likeBtn = e.target.closest('.like-btn');
+        if (likeBtn) {
+            if (likeBtn.classList.contains('is-busy')) return;
+            likeBtn.classList.add('is-busy');
+
+            const cardEl  = likeBtn.closest('.product-card');
+            const pid     = Number(cardEl.dataset.id);
+            const icon    = likeBtn.querySelector('i');
+            const countEl = likeBtn.querySelector('.like-count');
+
+            try {
+                const res = await fetch('/matchymatchy/backend/like_toggle.php', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+                    body:`product_id=${encodeURIComponent(pid)}`
+                });
+                const j = await res.json();
+                if (j && (j.ok || j.success)) {
+                    likeBtn.classList.toggle('is-liked', j.liked);
+                    icon.className = j.liked ? 'ri-heart-fill' : 'ri-heart-line';
+                    countEl.textContent = String(j.likes);
+                    if (!j.liked) {
+                        // حذف البطاقة من شبكة الـWishlist
+                        cardEl.remove();
+                        if (!gridEl.querySelector('.product-card')) {
+                            gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Your wishlist is empty.</div>`;
+                        }
+                    }
+                }
+            } catch(err) {
+                console.error('like_toggle failed', err);
+            } finally {
+                likeBtn.classList.remove('is-busy');
+            }
+            return;
+        }
+
+        // RATING (يحفظ بالداتابيس)
+        const star = e.target.closest('.star');
+        if (star) {
+            const rating   = Number(star.dataset.rating);
+            const cardEl   = star.closest('.product-card');
+            const pid      = Number(cardEl.dataset.id);
+            const starWrap = star.parentElement;
+
+            if (starWrap.classList.contains('is-busy')) return;
+            starWrap.classList.add('is-busy');
+
+            try {
+                const res = await fetch('/matchymatchy/backend/rate_set.php', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+                    body:`product_id=${encodeURIComponent(pid)}&rating=${encodeURIComponent(rating)}`
+                });
+                const j = await res.json();
+                if (j && (j.ok || j.success)) {
+                    [...starWrap.querySelectorAll('.star')].forEach((s,i)=>{
+                        s.classList.toggle('is-filled', i < j.my_rating);
+                    });
+                    const avgEl = starWrap.querySelector('.avg');
+                    const cntEl = starWrap.querySelector('.count');
+                    if (avgEl) avgEl.textContent = j.count ? Number(j.avg).toFixed(1) : '—';
+                    if (cntEl) cntEl.textContent = j.count ? `(${j.count})` : '';
+                }
+            } catch(err) {
+                console.error('rate_set failed', err);
+            } finally {
+                starWrap.classList.remove('is-busy');
+            }
+        }
+    });
+    // دالة مساعدة لإنشاء بصمة جهاز
+    function getDeviceFingerprint() {
+        let fingerprint = localStorage.getItem('device_fingerprint');
+        if (!fingerprint) {
+            fingerprint = Math.random().toString(36).substring(2) + Date.now().toString(36);
+            localStorage.setItem('device_fingerprint', fingerprint);
+        }
+        return fingerprint;
+    }
+
+    // تعديل دالة renderWishlist
+    async function renderWishlist() {
+        gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Loading your wishlist…</div>`;
+
+        try {
+            const res = await fetch('/matchymatchy/backend/wishlist.php', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+            console.log('Wishlist response:', data); // للتصحيح
+
+            if (data.success && data.data && data.data.length) {
+                gridEl.innerHTML = data.data.map(card).join('');
+                console.log(`Loaded ${data.data.length} products to wishlist`);
+            } else {
+                gridEl.innerHTML = `
+                <div class="col-span-full text-center py-10 text-gray-500">
+                    Your wishlist is empty.
+                    ${data.debug ? ` (User ID: ${data.debug.user_id}, Found: ${data.debug.product_count})` : ''}
+                </div>`;
+            }
+        } catch (err) {
+            console.error('Wishlist fetch failed', err);
+            gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Error loading wishlist.</div>`;
+        }
+    }
+
+    // تعديل event listener للـ like toggle
+    gridEl.addEventListener('click', async (e) => {
+        // ... الكود الحالي للإضافة إلى السلة والتقييم ...
+
+        // LIKE toggle - معدل
+        const likeBtn = e.target.closest('.like-btn');
+        if (likeBtn) {
+            if (likeBtn.classList.contains('is-busy')) return;
+            likeBtn.classList.add('is-busy');
+
+            const cardEl = likeBtn.closest('.product-card');
+            const pid = Number(cardEl.dataset.id);
+            const icon = likeBtn.querySelector('i');
+            const countEl = likeBtn.querySelector('.like-count');
+
+            try {
+                const formData = new FormData();
+                formData.append('product_id', pid);
+
+                const res = await fetch('/matchymatchy/backend/like_toggle.php', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Device-Fingerprint': getDeviceFingerprint()
+                    }
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    likeBtn.classList.toggle('is-liked', result.liked);
+                    icon.className = result.liked ? 'ri-heart-fill' : 'ri-heart-line';
+                    countEl.textContent = String(result.likes);
+
+                    if (!result.liked) {
+                        // إزالة المنتج من القائمة
+                        cardEl.style.opacity = '0.5';
+                        setTimeout(() => {
+                            cardEl.remove();
+                            if (!gridEl.querySelector('.product-card')) {
+                                gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Your wishlist is empty.</div>`;
+                            }
+                        }, 500);
+                    }
+                }
+            } catch (err) {
+                console.error('Like toggle failed', err);
+            } finally {
+                likeBtn.classList.remove('is-busy');
+            }
+            return;
+        }
+    });
+</script>
+
+
+<script>
+    function getDeviceFingerprint() {
+        let fp = localStorage.getItem('device_fingerprint');
+        if (!fp) {
+            fp = Math.random().toString(36).slice(2) + Date.now().toString(36);
+            localStorage.setItem('device_fingerprint', fp);
+        }
+        return fp;
+    }
+
+    // ضبّطي كوكي للبصمة (يشوفها الـ PHP)
+    function ensureDeviceFingerprintCookie() {
+        const fp = getDeviceFingerprint();
+        // سنة صلاحية، نفس الدومين
+        document.cookie = `device_fingerprint=${fp}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+
+    // نادِها قبل أي fetch للwishlist أو عند أول لود
+    ensureDeviceFingerprintCookie();
+</script>
+
+
+<script src="../js/indexscript.js"></script>
+<script defer src="../js/header.js"></script>
 
 </body>
 </html>

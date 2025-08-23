@@ -136,6 +136,17 @@
             </select>
         </div>
         <div class="form-item">
+            <label for="pChildCat">Child Category</label>
+            <select class="select" id="pChildCat">
+                <option value="">— Select child —</option>
+            </select>
+        </div>
+        <div class="form-item">
+            <label for="pParentCat">Parent</label>
+            <input class="input" id="pParentCat" placeholder="Auto" disabled />
+        </div>
+
+        <div class="form-item">
             <label for="pStatus">Status</label>
             <select class="select" id="pStatus">
                 <option>Auto (by stock)</option>
@@ -176,6 +187,24 @@
             <input class="input" id="pImage" placeholder="https://…" style="margin-top:8px" />
             <small style="color:var(--umber)">If you already have a URL, paste it; otherwise upload.</small>
         </div>
+        <!-- Gallery (extra images) -->
+        <div class="form-item" style="grid-column:1/-1">
+            <label>Gallery Images</label>
+
+            <div id="galleryGrid" class="gallery-grid"></div>
+
+            <div class="gallery-actions" style="display:flex;gap:8px;margin-top:8px">
+                <button type="button" class="btn btn-ghost" id="addGalleryBtn">
+                    <i class="fa-solid fa-plus"></i> Add from device
+                </button>
+                <button type="button" class="btn btn-ghost" id="addGalleryUrlBtn">
+                    <i class="fa-solid fa-link"></i> Add from URL
+                </button>
+                <input type="file" id="galleryFileInput" accept="image/*" multiple style="display:none"/>
+            </div>
+
+            <small style="color:var(--umber)">Drag to reorder. Each image can have alt text.</small>
+        </div>
 
     </div>
     <div class="drawer-actions">
@@ -189,6 +218,7 @@
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
     const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
     const currencyILS = (n) => `₪${Number(n).toFixed(2)}`;
+    let gallery = []; // [{url, alt, sort}]
 
     // حالات التحميل والعرض
     const showLoading = () => {
@@ -225,6 +255,8 @@
         // تحميل المنتجات عند بدء التحميل
         loadProducts();
         loadCollections();
+        loadCategoryTreeForDrawer();
+
     });
 
     /* === حالة التطبيق === */
@@ -419,11 +451,37 @@
     function resetForm() {
         editingId = null;
         drawerTitle.textContent = 'Add Product';
+
+        // فضّي كل الفيلدز
         Object.values(formEls).forEach(el => el.value = '');
+        $('#pStatus').value = 'Auto (by stock)';
+        $('#pCollection').value = '';          // تأكيد صريح
+        $('#customSize').value = '';          // امسحي المقاس المخصص
+
+        // المقاسات
         selectedSizes = new Set(['One Size']);
         renderSizeChips();
-        $('#pStatus').value = 'Auto (by stock)';
+
+        // الصورة الأساسية: اخفي المعاينة وارجعي الخلفية الافتراضية
+        const dzPrev = document.getElementById('dzPreview');
+        const dzImg  = document.getElementById('dzImg');
+        const dz     = document.getElementById('dropzone');
+        if (dzPrev) dzPrev.style.display = 'none';
+        if (dzImg)  dzImg.src = '';
+        if (dz)     dz.style.background = '#F9F8F3';
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) fileInput.value = '';
+
+        // المعرض (الصور الإضافية)
+        gallery = [];
+        const gg = document.getElementById('galleryGrid');
+        if (gg) gg.innerHTML = '';
+
+        // (اختياري) مرّري الدرج لأعلى
+        const drw = document.getElementById('drawer');
+        if (drw) drw.scrollTop = 0;
     }
+
 
     function openDrawer() {
         drawer.classList.add('open');
@@ -466,7 +524,16 @@
             formEls.image.value = product.image_main_url || '';
 
             selectedSizes = new Set(product.sizes || []);
+
             renderSizeChips();
+            gallery = (product.images || []).map((im, i) => ({
+                url: im.image_url || im.url,
+                alt: im.alt_text || im.alt || '',
+                sort: (typeof im.sort_order === 'number') ? im.sort_order : i
+            }));
+            gallery.sort((a,b)=>a.sort-b.sort);
+            renderGallery();
+
 
             openDrawer();
         } catch (error) {
@@ -496,11 +563,13 @@
             sku: formEls.sku.value.trim(),
             price: Number(formEls.price.value || 0),
             stock: Math.max(0, Number(formEls.stock.value || 0)),
+            category_id: Number(document.getElementById('pChildCat').value) || 0, // <<<<<<
             collection: formEls.collection.value,
             status: formEls.status.value,
             description: formEls.desc.value.trim(),
             image: formEls.image.value.trim(),
-            sizes: Array.from(selectedSizes)
+            sizes: Array.from(selectedSizes),
+            gallery: gallery
         };
 
         try {
@@ -608,6 +677,130 @@
             }
         }
     })();
+</script>
+<script>
+    // ===== Gallery (extra images) =====
+    function renderGallery(){
+        const wrap = document.getElementById('galleryGrid');
+        wrap.innerHTML = '';
+        gallery.forEach((g, idx) => {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            item.draggable = true;
+            item.innerHTML = `
+        <button class="del" title="Remove">&times;</button>
+        <span class="drag"><i class="fa-solid fa-grip-lines"></i></span>
+        <img src="${g.url}" onerror="this.src='../images/placeholder.jpg'"/>
+        <button class="main" title="Set as main">Set main</button>
+        <div class="tools">
+          <input type="text" placeholder="Alt text…" value="${g.alt || ''}">
+        </div>
+      `;
+            wrap.appendChild(item);
+
+            // حذف
+            item.querySelector('.del').onclick = () => { gallery.splice(idx,1); renumber(); renderGallery(); };
+
+            // Alt
+            item.querySelector('input').oninput = (e)=>{ gallery[idx].alt = e.target.value; };
+
+            // Set main -> ينسخ للـ pImage
+            item.querySelector('.main').onclick = ()=>{
+                document.getElementById('pImage').value = g.url;
+                const dzImg = document.getElementById('dzImg');
+                const dzPrev = document.getElementById('dzPreview');
+                if (dzImg && dzPrev){ dzImg.src = g.url; dzPrev.style.display='block'; }
+            };
+
+            // سحب لإعادة الترتيب
+            item.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', String(idx)); });
+            item.addEventListener('dragover', e => e.preventDefault());
+            item.addEventListener('drop', e => {
+                e.preventDefault();
+                const from = +e.dataTransfer.getData('text/plain');
+                const to   = idx;
+                if (from === to) return;
+                const [moved] = gallery.splice(from,1);
+                gallery.splice(to,0,moved);
+                renumber(); renderGallery();
+            });
+        });
+    }
+    function renumber(){ gallery.forEach((g,i)=>g.sort=i); }
+
+    // أزرار الإضافة
+    const gAddBtn = document.getElementById('addGalleryBtn');
+    const gAddUrl = document.getElementById('addGalleryUrlBtn');
+    const gInput  = document.getElementById('galleryFileInput');
+
+    if (gAddBtn) gAddBtn.onclick = () => gInput.click();
+    if (gAddUrl) gAddUrl.onclick = async () => {
+        const url = prompt('Paste image URL');
+        if (!url) return;
+        gallery.push({url, alt:'', sort: gallery.length});
+        renderGallery();
+    };
+
+    if (gInput) gInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        for (const file of files) {
+            const fd = new FormData();
+            fd.append('file', file);
+            try {
+                const res = await fetch('../backend/upload_image.php', { method:'POST', body: fd });
+                const j   = await res.json();
+                if (!j.ok) throw new Error(j.error || 'Upload failed');
+                gallery.push({url: j.url, alt:'', sort: gallery.length});
+            } catch(err){ alert(err.message); }
+        }
+        e.target.value = '';
+        renderGallery();
+    });
+
+    async function loadCategoryTreeForDrawer() {
+        try {
+            // جرّب /collections_api.php?withChildren=1 (الوضع B)
+            const res = await fetch('../backend/collections_api.php?withChildren=1');
+            const ct  = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) throw new Error('Bad JSON');
+            const data = await res.json();
+
+            // API عندك ممكن ترجع [{name,slug,children:[{id,name,slug}...]}] أو {ok:true,data:[...]}
+            const parents = Array.isArray(data) ? data
+                : (Array.isArray(data.data) ? data.data : []);
+
+            // اعمر قائمة الطفل بجروبات كل أب
+            const sel = document.getElementById('pChildCat');
+            sel.innerHTML = '<option value="">— Select child —</option>';
+
+            parents.forEach(p => {
+                const og = document.createElement('optgroup');
+                og.label = p.name || p.slug || 'Parent';
+                (p.children || []).forEach(ch => {
+                    const opt = document.createElement('option');
+                    opt.value = ch.id;                                   // مهم: id
+                    opt.textContent = ch.name;
+                    opt.dataset.parentName = p.name || '';
+                    opt.dataset.parentId   = p.id || '';
+                    sel.appendChild(opt);
+                });
+                sel.appendChild(og);
+            });
+
+        } catch(e) {
+            console.error('loadCategoryTreeForDrawer', e);
+        }
+    }
+
+    // لما يختار Child حدّث الأب تلقائيًا
+    document.addEventListener('change', (e) => {
+        if (e.target && e.target.id === 'pChildCat') {
+            const opt = e.target.selectedOptions[0];
+            const parentName = opt?.dataset?.parentName || '';
+            document.getElementById('pParentCat').value = parentName;
+        }
+    });
+
 </script>
 
 

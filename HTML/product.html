@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Matchy Matchy • Product</title>
+    <!-- Tailwind (نفس الكاتيجوري) -->
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors:{ primary:'#008080', secondary:'#FADADD' }, borderRadius:{ 'button':'8px' } } }
+        }
+    </script>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="../styles/productStyle.css" />
-    <link rel="stylesheet" href="../styles/style.css" />
 
+    <!-- نفس الأيقونات المستعملة -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
 
+    <!-- نفس ترتيب الستايلات -->
+    <link rel="stylesheet" href="../styles/productStyle.css"/>
+    <link rel="stylesheet" href="../styles/style.css"/>
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
@@ -96,7 +105,7 @@
     </script>
 </head>
 <body>
-<div id="header"></div>
+<div id="header-slot"></div>
 <nav id="breadcrumb" style="margin:10px 0;color:#6b7280;font-size:14px"></nav>
 
 <section class="product-detail">
@@ -184,13 +193,26 @@
 
 <div id="foot"></div>
 
-<script>
     // inject header
-    fetch('header.html').then(r=>r.text()).then(h=>{
-        document.getElementById('header').innerHTML=h;updateHeaderCartCount();
-        addEventListener('storage',e=>{if(e.key==='cart')updateHeaderCartCount()});
-        addEventListener('cart:updated',updateHeaderCartCount);
-    });
+    <script>
+        (async () => {
+        const host = document.getElementById('header-slot');
+        if (!host) return;
+
+        const html = await (await fetch('header.html')).text();
+        host.innerHTML = html;
+
+        // نفس تهيئة الكاتيجوري
+        updateHeaderCartCount?.();
+        window.addEventListener('storage', e => { if (e.key === 'cart') updateHeaderCartCount?.(); });
+        window.addEventListener('cart:updated', () => updateHeaderCartCount?.());
+
+        // لو عندك دوال في header.js
+        window.setupHeaderMenu?.();
+        window.setupHeaderSearch?.();
+    })();
+</script>
+<script>
     fetch('footer.html')
         .then(response => response.text())
         .then(data => {
@@ -533,6 +555,6 @@
 </script>
 
 <script src="../js/indexscript.js"></script>
-<script defer src="../js/headerjs.js"></script>
+<script defer src="../js/header.js"></script>
 </body>
 </html>
