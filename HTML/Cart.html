@@ -202,6 +202,8 @@
                     <button id="checkout-btn" class="w-full bg-teal text-white py-3 !rounded-button hover:bg-opacity-90 transition-all font-medium whitespace-nowrap">
                         Proceed to Checkout
                     </button>
+                    <div id="paypal-button-container" class="mt-3"></div>
+
                     <a href="#" class="block text-center text-pink hover:text-umber transition-colors">
                         Continue Shopping
                     </a>
@@ -435,6 +437,45 @@
         }
     });
 </script>
+
+
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_SANDBOX_CLIENT_ID&currency=ILS&intent=capture"></script>
+<script>
+    // نرندر الزر بعد ما تتحمّل السلة من السيرفر
+    document.addEventListener('DOMContentLoaded', () => {
+        // لو API السلة عندك يحدّث cartData، ننتظر تحميلها:
+        const renderPayPal = () => {
+            if (!cartData || !cartData.summary) { setTimeout(renderPayPal, 100); return; }
+
+            paypal.Buttons({
+                // الأفضل: ننشئ الطلب من "السيرفر" حتى ما نعتمد على قيمة من المتصفح
+                createOrder: function() {
+                    // السيرفر يحسب الإجمالي من جلسة السلة (Session/DB) ويعيد orderID
+                    return fetch('/matchymatchy/api/paypal/create-order.php', { method:'POST' })
+                        .then(r => r.json())
+                        .then(d => d.id);
+                },
+
+                // عند الموافقة، نطلب من السيرفر تنفيذ Capture وتحديث حالة الطلب بقاعدة البيانات
+                onApprove: function(data) {
+                    return fetch('/matchymatchy/api/paypal/capture-order.php?orderID=' + data.orderID, { method:'POST' })
+                        .then(r => r.json())
+                        .then(details => {
+                            alert('تم الدفع بنجاح. رقم الطلب: ' + data.orderID);
+                            // اختياري: توجيه لصفحة نجاح أو تفريغ السلة
+                            window.location.href = '/matchymatchy/HTML/success.html?order=' + encodeURIComponent(data.orderID);
+                        });
+                },
+
+                onCancel: () => { window.location.href = '/matchymatchy/HTML/cancel.html'; },
+                onError:  (err) => { console.error(err); alert('حدث خطأ أثناء الدفع'); }
+            }).render('#paypal-button-container');
+        };
+
+        renderPayPal();
+    });
+</script>
+
 </body>
 
 </html>
