@@ -12,7 +12,6 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
 }
 
 $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-// لو بتفضّلي تتجنّبي تكرار الأسماء بالـplaceholders، ما في داعي تغيّري emulate.
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $userId = currentUserId() ?? 0;

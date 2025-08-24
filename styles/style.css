@@ -330,7 +330,7 @@ body {
     position: absolute;
     top: 30%;
     left: 10%;
-    color: white;
+    color: var(--umber);
     max-width: 500px;
     z-index: 2;
 }
