@@ -330,3 +330,10 @@
     font-size: 1.2rem;
     color: var(--teal);
 }
+.top-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px; /* مسافة بين الأيقونات */
+    flex: 1;   /* تاخد عرض الهيدر وتدفع حالها لليمين */
+}
