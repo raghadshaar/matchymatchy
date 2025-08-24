@@ -89,9 +89,12 @@
 
 <section class="w-full px-6 py-6 border-b" style="background-color:#F9F8F3;">
     <div class="mb-4 max-w-6xl mx-auto">
-        <nav class="text-sm text-gray-500 mb-2" id="breadcrumb">Home / <span>Category</span></nav>
+        <nav class="text-sm text-gray-500 mb-2" id="breadcrumb">
+            <a href="index.html" class="hover:underline">Home</a> / <span>Category</span>
+        </nav>
         <h1 class="text-2xl font-bold text-gray-800" id="page-title">Loading…</h1>
     </div>
+
 
     <div class="max-w-6xl mx-auto flex flex-wrap items-center gap-4">
 
@@ -462,45 +465,54 @@
     }
 
     async function renderPLP(){
-        // Params
         const params = new URLSearchParams(location.search);
-        const slug = params.get('slug') || 'baby-girl';
-        const q    = params.get('q') || '';
-        const page = Math.max(1, +(params.get('page') || 1));
-        const size = Math.max(1, +(params.get('size') || 24));
+        const slug   = params.get('slug') || 'baby-girl';
+        const q      = params.get('q') || '';
+        const page   = Math.max(1, +(params.get('page') || 1));
+        const pgSize = Math.max(1, +(params.get('size') || 24)); // ← هذا حجم الصفحة (pagination)
 
         gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Loading…</div>`;
-        // API
-        const apiBase = '/matchymatchy/backend/products.php';
-        let url = `${apiBase}?page=${page}&size=${size}`;
-        if (q) url += `&q=${encodeURIComponent(q)}`;
-        else if (slug && slug !== 'all-products') url += `&category_slug=${encodeURIComponent(slug)}`;
 
-        const filters = {
-            type: params.get('type'),
-            fabric: params.get('fabric'),
-            color: params.get('color'),
-            pickup: params.get('pickup'),
-            size: params.get('size'),
-        };
-
-        for (const [key, value] of Object.entries(filters)) {
-            if (value && value !== '') {
-                if (['fabric', 'color'].includes(key)) {
-                    url += `&${key}[]=${encodeURIComponent(value)}`;
-                } else {
-                    url += `&${key}=${encodeURIComponent(value)}`;
-                }
+        // 1) حددي الـ endpoint
+        let url;
+        if (slug === 'new-arrivals') {
+            url = `/matchymatchy/backend/new_arrivals.php?page=${page}&size=${pgSize}`;
+        } else {
+            url = `/matchymatchy/backend/products.php?page=${page}&size=${pgSize}`;
+            if (!q && slug && slug !== 'all-products') {
+                url += `&category_slug=${encodeURIComponent(slug)}`;
             }
         }
 
+        // 2) بحث
+        if (q) url += `&q=${encodeURIComponent(q)}`;
 
+        // 3) فلاتر
+        const filters = {
+            type:   params.get('type'),
+            fabric: params.get('fabric'),
+            color:  params.get('color'),
+            pickup: params.get('pickup'),
+            size_label: params.get('size') || params.get('size_label'), // ← اقرأ أي واحد موجود
+        };
 
-        // Fetch
+        for (const [key, value] of Object.entries(filters)) {
+            if (!value) continue;
+            // fabric/color/size_label تدعم تعدد القيم، فنبعتها كمصفوفات
+            if (['fabric','color','size_label'].includes(key)) {
+                // لو عندك قيم متعددة بفاصلة
+                const arr = String(value).split(',').map(v => v.trim()).filter(Boolean);
+                for (const v of arr) url += `&${key}[]=${encodeURIComponent(v)}`;
+            } else {
+                url += `&${key}=${encodeURIComponent(value)}`;
+            }
+        }
+
+        // 4) Fetch
         let ok=false, data=[], total=0;
         try{
             const res = await fetch(url, { headers: { 'Accept':'application/json' } });
-            if (!res.ok){ throw new Error(`API ${res.status}`); }
+            if (!res.ok) throw new Error(`API ${res.status}`);
             const json = await res.json();
             ok    = !!json.ok;
             data  = json.data  || [];
@@ -508,26 +520,26 @@
         }catch(err){
             console.error('Fetch failed:', err);
         }
+
         if (!ok){
             gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Error loading products</div>`;
             return;
         }
 
-        // Title + breadcrumb
         const pretty = q ? `Results for “${q}”` : slug.replace(/-/g,' ').replace(/\b\w/g, s => s.toUpperCase());
         const titleEl = document.getElementById('page-title');
         if (titleEl) titleEl.innerHTML = `${pretty} <span class="text-lg font-normal text-gray-600">(${total} items)</span>`;
         const bc = document.getElementById('breadcrumb');
-        if (bc) bc.innerHTML = `Home / <span class="text-gray-800">${pretty}</span>`;
+        if (bc) bc.innerHTML = `<a href="index.html" class="hover:underline">Home</a> / <span class="text-gray-800">${pretty}</span>`;
 
-        // Render
+
         gridEl.innerHTML = data.length
             ? data.map(card).join('')
             : `<div class="col-span-full text-center py-10 text-gray-500">No products found</div>`;
 
-        // تحديث عدد الفلاتر النشطة
         updateActiveFiltersCount();
     }
+
 
 
     // إعداد مستمعين للفلاتر

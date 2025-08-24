@@ -569,6 +569,7 @@ FROM products WHERE slug='toddler-boy-construction-alphabet-tee-blue'
 -- -- ============================================================================
 -- -- ============================================================================
 --
+    --l
 -- -- 1) Family Matching Pajama Set
 -- INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
 -- SELECT 'Family Matching Pajama Set','family-matching-pajama-set','PJ-FAM-001',

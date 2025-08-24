@@ -2,14 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Matchy Matchy</title>
-    <link rel="stylesheet" href="../styles/style.css" />
+
+    <!-- Base styles + Icons + Fonts -->
+    <link rel="stylesheet" href="../styles/style.css"/>
+    <link rel="stylesheet" href="../styles/productStyle.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-    <!-- Tailwind (للتطوير فقط) -->
+
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script>
         tailwind.config = {
@@ -21,250 +24,360 @@
             }
         }
     </script>
+
     <style>
-        /* Search bar styles (خفيفة وتلتزم بالـ palette تبعتك) */
         :root{
-            --baby: #F9F8F3;
-            --jet: #383838;
-            --teal: #008080;
-            --pink: #E4CFC3;
-            --umber: #715E51;
-            --white: #ffffff;
+            --baby:#F9F8F3; --jet:#383838; --teal:#008080; --pink:#E4CFC3; --umber:#715E51; --white:#ffffff;
         }
-        .search-wrap{
-            background: var(--baby);
-            padding: 18px 12px;
-        }
-        .search-container{
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-        .search-form{
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 8px;
-            align-items: center;
-        }
+        /* Search */
+        .search-wrap{ background:var(--baby); padding:18px 12px; position:relative; z-index:20; }
+        .search-container{ max-width:1100px; margin:0 auto; }
+        .search-form{ display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; }
         .search-input{
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid var(--pink);
-            background: #FCFAF6;
-            color: var(--jet);
-            border-radius: 12px;
-            font-size: 15px;
-            outline: none;
+            width:100%; padding:12px 14px; border:1.5px solid var(--pink); background:#FCFAF6; color:var(--jet);
+            border-radius:12px; font-size:15px; outline:none;
         }
         .search-input::placeholder{ color:#8e8177; }
-        .search-btn{
-            padding: 12px 16px;
-            border: none;
-            border-radius: 12px;
-            background: var(--teal);
-            color: var(--baby);
-            font-weight: 600;
-            cursor: pointer;
+        .search-btn{ padding:12px 16px; border:none; border-radius:12px; background:var(--teal); color:var(--baby); font-weight:600; cursor:pointer; }
+        .search-meta{ margin-top:8px; font-size:12px; color:var(--umber); }
+        .search-meta code{ background:#F2ECE6; padding:2px 6px; border-radius:6px; }
+
+        /* Live suggestions */
+        .suggest-box{
+            position:absolute; left:50%; transform:translateX(-50%);
+            width:min(1100px, calc(100% - 24px)); top:100%; margin-top:6px;
+            background:#FCFAF6; border:1px solid var(--pink); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.08);
+            display:none;
         }
-        .search-meta{
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--umber);
+        .suggest-item{ display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; }
+        .suggest-item:hover{ background:#f6f1ec; }
+        .suggest-item img{ width:40px; height:40px; object-fit:cover; border-radius:8px; }
+
+        /* Slider spacing */
+        .slider{ margin-top:0; }
+
+        .category-section{ background:#FEFEFA; padding:48px 0; }
+        .category-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
+        .category-card{ background:#fff7f1; border:1px solid #efdcd1; border-radius:16px; overflow:hidden; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease; }
+        .category-card:hover{ transform:translateY(-3px); box-shadow:0 12px 26px rgba(0,0,0,.12); }
+        .category-image{ width:100%; aspect-ratio: 4/3; object-fit:cover; display:block; }
+        .category-info{ padding:10px 12px; display:flex; align-items:center; justify-content:space-between; }
+        .category-info h3{ font-size:16px; color:var(--jet); }
+        .category-info p{ font-size:13px; color:#6b5b50; }
+
+        .product-card{ min-width:210px; background:#fffdf9; border:1px solid #f0e4db; border-radius:16px; padding:10px; transition:transform .2s ease, box-shadow .2s ease; }
+        .product-card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.08); }
+        .product-card img{ width:100%; aspect-ratio: 1/1; object-fit:cover; border-radius:12px; }
+        .meta-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px; }
+        .star{ font-size:16px; }
+        .price-alone{ color:var(--teal); font-weight:700; }
+
+        /* Subscribe */
+        .subscribe-section{ background:var(--baby); padding:50px 16px; margin-top:36px; }
+        .subscribe-container{ max-width:900px; margin:0 auto; text-align:center; }
+        .subscribe-form{ margin-top:14px; display:grid; grid-template-columns:1fr auto; gap:8px; }
+        .subscribe-form input{ padding:12px 14px; border:1.5px solid var(--pink); border-radius:12px; background:#FCFAF6; }
+        .subscribe-form button{ padding:12px 16px; border:none; border-radius:12px; background:var(--teal); color:var(--baby); font-weight:600; cursor:pointer; }
+        .sub-msg{ margin-top:10px; font-size:14px; }
+
+        /* Toast صغير */
+        .toast{ position:fixed; right:16px; bottom:16px; background:#1a1a1a; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.3); opacity:0; transform:translateY(8px); transition:all .2s ease; z-index:50; }
+        .toast.show{ opacity:1; transform:translateY(0); }
+
+
+        .rail-inner {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 18px;
+            padding: 10px 0;
         }
-        .search-meta code{
-            background: #F2ECE6;
-            padding: 2px 6px;
-            border-radius: 6px;
+
+
+
+        .product-card {
+            flex: 0 0 240px;
+            max-width: 240px;
+            width: 100%;
         }
-        /* Keep slider spacing pleasant under the search bar */
-        .slider{ margin-top: 0; }
+
+
+        .rail-inner {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+        .rail-inner::-webkit-scrollbar {
+            height: 6px;
+        }
+        .rail-inner::-webkit-scrollbar-thumb {
+            background-color: var(--pink);
+            border-radius: 10px;
+        }
+        .rail-inner::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+
     </style>
 
     <script>
-        // قراءة/كتابة السلة
         function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
         function setCart(next){ localStorage.setItem('cart', JSON.stringify(next)); window.dispatchEvent(new Event('cart:updated')); }
-
-        // حساب العدد وتحديث البادج (ينفع مع #header أو #header-slot)
         function getCartCount(){ return getCart().reduce((n,i)=> n + (Number(i.quantity)||0), 0); }
         function updateHeaderCartCount(){
             const el = document.querySelector('#header #cart-count, #header-slot #cart-count, #cart-count, .main-header .cart .badge');
             if (el) el.textContent = getCartCount();
         }
+        function setupHeaderMenu(){} // موجودة خارجياً عندك لو احتجتي
+        function setupHeaderSearch(){} // سنضيف اقتراحات البحث الخاصة بنا على المستوى العام للصفحة
     </script>
 </head>
-
 <body>
 
 <!-- HEADER -->
 <div id="header-slot"></div>
-
-<!-- 🔎 GLOBAL SEARCH BAR (without editing header.html) -->
-<section class="search-wrap" aria-label="Site Search">
-    <div class="search-container">
-        <form id="global-search" class="search-form" action="search.html" method="GET" role="search">
-            <input
-                    id="q"
-                    name="q"
-                    class="search-input"
-                    type="search"
-                    placeholder="Search baby & kids items… e.g. summer dress 5y, baby shoes, toddler toys"
-                    autocomplete="off"
-                    minlength="1"
-                    required
-                    aria-label="Search products"
-            />
-            <button class="search-btn" type="submit" aria-label="Search">
-                <i class="fa fa-search"></i>
-            </button>
-        </form>
-        <div class="search-meta">
-            Tips: try <code>baby girl dress</code>, <code>toddler shoes</code>, <code>5y jacket</code>. We’ll understand your intent 😉
-        </div>
-    </div>
-</section>
-
-<!-- HERO SLIDER -->
-<section class="slider">
-    <!-- Slide 1 -->
-    <div class="slide active">
-        <img src="../images/hero2.jpg" alt="Slide 1" />
+<!-- HERO SLIDER (كما هو عندك) -->
+<section class="slider"><div class="slide active">
+        <img src="../images/hero1new.jpg" alt="Slide 1"/>
         <div class="overlay">
             <h1>Baby Essentials</h1>
             <p>Everything your baby needs in one place</p>
-            <a href="#" class="button">Shop Baby</a>
+            <a href="category.html?slug=baby&page=1" class="button">Shop Baby</a>
         </div>
     </div>
-
-    <!-- Slide 2 -->
     <div class="slide">
-        <img src="../images/hero6.jpg" alt="Slide 2" />
+        <img src="../images/hero2new.jpg" alt="Slide 2"/>
         <div class="overlay">
-            <h1>Fun & Learning</h1>
-            <p>Educational toys for happy minds</p>
-            <a href="#" class="button">Explore Toys</a>
+            <h1>Joyful Kidswear</h1>
+            <p>Playful styles in soft pastel colors</p>
+            <a href="category.html?slug=kids&page=1" class="button">Shop Kids</a>
         </div>
     </div>
-
-    <!-- Slide 3 -->
     <div class="slide">
-        <img src="../images/hero1.jpg" alt="Slide 3" />
+        <img src="../images/hero1.jpg" alt="Slide 3"/>
         <div class="overlay">
             <h1>New Arrivals</h1>
             <p>Fresh picks for your little stars</p>
-            <a href="#" class="button">Discover More</a>
+            <a href="category.html?slug=new-arrivals&page=1" class="button">Discover More</a>
         </div>
     </div>
-
-    <!-- Arrows -->
     <button class="arrow left" onclick="prevSlide()">&#10094;</button>
     <button class="arrow right" onclick="nextSlide()">&#10095;</button>
 </section>
 
 <section class="category-section">
-    <div class="container">
+    <div class="container" style="max-width:1100px; margin:0 auto;">
         <h2 class="section-title">Shop by Category</h2>
-        <p class="title-info"> Discover everything your little ones need, from baby essentials to school supplies</p>
-        <div class="category-grid">
+        <p class="title-info">Discover everything your little ones need, from baby essentials to school supplies</p>
+        <div id="category-grid" class="category-grid"></div>
+    </div>
+</section>
 
-            <div class="category-card">
-                <img src="../images/babyessentials.jpg" alt="Baby Essentials" class="category-image">
-                <div class="category-info">
-                    <h3>Baby Essentials</h3>
-                    <p>x Items</p>
-                </div>
-            </div>
-
-            <div class="category-card">
-                <img src="../images/toys.jpg" alt="Toddler Toys" class="category-image">
-                <div class="category-info">
-                    <h3>Toddler Toys</h3>
-                    <p>x Items</p>
-                </div>
-            </div>
-
-            <div class="category-card">
-                <img src="../images/kidsfashion.jpg" alt="Kids Fashion" class="category-image">
-                <div class="category-info">
-                    <h3>Kids Fashion</h3>
-                    <p>x Items</p>
-                </div>
-            </div>
-
-            <div class="category-card">
-                <img src="../images/schoolsuppliers.jpg" alt="School Supplies" class="category-image">
-                <div class="category-info">
-                    <h3>School Supplies</h3>
-                    <p>x Items</p>
-                </div>
-            </div>
-
+<section style="padding:6px 0 28px; background:#FEFEFA;">
+    <div style="max-width:1100px; margin:0 auto;">
+        <div class="flex items-center justify-between px-1 pb-2">
+            <h2 class="text-xl font-semibold text-gray-800">New Arrivals</h2>
+            <a href="category.html?slug=new-arrivals&page=1" class="text-[13px] text-[var(--teal)] hover:underline">View all</a>
+        </div>
+        <div class="rail">
+            <div id="new-rail" class="rail-inner flex gap-4 overflow-x-auto px-1 pb-2"></div>
         </div>
     </div>
 </section>
 
-<!-- SUBSCRIBE SECTION -->
 <section class="subscribe-section">
     <div class="subscribe-container">
         <h2>Stay Updated with <span class="logo">Matchy Matchy</span></h2>
         <p>Subscribe to our newsletter and be the first to know about new arrivals, exclusive deals, and parenting tips!</p>
-        <form class="subscribe-form">
-            <input type="email" placeholder="Enter your email" required />
+        <form id="subscribe-form" class="subscribe-form">
+            <input id="sub-email" type="email" placeholder="Enter your email" required />
             <button type="submit">Subscribe</button>
         </form>
+        <div id="sub-msg" class="sub-msg"></div>
     </div>
 </section>
 
+<!-- FOOTER -->
 <div id="foot"></div>
 
-<!-- ========= SCRIPTS ========= -->
-<script>
-    /* Footer include */
-    fetch('footer.html')
-        .then(r => r.text())
-        .then(html => { document.getElementById('foot').innerHTML = html; });
-</script>
+<!-- Toast -->
+<div id="toast" class="toast"></div>
 
+<!-- ========= INCLUDES ========= -->
 <script>
-        fetch('header.html')
-        .then(r => r.text())
-        .then(html => {
+    // Footer include
+    fetch('footer.html').then(r=>r.text()).then(html=>{ document.getElementById('foot').innerHTML = html; });
+    // Header include + badge sync
+    fetch('header.html').then(r=>r.text()).then(html=>{
         document.getElementById('header-slot').innerHTML = html;
         updateHeaderCartCount();
-        setupHeaderMenu();
-        setupHeaderSearch();
-        window.addEventListener('storage', (e)=>{ if (e.key === 'cart') updateHeaderCartCount(); });
+        setupHeaderMenu(); setupHeaderSearch();
+        window.addEventListener('storage', (e)=>{ if (e.key==='cart') updateHeaderCartCount(); });
         window.addEventListener('cart:updated', updateHeaderCartCount);
     });
-
 </script>
 
-<script src="../js/indexscript.js"></script>
-<script defer src="../js/headerjs.js"></script>
-
+<!-- ========= PAGE LOGIC ========= -->
 <script>
-    /* سلوك البحث: يوجّه إلى search.html?q=... ويحفظ آخر استعلام */
-    (function setupGlobalSearch(){
-        const form = document.getElementById('global-search');
-        const input = document.getElementById('q');
+    const API_PRODUCTS = '/matchymatchy/backend/products.php';
 
-        // لو فيه آخر استعلام، نعكسه للمستخدم
-        try {
-            const lastQ = sessionStorage.getItem('last_search_q') || '';
-            if (lastQ && !input.value) input.value = lastQ;
-        } catch {}
+    /* 1) جلب الكاتيجوريز مع عدد المنتجات */
+    (async function renderCategories(){
+        const grid = document.getElementById('category-grid');
+        grid.innerHTML = `<div class="col-span-full text-center py-6 text-gray-500">Loading categories…</div>`;
+        try{
+            // نتوقع API يرجّع parents (baby/toddler/kids/toys/collections …) مع children
+            const res = await fetch(`${API_CATEGORIES}?level=top`, {headers:{'Accept':'application/json'}});
+            if (!res.ok) throw 0;
+            const j = await res.json();
+            const cats = (j.data || j.categories || []).filter(c => c.status === 'active').slice(0,4);
 
-        form.addEventListener('submit', (e) => {
-            // اضمن وجود قيمة
-            if (!input.value.trim()) {
-                e.preventDefault();
-                input.focus();
-                return;
+            // لود عدد عناصر كل كاتيجوري (خفيفة: نجيب total من products.php)
+            const cards = await Promise.all(cats.map(async c=>{
+                let total = 0;
+                try{
+                    const res2 = await fetch(`${API_PRODUCTS}?category_slug=${encodeURIComponent(c.slug)}&page=1&size=1`, {headers:{'Accept':'application/json'}});
+                    const j2 = await res2.json(); total = j2.total || 0;
+                }catch {}
+                // صورة بسيطة حسب الاسم (fallback)
+                const guessImg = (name)=>{
+                    const k = name.toLowerCase();
+                    if (k.includes('baby')) return '../images/babyessentials.jpg';
+                    if (k.includes('toy')) return '../images/toys.jpg';
+                    if (k.includes('kid')) return '../images/kidsfashion.jpg';
+                    return '../images/schoolsuppliers.jpg';
+                };
+                const img = c.image_url || guessImg(c.name||'');
+                return `
+            <a class="category-card" href="category.html?slug=${encodeURIComponent(c.slug)}&page=1" aria-label="${c.name}">
+              <img class="category-image" src="${img}" alt="${c.name}">
+           <div class="category-info justify-center">
+  <h3 style="margin: 0 auto;">${c.name}</h3>
+</div>
+
+
+            </a>`;
+            }));
+            grid.innerHTML = cards.join('') || `<div class="col-span-full text-center py-6 text-gray-500">No categories</div>`;
+        }catch{
+            grid.innerHTML = `
+          <a class="category-card" href="category.html?slug=baby&page=1">
+            <img src="../images/babyessentials.jpg" class="category-image" alt="Baby Essentials">
+            <div class="category-info"><h3>Baby Essentials</h3></div>
+          </a>
+          <a class="category-card" href="category.html?slug=toys-learning&page=1">
+            <img src="../images/toys.jpg" class="category-image" alt="Toddler Toys">
+            <div class="category-info"><h3>Toddler Toys</h3></div>
+          </a>
+          <a class="category-card" href="category.html?slug=kids&page=1">
+            <img src="../images/kidsfashion.jpg" class="category-image" alt="Kids Fashion">
+            <div class="category-info"><h3>Kids Fashion</h3></div>
+          </a>
+          <a class="category-card" href="category.html?slug=collections&page=1">
+            <img src="../images/schoolsuppliers.jpg" class="category-image" alt="School Supplies">
+            <div class="category-info"><h3>Collections</h3></div>
+          </a>`;
+        }
+    })();
+
+    /* 2) New Arrivals rail */
+    (async function renderNewArrivals(){
+        const rail = document.getElementById('new-rail');
+        rail.innerHTML = `<div class="text-gray-500 px-2 py-4">Loading…</div>`;
+        try{
+            const res = await fetch('/matchymatchy/backend/new_arrivals.php?page=1&size=12',{headers:{'Accept':'application/json'}});
+            if(!res.ok) throw new Error('HTTP '+res.status);
+            const j = await res.json();
+            const data = j.data || [];
+            if(!data.length) throw 0;
+            rail.innerHTML = data.map(cardLikeCategory).join('');
+        }catch{
+            rail.innerHTML = `<div class="text-gray-500 px-2 py-4">No new items</div>`;
+        }
+    })();
+
+
+
+    /* 4) Subscribe form */
+    (function subscribeSetup(){
+        const form = document.getElementById('subscribe-form');
+        const email = document.getElementById('sub-email');
+        const msg = document.getElementById('sub-msg');
+
+        form.addEventListener('submit', async (e)=>{
+            e.preventDefault(); msg.textContent = 'Submitting…'; msg.style.color = '#6b6b6b';
+            try{
+                const body = new URLSearchParams({ email: email.value.trim() });
+                const res = await fetch('/matchymatchy/backend/subscribe.php', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+                    body: body.toString()
+                });
+                const j = await res.json();
+                if (j && j.ok){
+                    msg.textContent = 'Thanks! You’re subscribed. 🎉';
+                    msg.style.color = '#0a7a7a';
+                    email.value = '';
+                    showToast('Subscribed successfully');
+                }else{
+                    msg.textContent = (j && j.message) ? j.message : 'Could not subscribe. Please try again.';
+                    msg.style.color = '#a02c2c';
+                }
+            }catch(_){
+                msg.textContent = 'Network error. Please try later.';
+                msg.style.color = '#a02c2c';
             }
-            // خزّن آخر استعلام (مفيد لصفحة النتائج)
-            try { sessionStorage.setItem('last_search_q', input.value.trim()); } catch {}
-            // دع المتصفح يكمل للـ action = search.html?q=...
         });
     })();
+
+    /* Toast helper */
+    function showToast(text){
+        const t = document.getElementById('toast');
+        t.textContent = text; t.classList.add('show');
+        setTimeout(()=> t.classList.remove('show'), 1600);
+    }
+</script>
+<script>
+function cardLikeCategory(p){
+    const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
+    const cnt      = Number(p.rating_count || 0);
+    const likes    = Number(p.likes || 0);
+    const myLike   = Number(p.my_like || 0) === 1;
+    const myRating = (p.my_rating == null ? null : Number(p.my_rating));
+
+    const filledByAvg = (avg == null ? 0 : Math.round(avg));
+    const stars = Array.from({length:5}, (_,i) => {
+        const filled = (myRating != null ? (i < myRating) : (i < filledByAvg));
+        return `<button class="star ${filled ? 'text-yellow-400' : 'text-gray-300'}" data-rating="${i+1}">★</button>`;
+    }).join('');
+
+    const ratingText = (cnt > 0)
+        ? `<span class="avg ml-2">${avg.toFixed(1)}</span><span class="count text-xs text-gray-500">(${cnt})</span>`
+        : `<span class="avg ml-2 text-gray-400">—</span>`;
+
+    return `
+    <div class="similar-product-card product-card" data-id="${p.id}">
+        <a class="image-wrap block" href="product.html?id=${p.id}">
+            <img src="${p.image_main_url || '../images/placeholder.jpg'}" alt="${p.name}" class="w-full aspect-[1/1] object-cover rounded-xl">
+        </a>
+
+        <h3 class="similar-product-title">
+            <a href="product.html?id=${p.id}">${p.name}</a>
+        </h3>
+
+        <div class="price-alone">₪${Number(p.price).toFixed(2)}</div>
+
+        <div class="meta-row">
+            <div class="star-rating">${stars} ${ratingText}</div>
+            <button type="button" class="like-btn wish-btn ${myLike ? 'text-red-400' : ''}" title="Wishlist">
+                <i class="${myLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+                <span class="text-xs like-count">${likes}</span>
+            </button>
+        </div>
+    </div>`;
+}
+
 </script>
 <script src="../js/indexscript.js"></script>
 <script defer src="../js/header.js"></script>

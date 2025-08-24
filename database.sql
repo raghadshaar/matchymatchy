@@ -79,16 +79,16 @@
 --     last_failed_at  TIMESTAMP NULL DEFAULT NULL
 --     ) ENGINE=InnoDB;
 
-
-ALTER TABLE magic_links
-    MODIFY purpose ENUM('login','welcome','set_password','reset_password')
-    NOT NULL DEFAULT 'set_password';
-
-
-ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS phone      VARCHAR(30) NULL,ADD COLUMN IF NOT EXISTS notes       TEXT NULL;
-
-
+--
+-- ALTER TABLE magic_links
+--     MODIFY purpose ENUM('login','welcome','set_password','reset_password')
+--     NOT NULL DEFAULT 'set_password';
+--
+--
+-- ALTER TABLE users
+--     ADD COLUMN IF NOT EXISTS phone      VARCHAR(30) NULL,ADD COLUMN IF NOT EXISTS notes       TEXT NULL;
+--
+--
 
 
 
