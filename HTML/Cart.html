@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Shopping Cart - Kids Fashion Store</title>
+
+    <!-- Tailwind + fonts/icons -->
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="../styles/style.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
-    <link rel="stylesheet" href="../styles/style.css" />
+    <link rel="stylesheet" href="../styles/style.css"/>
+
     <style>
         :where([class^="ri-"])::before { content: "\f3c2"; }
         :root {
@@ -21,96 +23,37 @@
             --umber: #715E51;
             --white: #ffffff;
         }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--baby);
-            color: var(--jet);
-        }
-        .font-pacifico {
-            font-family: 'Pacifico', cursive;
-        }
-        .bg-baby { background-color: var(--baby); }
-        .bg-jet { background-color: var(--jet); }
-        .bg-teal { background-color: var(--teal); }
-        .bg-pink { background-color: var(--pink); }
-        .bg-umber { background-color: var(--umber); }
-        .text-baby { color: var(--baby); }
-        .text-jet { color: var(--jet); }
-        .text-teal { color: var(--teal); }
-        .text-pink { color: var(--pink); }
-        .text-umber { color: var(--umber); }
-        .border-teal { border-color: var(--teal); }
-        .border-pink { border-color: var(--pink); }
-        .hover\:bg-teal:hover { background-color: var(--teal); }
-        .hover\:bg-pink:hover { background-color: var(--pink); }
-        .hover\:text-teal:hover { color: var(--teal); }
-        .hover\:text-pink:hover { color: var(--pink); }
-        .hover\:border-teal:hover { border-color: var(--teal); }
-        .hover\:border-pink:hover { border-color: var(--pink); }
-        .rounded-button { border-radius: 8px !important; }
-
-        .quantity-btn {
-            transition: all 0.2s ease;
-        }
-        .quantity-btn:hover {
-            transform: scale(1.05);
-        }
-        .cart-item {
-            transition: all 0.3s ease;
-        }
-        .cart-item.removing {
-            opacity: 0;
-            transform: translateX(-100%);
-        }
-        .toast {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .toast.hide {
-            opacity: 0;
-            transform: translateY(-2rem);
-        }
-
-        @media (max-width: 768px) {
-            .cart-summary {
-                position: static !important;
-            }
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--baby); color: var(--jet); }
+        .font-pacifico { font-family: 'Pacifico', cursive; }
+        .bg-baby{background:var(--baby)} .bg-jet{background:var(--jet)} .bg-teal{background:var(--teal)}
+        .bg-pink{background:var(--pink)} .bg-umber{background:var(--umber)}
+        .text-baby{color:var(--baby)} .text-jet{color:var(--jet)} .text-teal{color:var(--teal)}
+        .text-pink{color:var(--pink)} .text-umber{color:var(--umber)}
+        .rounded-button{border-radius:8px !important}
+        .quantity-btn{transition:.2s} .quantity-btn:hover{transform:scale(1.05)}
+        .cart-item{transition:.3s} .cart-item.removing{opacity:0;transform:translateX(-100%)}
+        .toast{position:fixed;top:2rem;right:2rem;z-index:1000;transition:.3s}
+        .toast.show{opacity:1;transform:translateY(0)} .toast.hide{opacity:0;transform:translateY(-2rem)}
+        @media (max-width:768px){ .cart-summary{position:static !important} }
     </style>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        primary: '#008080',
-                        secondary: '#E4CFC3'
-                    },
+                    colors: { primary: '#008080', secondary: '#E4CFC3' },
                     borderRadius: {
-                        'none': '0px',
-                        'sm': '4px',
-                        DEFAULT: '8px',
-                        'md': '12px',
-                        'lg': '16px',
-                        'xl': '20px',
-                        '2xl': '24px',
-                        '3xl': '32px',
-                        'full': '9999px',
-                        'button': '8px'
+                        'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px',
+                        'xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'
                     }
                 }
             }
-        }
+        };
     </script>
 </head>
 
 <body class="bg-baby min-h-screen">
+
 <header class="bg-white shadow-sm border-b border-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -147,9 +90,7 @@
 
     <div class="lg:grid lg:grid-cols-3 lg:gap-8">
         <div class="lg:col-span-2">
-            <div id="cart-items" class="space-y-4">
-                <!-- Cart items will be populated here -->
-            </div>
+            <div id="cart-items" class="space-y-4"></div>
 
             <div id="empty-cart" class="hidden text-center py-16">
                 <div class="w-32 h-32 mx-auto mb-6 bg-pink rounded-full flex items-center justify-center">
@@ -157,9 +98,9 @@
                 </div>
                 <h2 class="font-pacifico text-2xl text-jet mb-4">Your cart is empty</h2>
                 <p class="text-umber mb-8">Looks like you haven't added any adorable outfits yet!</p>
-                <button class="bg-teal text-white px-8 py-3 !rounded-button hover:bg-opacity-90 transition-all whitespace-nowrap">
+                <a href="category.html" class="bg-teal text-white px-8 py-3 !rounded-button hover:bg-opacity-90 transition-all whitespace-nowrap">
                     Shop Now
-                </button>
+                </a>
             </div>
         </div>
 
@@ -198,20 +139,25 @@
                     <div id="coupon-message" class="mt-2 text-sm hidden"></div>
                 </div>
 
-                <div class="space-y-3">
-                    <button id="checkout-btn" class="w-full bg-teal text-white py-3 !rounded-button hover:bg-opacity-90 transition-all font-medium whitespace-nowrap">
+                <!-- Proceed button row (visible first) -->
+                <div id="checkout-row" class="space-y-3">
+                    <button id="checkout-btn"
+                            class="w-full bg-teal text-white py-3 !rounded-button hover:bg-opacity-90 transition-all font-medium whitespace-nowrap">
                         Proceed to Checkout
                     </button>
-                    <div id="paypal-button-container" class="mt-3"></div>
+                </div>
 
-                    <a href="#" class="block text-center text-pink hover:text-umber transition-colors">
+                <!-- PayPal buttons row (hidden first) -->
+                <div id="paypal-row" class="space-y-3 hidden">
+                    <div id="paypal-button-container" class="mt-3"></div>
+                    <div id="paypal-errors" class="mt-3 text-sm text-red-600"></div>
+                    <a href="category.html" class="block text-center text-pink hover:text-umber transition-colors">
                         Continue Shopping
                     </a>
                 </div>
             </div>
         </div>
     </div>
-
 </main>
 
 <div id="toast" class="toast hide bg-white border-l-4 border-teal rounded-md shadow-lg p-4 max-w-sm">
@@ -225,74 +171,41 @@
     </div>
 </div>
 
+<div id="foot"></div>
 
-
-<script id="checkout-functionality">
-    document.getElementById('checkout-btn').addEventListener('click', function() {
-        if (cart.length === 0) {
-            showToast('Your cart is empty');
-            return;
-        }
-
-        showToast('Redirecting to checkout...');
-        setTimeout(() => {
-            window.location.href = '#checkout';
-        }, 1000);
-    });
-</script>
+<!-- Footer load (optional) -->
 <script>
+    fetch('footer.html')
+        .then(r => r.text())
+        .then(html => { document.getElementById('foot').innerHTML = html; });
+</script>
+
+<!-- Cart logic -->
+<script>
+    const ILS = new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' });
+    const fmt = n => ILS.format(n);
+
+    let csrf = null;
+    let cartData = { items: [], summary: { subtotal: 0, shipping: 0, tax: 0, total: 0 } };
+
     function showToast(message) {
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
         toastMessage.textContent = message;
-        toast.classList.remove('hide');
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-            toast.classList.add('hide');
-        }, 3000);
+        toast.classList.remove('hide'); toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); toast.classList.add('hide'); }, 3000);
     }
-</script>
-<script>
-    document.getElementById('checkout-btn').addEventListener('click', function () {
-        if (!cartData.items.length) {
-            showToast('Your cart is empty');
-            return;
-        }
-        showToast('Redirecting to checkout...');
-        setTimeout(() => { window.location.href = '#checkout'; }, 1000);
-    });
-</script>
-
-<div id="foot">
-
-</div>
-<script>
-
-    fetch('footer.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('foot').innerHTML = data;
-        });
-</script>
-<script>
-    const ILS = new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }); // ₪
-    const fmt = n => ILS.format(n);  // MDN: Intl.NumberFormat / Fetch docs below. :contentReference[oaicite:7]{index=7}
-
-    let csrf = null;       // set after first /list call
-    let cartData = { items: [], summary: { subtotal: 0, shipping: 0, tax: 0, total: 0 } };
 
     async function api(action, method='GET', body=null) {
         const opts = { method, headers: { 'Accept':'application/json' } };
         if (method !== 'GET') {
             opts.headers['Content-Type'] = 'application/json';
-            if (csrf) opts.headers['X-CSRF-Token'] = csrf;     // matches server check
+            if (csrf) opts.headers['X-CSRF-Token'] = csrf;
             if (body) opts.body = JSON.stringify(body);
         }
-        const res = await fetch(`/matchymatchy/api/cart.php?action=${encodeURIComponent(action)}`, opts); // MDN fetch. :contentReference[oaicite:8]{index=8}
+        const res = await fetch(`/matchymatchy/api/cart.php?action=${encodeURIComponent(action)}`, opts);
         if (res.status === 401) { alert('Please sign in to use your cart.'); return null; }
-        const data = await res.json();
-        return data;
+        return await res.json();
     }
 
     async function loadCart() {
@@ -306,33 +219,28 @@
     async function addToCart(productId, size='', quantity=1) {
         const data = await api('add', 'POST', { product_id: productId, size, quantity });
         if (!data) return;
-        cartData = data;
-        renderCartFromApi();
+        cartData = data; renderCartFromApi();
     }
 
     async function updateQuantity(itemId, quantity) {
         if (quantity <= 0) return removeItem(itemId);
         const data = await api('update', 'POST', { item_id: itemId, quantity });
         if (!data) return;
-        cartData = data;
-        renderCartFromApi();
+        cartData = data; renderCartFromApi();
     }
 
     async function removeItem(itemId) {
         const data = await api('remove', 'POST', { item_id: itemId });
         if (!data) return;
-        cartData = data;
-        renderCartFromApi();
+        cartData = data; renderCartFromApi();
     }
 
     async function clearCart() {
         const data = await api('clear', 'POST', {});
         if (!data) return;
-        cartData = data;
-        renderCartFromApi();
+        cartData = data; renderCartFromApi();
     }
 
-    // Optional: apply coupon server-side
     async function applyCoupon(code) {
         const resp = await api('applyCoupon', 'POST', { code });
         const msgEl = document.getElementById('coupon-message');
@@ -341,7 +249,6 @@
             msgEl.className = 'mt-2 text-sm text-red-500';
             return;
         }
-        // Update summary UI with server math
         const s = resp.summary;
         document.getElementById('subtotal').textContent = fmt(s.subtotal);
         document.getElementById('shipping').textContent = fmt(s.shipping);
@@ -351,7 +258,6 @@
         msgEl.className = 'mt-2 text-sm text-teal';
     }
 
-    // Reuse your existing render HTML but feed server IDs and prices
     function renderCartFromApi() {
         const list = document.getElementById('cart-items');
         const empty = document.getElementById('empty-cart');
@@ -398,7 +304,6 @@
       `).join('');
         }
 
-        // Summary from server
         const s = cartData.summary;
         document.getElementById('subtotal').textContent = fmt(s.subtotal);
         document.getElementById('shipping').textContent = fmt(s.shipping);
@@ -408,7 +313,6 @@
             cartData.items.reduce((sum, it) => sum + it.quantity, 0);
     }
 
-    // Coupon button hook: wire to server
     document.getElementById('apply-coupon').addEventListener('click', () => {
         const code = document.getElementById('coupon-input').value.trim();
         if (!code) {
@@ -420,62 +324,207 @@
         applyCoupon(code);
     });
 
-    // Load cart on page load
     document.addEventListener('DOMContentLoaded', loadCart);
 </script>
+
+<!-- PayPal SDK (card funding enabled) -->
+<!-- Docs:
+  JS SDK reference (createOrder/onApprove/onClick):
+  https://developer.paypal.com/docs/checkout/standard/integrate/
+  Orders v2 API (Create/Amount breakdown/Capture):
+  https://developer.paypal.com/docs/api/orders/v2/
+-->
+<script src="https://www.paypal.com/sdk/js?client-id=AeNRbUtyWFnhdgD_OhFSyJJlz1qg8M3pVz54kkxwK97qK8YyBJTRTL4_1JMImxb8TTvRDqHp3kYVCcW2&currency=ILS&intent=capture&enable-funding=card"></script>
+
 <script>
-    document.getElementById('checkout-btn').addEventListener('click', async () => {
-        try{
-            const res = await fetch('/matchymatchy/api/checkout.php', { method:'POST', headers:{'Accept':'application/json'} });
-            const j = await res.json();
-            if (!j.ok) { alert(j.error || 'Checkout failed'); return; }
-            // اختياري: وجّهي المستخدم لصفحة تأكيد
-            alert('Order placed: ' + j.order_public_id);
-            location.href = '/matchymatchy/admin/orders.html';
-        }catch(e){
-            alert('Network error');
+    const showPayErr = (msg) => {
+        let box = document.getElementById('paypal-errors');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'paypal-errors';
+            box.className = 'mt-3 text-sm text-red-600';
+            document.getElementById('paypal-row').prepend(box);
+        }
+        box.textContent = msg;
+    };
+
+    let paypalRendered = false;
+
+    // Show PayPal buttons
+    document.getElementById('checkout-btn').addEventListener('click', async function () {
+        // Sync cart from server first
+        await loadCart();
+        if (!cartData.items.length) { showToast('Your cart is empty'); return; }
+
+        document.getElementById('checkout-row').classList.add('hidden');
+        document.getElementById('paypal-row').classList.remove('hidden');
+        showToast('Choose a payment method');
+
+        if (!paypalRendered) {
+            await renderPayPalButtons();
+            paypalRendered = true;
         }
     });
-</script>
 
+    async function waitForPayPal(maxMs = 5000) {
+        const start = Date.now();
+        while (!window.paypal) {
+            await new Promise(r => setTimeout(r, 50));
+            if (Date.now() - start > maxMs) throw new Error('PayPal SDK did not load. Check client-id or ad-blocker.');
+        }
+        return window.paypal;
+    }
 
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_SANDBOX_CLIENT_ID&currency=ILS&intent=capture"></script>
-<script>
-    // نرندر الزر بعد ما تتحمّل السلة من السيرفر
-    document.addEventListener('DOMContentLoaded', () => {
-        // لو API السلة عندك يحدّث cartData، ننتظر تحميلها:
-        const renderPayPal = () => {
-            if (!cartData || !cartData.summary) { setTimeout(renderPayPal, 100); return; }
+    async function renderPayPalButtons() {
+        try {
+            const paypal = await waitForPayPal();
 
             paypal.Buttons({
-                // الأفضل: ننشئ الطلب من "السيرفر" حتى ما نعتمد على قيمة من المتصفح
-                createOrder: function() {
-                    // السيرفر يحسب الإجمالي من جلسة السلة (Session/DB) ويعيد orderID
-                    return fetch('/matchymatchy/api/paypal/create-order.php', { method:'POST' })
-                        .then(r => r.json())
-                        .then(d => d.id);
+                // Validate before create (ensure client/server totals match)
+                onClick: async (data, actions) => {
+                    try {
+                        const r = await fetch('/matchymatchy/api/cart.php?action=list', { headers: { 'Accept':'application/json' }});
+                        const server = await r.json();
+                        if (!server || !server.summary) return actions.reject();
+
+                        const clientTotal = Number((cartData.summary?.total ?? 0).toFixed(2));
+                        const serverTotal = Number((server.summary.total ?? 0).toFixed(2));
+
+                        if (clientTotal !== serverTotal) {
+                            cartData = server;
+                            renderCartFromApi();
+                            showPayErr('Your cart changed. Please review the new total and try again.');
+                            return actions.reject();
+                        }
+                        return actions.resolve();
+                    } catch (e) {
+                        console.error(e);
+                        showPayErr('Could not validate cart. Please try again.');
+                        return actions.reject();
+                    }
                 },
 
-                // عند الموافقة، نطلب من السيرفر تنفيذ Capture وتحديث حالة الطلب بقاعدة البيانات
-                onApprove: function(data) {
-                    return fetch('/matchymatchy/api/paypal/capture-order.php?orderID=' + data.orderID, { method:'POST' })
-                        .then(r => r.json())
-                        .then(details => {
-                            alert('تم الدفع بنجاح. رقم الطلب: ' + data.orderID);
-                            // اختياري: توجيه لصفحة نجاح أو تفريغ السلة
-                            window.location.href = '/matchymatchy/HTML/success.html?order=' + encodeURIComponent(data.orderID);
-                        });
+                // Create order on the server (server computes exact totals)
+                createOrder: () => {
+                    return fetch('/matchymatchy/api/paypal/create-order.php', {
+                        method: 'POST'
+                    }).then(async r => {
+                        const txt = await r.text();
+                        try {
+                            const d = JSON.parse(txt);
+                            if (!d.ok || !d.id) throw new Error(d.error || 'create-order failed');
+                            return d.id;
+                        } catch (e) {
+                            console.error('create-order raw:', txt);
+                            throw e;
+                        }
+                    });
                 },
 
-                onCancel: () => { window.location.href = '/matchymatchy/HTML/cancel.html'; },
-                onError:  (err) => { console.error(err); alert('حدث خطأ أثناء الدفع'); }
+                // Capture on server, then persist order
+                // onApprove: function (data, actions) {
+                //     return fetch('/matchymatchy/api/paypal/capture-order.php?orderID=' + encodeURIComponent(data.orderID), {
+                //         method: 'POST'
+                //     })
+                //         .then(async r => {
+                //             const txt = await r.text();
+                //             let details;
+                //             try { details = JSON.parse(txt); }
+                //             catch (e) { console.error('capture raw:', txt); throw e; }
+                //
+                //             console.log('capture details:', details);
+                //
+                //             // Success
+                //             if ((details.ok && details.status === 'COMPLETED') || details.status === 'COMPLETED') {
+                //                 alert('Payment successful! Order: ' + data.orderID);
+                //                 // Optional: window.location.href = '/matchymatchy/HTML/success.html?order=' + encodeURIComponent(data.orderID);
+                //                 return;
+                //             }
+                //
+                //             // Common sandbox statuses
+                //             if (details.status === 'PAYER_ACTION_REQUIRED') {
+                //                 showPayErr('Payment requires new approval (amount changed or extra verification). Please try again.');
+                //                 return;
+                //             }
+                //             if (details.status === 'INSTRUMENT_DECLINED') {
+                //                 showPayErr('Payment method was declined. Try another card or method.');
+                //                 try { if (actions && actions.restart) return actions.restart(); } catch (_) {}
+                //                 return;
+                //             }
+                //
+                //             throw new Error('Payment not completed: ' + (details.status || details.error || ''));
+                //         })
+                //         .catch(err => { console.error(err); showPayErr('An error occurred during payment.'); });
+                // },
+
+
+
+
+                onApprove: async function (data, actions) {
+                    try {
+                        const r   = await fetch('/matchymatchy/api/paypal/capture-order.php?orderID=' + encodeURIComponent(data.orderID), { method: 'POST' });
+                        const txt = await r.text();
+                        let details;
+                        try { details = JSON.parse(txt); } catch(e){ console.error('capture raw:', txt); throw e; }
+
+                        console.log('capture details:', details);
+
+                        if ((details.ok && details.status === 'COMPLETED') || details.status === 'COMPLETED') {
+                            // 1) clear cart on the server
+                            await fetch('/matchymatchy/api/cart.php?action=clear', { method: 'POST', headers: { 'Accept':'application/json' } });
+
+                            // 2) refresh UI from API (will show the empty-cart block)
+                            await loadCart();
+
+                            // 3) hide PayPal row, show the initial row again (optional)
+                            document.getElementById('paypal-row').classList.add('hidden');
+                            document.getElementById('checkout-row').classList.remove('hidden');
+
+                            // 4) friendly toast (optional)
+                            showToast('Payment successful! Your cart is now empty.');
+
+                            // (optional) redirect to a success page:
+                            // window.location.href = 'success.html?order=' + encodeURIComponent(data.orderID);
+                            return;
+                        }
+
+                        // common sandbox statuses:
+                        if (details.status === 'PAYER_ACTION_REQUIRED') {
+                            showPayErr('Payment requires a new approval. Please try again.');
+                            return;
+                        }
+                        if (details.status === 'INSTRUMENT_DECLINED') {
+                            showPayErr('Payment method was declined. Try another card or method.');
+                            try { if (actions && actions.restart) return actions.restart(); } catch(_) {}
+                            return;
+                        }
+
+                        throw new Error('Payment not completed: ' + (details.status || details.error || ''));
+                    } catch (err) {
+                        console.error(err);
+                        showPayErr('An error occurred during payment.');
+                    }
+                },
+
+
+
+
+
+
+                onCancel: () => { /* optional */ },
+                onError : (err) => { console.error(err); showPayErr('Failed to load payment gateway.'); },
+                style   : { layout: 'vertical' }
             }).render('#paypal-button-container');
-        };
 
-        renderPayPal();
-    });
+        } catch (e) {
+            console.error(e);
+            showPayErr(e.message || 'Failed to initialize PayPal.');
+        }
+    }
+
+    // We render PayPal only after user clicks Proceed
+    document.addEventListener('DOMContentLoaded', () => {});
 </script>
 
 </body>
-
 </html>
