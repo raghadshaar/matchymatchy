@@ -163,23 +163,54 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', async ()=>{
+
+        document.addEventListener('DOMContentLoaded', async ()=>{
         await loadIncludes(); requestAnimationFrame(adjustForStickyHeader);
 
-        // Search redirect
-        const input=document.getElementById('searchInput');
-        const btn=document.getElementById('searchButton');
-        const go=()=>{ const q=(input.value||'').trim(); if(q) location.href=`/search.html?q=${encodeURIComponent(q)}`; };
-        btn.addEventListener('click', go);
-        input.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+        // العناصر
+        const input = document.getElementById('searchInput');
+        const btn   = document.getElementById('searchButton');
 
-        // Soft fallback if video fails
+        // (اختياري) لو عندك فئة حالية مرسومة على الصفحة—احفظيها هنا
+        // مثلًا <body data-category-id="7"> ثم نقرأها:
+        const body = document.body;
+        const currentCategoryId = body?.dataset?.categoryId || null;
+
+        // ✅ دالة التوجيه إلى صفحة النتائج بالوضع الدلالي
+        const go = () => {
+        const q = (input.value || '').trim();
+        if (!q) { input.focus(); return; }
+
+        // صفحة النتائج (عدّلي المسار حسب مكان ملف search.html عندك)
+        const base = '/matchymatchy/HTML/search.html';
+
+        const params = new URLSearchParams({
+        q,
+        mode: 'semantic',   // 🔑 هذا يفعّل البحث بالـ AI
+        page: '1',
+        limit: '24'
+    });
+
+        if (currentCategoryId) params.set('category_id', currentCategoryId);
+
+        // (اختياري) خزّني آخر استعلام لعرضه لاحقًا
+        try { sessionStorage.setItem('last_search_q', q); } catch {}
+
+        location.href = `${base}?${params.toString()}`;
+    };
+
+        btn.addEventListener('click', go);
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+
+        // بقية الكود كما هو...
         const video=document.getElementById('bgVideo'), hero=document.getElementById('hero');
         const soft=()=>{ hero.style.background='linear-gradient(135deg, rgba(0,128,128,.15), rgba(228,207,195,.25))'; };
         let ok=false; const t=setTimeout(()=>{ if(!ok) soft(); }, 2500);
         video.addEventListener('loadeddata', ()=>{ ok=true; clearTimeout(t); });
         video.addEventListener('error', soft); video.addEventListener('stalled', soft);
     });
+
+
 </script>
 
 <script>

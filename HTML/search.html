@@ -40,6 +40,17 @@
         }
         .btn[disabled]{ opacity:.5; cursor:not-allowed;}
     </style>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary:'#008080', secondary:'#FADADD' },
+                    borderRadius: { 'button':'8px' }
+                }
+            }
+        }
+    </script>
 </head>
 <body>
 <!-- Header include -->
@@ -147,5 +158,7 @@
         $nextBtn.onclick = ()=>{ qs.set('page', String(page+1)); location.search = qs.toString(); };
     }
 </script>
+<script src="../js/indexscript.js"></script>
+<script defer src="../js/header.js"></script>
 </body>
 </html>
