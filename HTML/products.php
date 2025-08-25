@@ -1,3 +1,14 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../backend/auth_db.php';
+
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'pdo_init_failed']);
+exit;
+}
+$me = require_admin_page_db($pdo, '/matchymatchy/sign-in.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Matchy Matchy</title>
-
+    <link rel="stylesheet" href="../styles/responsive.css">
     <!-- Base styles + Icons + Fonts -->
     <link rel="stylesheet" href="../styles/style.css"/>
     <link rel="stylesheet" href="../styles/productStyle.css"/>
@@ -29,6 +29,7 @@
         :root{
             --baby:#F9F8F3; --jet:#383838; --teal:#008080; --pink:#E4CFC3; --umber:#715E51; --white:#ffffff;
         }
+
         /* Search */
         .search-wrap{ background:var(--baby); padding:18px 12px; position:relative; z-index:20; }
         .search-container{ max-width:1100px; margin:0 auto; }
@@ -57,7 +58,11 @@
         .slider{ margin-top:0; }
 
         .category-section{ background:#FEFEFA; padding:48px 0; }
-        .category-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
+        .category-grid{
+            display:grid;
+            grid-template-columns:repeat(4, 1fr);
+            gap:18px;
+        }
         .category-card{ background:#fff7f1; border:1px solid #efdcd1; border-radius:16px; overflow:hidden; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease; }
         .category-card:hover{ transform:translateY(-3px); box-shadow:0 12px 26px rgba(0,0,0,.12); }
         .category-image{ width:100%; aspect-ratio: 4/3; object-fit:cover; display:block; }
@@ -65,7 +70,14 @@
         .category-info h3{ font-size:16px; color:var(--jet); }
         .category-info p{ font-size:13px; color:#6b5b50; }
 
-        .product-card{ min-width:210px; background:#fffdf9; border:1px solid #f0e4db; border-radius:16px; padding:10px; transition:transform .2s ease, box-shadow .2s ease; }
+        .product-card{
+            min-width:210px;
+            background:#fffdf9;
+            border:1px solid #f0e4db;
+            border-radius:16px;
+            padding:10px;
+            transition:transform .2s ease, box-shadow .2s ease;
+        }
         .product-card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.08); }
         .product-card img{ width:100%; aspect-ratio: 1/1; object-fit:cover; border-radius:12px; }
         .meta-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px; }
@@ -84,7 +96,6 @@
         .toast{ position:fixed; right:16px; bottom:16px; background:#1a1a1a; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.3); opacity:0; transform:translateY(8px); transition:all .2s ease; z-index:50; }
         .toast.show{ opacity:1; transform:translateY(0); }
 
-
         .rail-inner {
             display: flex;
             flex-wrap: nowrap;
@@ -92,14 +103,11 @@
             padding: 10px 0;
         }
 
-
-
         .product-card {
             flex: 0 0 240px;
             max-width: 240px;
             width: 100%;
         }
-
 
         .rail-inner {
             display: flex;
@@ -118,7 +126,125 @@
             background-color: transparent;
         }
 
+        /* =========== MEDIA QUERIES =========== */
 
+        /* للأجهزة متوسطة الحجم (أجهزة لوحية) */
+        @media (max-width: 1024px) {
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .product-card {
+                flex: 0 0 200px;
+                max-width: 200px;
+            }
+        }
+
+        /* للأجهزة الصغيرة (هواتف محمولة) */
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .search-btn {
+                width: 100%;
+            }
+
+            .category-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .category-section {
+                padding: 32px 0;
+            }
+
+            .subscribe-form {
+                grid-template-columns: 1fr;
+            }
+
+            .subscribe-form button {
+                width: 100%;
+            }
+
+            .product-card {
+                flex: 0 0 180px;
+                max-width: 180px;
+            }
+
+            .slider .overlay h1 {
+                font-size: 24px;
+            }
+
+            .slider .overlay p {
+                font-size: 14px;
+            }
+
+            .slider .overlay .button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
+
+        /* للأجهزة الصغيرة جداً */
+        @media (max-width: 480px) {
+            .search-wrap {
+                padding: 12px 8px;
+            }
+
+            .search-input, .search-btn {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            .category-info h3 {
+                font-size: 14px;
+            }
+
+            .category-info p {
+                font-size: 12px;
+            }
+
+            .product-card {
+                flex: 0 0 160px;
+                max-width: 160px;
+                padding: 8px;
+            }
+
+            .subscribe-section {
+                padding: 32px 12px;
+            }
+
+            .subscribe-form input, .subscribe-form button {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            .rail-inner {
+                gap: 12px;
+            }
+
+            .meta-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .star {
+                font-size: 14px;
+            }
+        }
+
+        /* تحسينات للشاشات الكبيرة جداً */
+        @media (min-width: 1600px) {
+            .search-container, .container, .subscribe-container {
+                max-width: 1400px;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
     </style>
 
     <script>
@@ -139,13 +265,13 @@
 <div id="header-slot"></div>
 <!-- HERO SLIDER (كما هو عندك) -->
 <section class="slider"><div class="slide active">
-        <img src="../images/hero1new.jpg" alt="Slide 1"/>
-        <div class="overlay">
-            <h1>Baby Essentials</h1>
-            <p>Everything your baby needs in one place</p>
-            <a href="category.html?slug=baby&page=1" class="button">Shop Baby</a>
-        </div>
+    <img src="../images/hero1new.jpg" alt="Slide 1"/>
+    <div class="overlay">
+        <h1>Baby Essentials</h1>
+        <p>Everything your baby needs in one place</p>
+        <a href="category.html?slug=baby&page=1" class="button">Shop Baby</a>
     </div>
+</div>
     <div class="slide">
         <img src="../images/hero2new.jpg" alt="Slide 2"/>
         <div class="overlay">
@@ -255,8 +381,6 @@
            <div class="category-info justify-center">
   <h3 style="margin: 0 auto;">${c.name}</h3>
 </div>
-
-
             </a>`;
             }));
             grid.innerHTML = cards.join('') || `<div class="col-span-full text-center py-6 text-gray-500">No categories</div>`;
@@ -296,8 +420,6 @@
             rail.innerHTML = `<div class="text-gray-500 px-2 py-4">No new items</div>`;
         }
     })();
-
-
 
     /* 4) Subscribe form */
     (function subscribeSetup(){
@@ -339,24 +461,24 @@
     }
 </script>
 <script>
-function cardLikeCategory(p){
-    const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
-    const cnt      = Number(p.rating_count || 0);
-    const likes    = Number(p.likes || 0);
-    const myLike   = Number(p.my_like || 0) === 1;
-    const myRating = (p.my_rating == null ? null : Number(p.my_rating));
+    function cardLikeCategory(p){
+        const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
+        const cnt      = Number(p.rating_count || 0);
+        const likes    = Number(p.likes || 0);
+        const myLike   = Number(p.my_like || 0) === 1;
+        const myRating = (p.my_rating == null ? null : Number(p.my_rating));
 
-    const filledByAvg = (avg == null ? 0 : Math.round(avg));
-    const stars = Array.from({length:5}, (_,i) => {
-        const filled = (myRating != null ? (i < myRating) : (i < filledByAvg));
-        return `<button class="star ${filled ? 'text-yellow-400' : 'text-gray-300'}" data-rating="${i+1}">★</button>`;
-    }).join('');
+        const filledByAvg = (avg == null ? 0 : Math.round(avg));
+        const stars = Array.from({length:5}, (_,i) => {
+            const filled = (myRating != null ? (i < myRating) : (i < filledByAvg));
+            return `<button class="star ${filled ? 'text-yellow-400' : 'text-gray-300'}" data-rating="${i+1}">★</button>`;
+        }).join('');
 
-    const ratingText = (cnt > 0)
-        ? `<span class="avg ml-2">${avg.toFixed(1)}</span><span class="count text-xs text-gray-500">(${cnt})</span>`
-        : `<span class="avg ml-2 text-gray-400">—</span>`;
+        const ratingText = (cnt > 0)
+            ? `<span class="avg ml-2">${avg.toFixed(1)}</span><span class="count text-xs text-gray-500">(${cnt})</span>`
+            : `<span class="avg ml-2 text-gray-400">—</span>`;
 
-    return `
+        return `
     <div class="similar-product-card product-card" data-id="${p.id}">
         <a class="image-wrap block" href="product.html?id=${p.id}">
             <img src="${p.image_main_url || '../images/placeholder.jpg'}" alt="${p.name}" class="w-full aspect-[1/1] object-cover rounded-xl">
@@ -376,8 +498,7 @@ function cardLikeCategory(p){
             </button>
         </div>
     </div>`;
-}
-
+    }
 </script>
 <script src="../js/indexscript.js"></script>
 <script defer src="../js/header.js"></script>

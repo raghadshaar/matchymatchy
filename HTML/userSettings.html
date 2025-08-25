@@ -16,98 +16,26 @@
             --white: #ffffff;
             --umber: #6B5B51;
         }
+        .btn { background-color: var(--teal); color:#fff; padding:10px 16px; font-weight:600; border-radius:10px; border:none; cursor:pointer; transition:opacity .2s; }
+        .btn:hover{ opacity:.9; }
+        .card { background-color: var(--white); border-radius:18px; padding:24px; box-shadow:0 16px 40px rgba(0,0,0,.08); }
+        .section-title { font-weight:600; font-size:1.25rem; margin-bottom:1rem; color:var(--jet); }
+        .order-details{ transition:all .3s ease; }
+        .toggle-icon{ transition:transform .3s ease; }
+        .toggle-icon.rotate{ transform:rotate(180deg); }
+        label{ display:block; margin-bottom:.5rem; font-weight:500; color:var(--jet); }
+        .input{ border:1px solid #d1d5db; border-radius:.375rem; padding:.5rem; width:100%; }
+        .input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 2px rgba(0,128,128,.15); }
 
-
-        .btn {
-            background-color: var(--teal);
-            color: white;
-            padding: 10px 16px;
-            font-weight: 600;
-            border-radius: 10px;
-            transition: opacity 0.2s;
-            cursor: pointer;
-            border: none;
+        body{ position:relative; min-height:100vh; font-family:'Poppins',sans-serif; z-index:0; overflow-x:hidden; }
+        body::before{
+            content:'';
+            position:fixed; inset:0;
+            background-image:url('../images/cover.jpg');
+            background-size:cover; background-position:center;
+            filter:blur(3px); opacity:.6; z-index:-1;
         }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .card {
-            background-color: var(--white);
-            border-radius: 18px;
-            padding: 24px;
-            box-shadow: 0 16px 40px rgba(0,0,0,.08);
-        }
-
-        .section-title {
-            font-weight: 600;
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-            color: var(--jet);
-        }
-
-        .order-details {
-            transition: all 0.3s ease;
-        }
-
-        .toggle-icon {
-            transition: transform 0.3s ease;
-        }
-
-        .toggle-icon.rotate {
-            transform: rotate(180deg);
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--jet);
-        }
-
-        .input {
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            padding: 0.5rem;
-            width: 100%;
-        }
-
-        .input:focus {
-            outline: none;
-            ring: 2px solid var(--teal);
-            border-color: var(--teal);
-        }
-
-
-
-        body {
-            position: relative;
-            min-height: 100vh;
-            font-family: 'Poppins', sans-serif;
-            z-index: 0;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('../images/cover.jpg');
-            background-size: cover;
-            background-position: center;
-            filter: blur(3px);
-            opacity: 0.6;
-            z-index: -1;
-        }
-        .card, .btn {
-            position: relative;
-            z-index: 1;
-        }
-
+        .card,.btn{ position:relative; z-index:1; }
     </style>
 </head>
 <body class="min-h-screen py-8">
@@ -122,7 +50,8 @@
     <!-- Avatar -->
     <div class="text-center mb-8">
         <div class="relative inline-block">
-            <img id="avatar" src="" class="w-28 h-28 rounded-full object-cover border shadow" alt="Avatar">            <label for="avatar_file" class="absolute bottom-1 right-1 bg-white rounded-full p-1 cursor-pointer border border-gray-300">
+            <img id="avatar" src="" class="w-28 h-28 rounded-full object-cover border shadow" alt="Avatar">
+            <label for="avatar_file" class="absolute bottom-1 right-1 bg-white rounded-full p-1 cursor-pointer border border-gray-300">
                 <i class="ri-camera-line text-lg text-gray-600"></i>
             </label>
             <input type="file" id="avatar_file" accept="image/*" class="hidden">
@@ -134,27 +63,25 @@
     <div class="card mb-8">
         <div class="section-title">Account Settings</div>
         <form id="settings-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4" enctype="multipart/form-data">
-            <input type="hidden" name="id" id="id" value="6" />
-
             <div>
                 <label>First Name</label>
-                <input class="input border p-2 w-full rounded-md" id="first_name" name="first_name" required>
+                <input class="input" id="first_name" name="first_name" required>
             </div>
             <div>
                 <label>Last Name</label>
-                <input class="input border p-2 w-full rounded-md" id="last_name" name="last_name" required>
+                <input class="input" id="last_name" name="last_name" required>
             </div>
             <div class="sm:col-span-2">
                 <label>Email Address</label>
-                <input id="email" name="email" class="border p-2 w-full rounded-md bg-gray-100" readonly>
+                <input id="email" name="email" class="input bg-gray-100" readonly>
             </div>
             <div class="sm:col-span-2">
                 <label>Avatar URL</label>
-                <input id="avatar_url" name="avatar" class="border p-2 w-full rounded-md">
+                <input id="avatar_url" name="avatar" class="input">
             </div>
             <div class="sm:col-span-2">
                 <label>New Password (Optional)</label>
-                <input type="password" id="password" name="password" class="border p-2 w-full rounded-md">
+                <input type="password" id="password" name="password" class="input">
             </div>
             <div class="sm:col-span-2 mt-2">
                 <button type="submit" class="btn w-full">Save Changes</button>
@@ -171,19 +98,18 @@
 </div>
 
 <script>
-    const uid = document.getElementById('id').value;
-
+    // === Load user data (SESSION-based) ===
     async function loadUserData() {
         try {
-            const res = await fetch(`../backend/settings.php?user_id=${uid}`);
+            const res = await fetch('../backend/settings.php', { credentials: 'include' });
             if (!res.ok) throw new Error('Failed to fetch user data');
-
             const u = await res.json();
 
-            if (u.error) {
-                document.getElementById('response').textContent = u.error;
+            if (u.error && !u.ok) {
+                document.getElementById('response').textContent = u.error || 'Unauthorized';
                 return;
             }
+
             document.getElementById('avatar').src = u.avatar ? `../backend/${u.avatar}` : 'https://via.placeholder.com/150';
             document.getElementById('first_name').value = u.first_name || '';
             document.getElementById('last_name').value  = u.last_name  || '';
@@ -194,56 +120,50 @@
             document.getElementById('response').textContent = 'Error loading user data';
         }
     }
-
     loadUserData();
 
+    // Preview + validate avatar file
     document.getElementById('avatar_file').addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
-            // تحقق من نوع الملف
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                document.getElementById('response').textContent = 'Only JPG, PNG, and WebP images are allowed';
-                e.target.value = '';
-                return;
-            }
+        if (!file) return;
 
-            // تحقق من حجم الملف (2MB كحد أقصى)
-            if (file.size > 2 * 1024 * 1024) {
-                document.getElementById('response').textContent = 'Image must be less than 2MB';
-                e.target.value = '';
-                return;
-            }
-
-            const url = URL.createObjectURL(file);
-            document.getElementById('avatar').src = url;
-            document.getElementById('response').textContent = '';
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            document.getElementById('response').textContent = 'Only JPG, PNG, and WebP images are allowed';
+            e.target.value = '';
+            return;
         }
+        if (file.size > 2 * 1024 * 1024) {
+            document.getElementById('response').textContent = 'Image must be less than 2MB';
+            e.target.value = '';
+            return;
+        }
+
+        const url = URL.createObjectURL(file);
+        document.getElementById('avatar').src = url;
+        document.getElementById('response').textContent = '';
     });
 
+    // Save settings (SESSION-based)
     document.getElementById('settings-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const formData = new FormData(e.target);
         const avatarFile = document.getElementById('avatar_file').files[0];
-
-        if (avatarFile) {
-            formData.append('avatar_file', avatarFile);
-        }
+        if (avatarFile) formData.append('avatar_file', avatarFile);
 
         try {
             const res = await fetch('../backend/settings.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include'
             });
-
             const j = await res.json();
             document.getElementById('response').textContent = j.message || (j.error || 'Unknown error');
-
             if (j.avatar) {
-                document.getElementById('avatar').src = j.avatar ? `../backend/${j.avatar}` : 'https://via.placeholder.com/150';
+                document.getElementById('avatar').src = `../backend/${j.avatar}`;
+                document.getElementById('avatar_url').value = j.avatar;
             }
-
         } catch (error) {
             console.error('Error saving settings:', error);
             document.getElementById('response').textContent = 'Error saving settings';
@@ -251,47 +171,38 @@
     });
 
     function logout() {
+        // إن كان عندك endpoint لتسجيل الخروج، استدعيه ثم أعيدي التوجيه
         window.location.href = '../sign-in.php';
     }
 
-    // Load Orders
+    // === Orders (SESSION-based) ===
     async function loadOrders() {
+        const list = document.getElementById('orders-list');
         try {
-            const res = await fetch(`../backend/get_user_orders.php?user_id=${uid}`);
+            const res = await fetch(`../backend/get_user_orders.php`, { credentials: 'include' });
             const j = await res.json();
             const orders = j.orders || [];
-            const list = document.getElementById('orders-list');
 
-            if (orders.length === 0) {
+            if (!orders.length) {
                 list.innerHTML = '<p class="text-gray-500 text-center py-4">No orders found</p>';
                 return;
             }
-
-            // ⬅️ هنا المهم: نستخدم الدالة اللي بتعمل fallback للأسماء
             list.innerHTML = orders.map(renderOrderCard).join('');
         } catch (error) {
             console.error('Error loading orders:', error);
-            document.getElementById('orders-list').innerHTML =
-                '<p class="text-red-500 text-center py-4">Error loading orders</p>';
+            list.innerHTML = '<p class="text-red-500 text-center py-4">Error loading orders</p>';
         }
     }
 
-
     function toggleDetails(btn) {
         const card = btn.closest('.border.rounded-lg');
-        if (!card) return;
-
-        const details = card.querySelector('.order-details');
+        const details = card?.querySelector('.order-details');
         if (!details) return;
-
         details.classList.toggle('hidden');
-
-        const icon = btn.querySelector('.toggle-icon');
-        if (icon) icon.classList.toggle('rotate');
+        btn.querySelector('.toggle-icon')?.classList.toggle('rotate');
     }
 
     function renderOrderCard(order) {
-        // ====== helpers ======
         const cur = n => `₪${Number(n ?? 0).toFixed(2)}`;
         const fmtDate = d => {
             const t = d || order.order_date || order.created_at || order.createdAt || '';
@@ -299,7 +210,6 @@
         };
         const val = (a, ...alts) => a ?? alts.find(v => v != null);
 
-        // ====== order-level fields with fallbacks ======
         const idText    = val(order.public_id, order.publicId, `ORD-${order.id ?? '—'}`);
         const dateText  = fmtDate(order.date);
         const payStat   = val(order.payment_status, order.paymentStatus, '—');
@@ -315,7 +225,6 @@
         const custPhone = val(order.customer_phone, order.customerPhone, '');
         const custAddr  = val(order.customer_address, order.customerAddress, '');
 
-        // ====== items ======
         const items = order.items || order.order_items || [];
         const itemsHtml = items.map(it => {
             const name  = val(it.product_name, it.name, it.productName, 'Item');
@@ -324,53 +233,49 @@
             return `• ${name} — ${cur(price)} × ${qty}`;
         }).join('<br>');
 
-        // small badge helper
         const badge = (text, tone) => `
-    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs border"
-          style="border-color:${tone}; color:${tone}">
-      ${text}
-    </span>`;
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs border"
+                  style="border-color:${tone}; color:${tone}">
+              ${text}
+            </span>`;
 
         return `
-  <div class="border rounded-lg p-4 mb-3 bg-gray-50">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <div class="text-lg font-semibold">Order #${idText}</div>
-        <div class="text-sm text-gray-500">${dateText}</div>
-        ${custName || custEmail || custPhone ? `
-          <div class="text-xs text-gray-600 mt-1">
-            ${custName ? `<div>${custName}</div>` : ''}
-            ${custEmail ? `<div>${custEmail}</div>` : ''}
-            ${custPhone ? `<div>${custPhone}</div>` : ''}
-            ${custAddr ? `<div class="mt-1">${custAddr}</div>` : ''}
-          </div>` : ''}
-      </div>
+          <div class="border rounded-lg p-4 mb-3 bg-gray-50">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div class="text-lg font-semibold">Order #${idText}</div>
+                <div class="text-sm text-gray-500">${dateText}</div>
+                ${custName || custEmail || custPhone ? `
+                  <div class="text-xs text-gray-600 mt-1">
+                    ${custName ? `<div>${custName}</div>` : ''}
+                    ${custEmail ? `<div>${custEmail}</div>` : ''}
+                    ${custPhone ? `<div>${custPhone}</div>` : ''}
+                    ${custAddr ? `<div class="mt-1">${custAddr}</div>` : ''}
+                  </div>` : ''}
+              </div>
 
-      <div class="text-right">
-        <div class="flex items-center gap-2 justify-end mb-1">
-          ${badge(`Payment: ${payStat}`, '#008080')}
-          ${badge(`Status: ${ordStat}`, '#6B5B51')}
-        </div>
-        <div class="text-sm text-gray-600">Subtotal: ${cur(subtotal)}</div>
-        <div class="text-sm text-gray-600">Shipping: ${cur(shipping)}</div>
-        <div class="text-sm text-gray-600">Tax: ${cur(tax)}</div>
-        <div class="font-semibold text-base mt-1">${cur(total)}</div>
+              <div class="text-right">
+                <div class="flex items-center gap-2 justify-end mb-1">
+                  ${badge(`Payment: ${payStat}`, '#008080')}
+                  ${badge(`Status: ${ordStat}`, '#6B5B51')}
+                </div>
+                <div class="text-sm text-gray-600">Subtotal: ${cur(subtotal)}</div>
+                <div class="text-sm text-gray-600">Shipping: ${cur(shipping)}</div>
+                <div class="text-sm text-gray-600">Tax: ${cur(tax)}</div>
+                <div class="font-semibold text-base mt-1">${cur(total)}</div>
 
-        <button onclick="toggleDetails(this)"
-                class="text-sm text-teal-700 mt-2 inline-flex items-center gap-1 border px-2 py-1 rounded">
-          Show Details <i class="ri-arrow-down-s-line toggle-icon"></i>
-        </button>
-      </div>
-    </div>
+                <button onclick="toggleDetails(this)"
+                        class="text-sm text-teal-700 mt-2 inline-flex items-center gap-1 border px-2 py-1 rounded">
+                  Show Details <i class="ri-arrow-down-s-line toggle-icon"></i>
+                </button>
+              </div>
+            </div>
 
-    <div class="order-details hidden mt-3 pl-1 text-sm text-gray-700">
-      ${itemsHtml || '<span class="text-gray-400">No items</span>'}
-    </div>
-  </div>`;
+            <div class="order-details hidden mt-3 pl-1 text-sm text-gray-700">
+              ${itemsHtml || '<span class="text-gray-400">No items</span>'}
+            </div>
+          </div>`;
     }
-
-
-
 
     loadOrders();
 </script>

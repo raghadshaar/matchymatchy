@@ -145,7 +145,7 @@ $_SESSION['role'] = strtolower((string)$user['role']);
 
 
 $redirect = (strtolower((string)$user['role']) === 'administrator')
-    ? '/matchymatchy/HTML/admin.html'
+    ? '/matchymatchy/HTML/admin.php'
     : '/matchymatchy/HTML/index.html';
 
 echo json_encode([

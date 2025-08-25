@@ -1,3 +1,14 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../backend/auth_db.php';
+
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'pdo_init_failed']);
+    exit;
+}
+$me = require_admin_page_db($pdo, '/matchymatchy/sign-in.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,11 +16,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Matchy Matchy — Admin • Users</title>
 
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Shared styles -->
     <link rel="stylesheet" href="../styles/sidebar.css"/>
     <link rel="stylesheet" href="../styles/products.css"/>
     <link rel="stylesheet" href="../styles/topbarAdmin.css"/>

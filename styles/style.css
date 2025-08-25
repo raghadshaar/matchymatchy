@@ -680,14 +680,12 @@ body {
     transition: color .15s ease, background-color .15s ease;
 }
 
-/* إلغاء البنفسجي للروابط المزارة */
 .dropdown-panel ul li a:visited {
     color: #2b2b2b;
 }
 
-/* هوفر وفوكس بنفس الهوية البصرية */
 .dropdown-panel ul li a:hover {
-    background: rgba(0,128,128,0.08); /* لمسة Teal خفيفة */
+    background: rgba(0,128,128,0.08);
     color: #008080;
 }
 .dropdown-panel ul li a:focus-visible {

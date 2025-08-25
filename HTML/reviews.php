@@ -1,3 +1,14 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../backend/auth_db.php';
+
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'pdo_init_failed']);
+exit;
+}
+$me = require_admin_page_db($pdo, '/matchymatchy/sign-in.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -169,11 +180,11 @@
       <div class="logo" style="font-weight:800;font-size:22px;margin-bottom:16px">Matchy Matchy</div>
       <nav class="nav" style="display:grid;gap:10px">
         <a href="dashboard.html">Dashboard</a>
-        <a href="products.html">Products</a>
-        <a href="orders.html">Orders</a>
+        <a href="products.php">Products</a>
+        <a href="orders.php">Orders</a>
         <a href="users.html">Users</a>
-        <a href="reviews.html" style="font-weight:700">Reviews</a>
-        <a href="categories.html">Categories</a>
+        <a href="reviews.php" style="font-weight:700">Reviews</a>
+        <a href="categories.php">Categories</a>
         <a href="settings.html">Settings</a>
       </nav>
     </aside>`;

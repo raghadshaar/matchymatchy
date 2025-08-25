@@ -405,31 +405,394 @@
 --
 -- COMMIT;
 
+--
+-- START TRANSACTION;
+--
+-- /* ====== Parents ====== */
+-- UPDATE categories SET image_url = '../images/categories/baby.jpg'               WHERE slug='baby';
+-- UPDATE categories SET image_url = '../images/categories/toddler.jpg'            WHERE slug='toddler';
+-- UPDATE categories SET image_url = '../images/categories/kids.jpg'               WHERE slug='kids';
+-- UPDATE categories SET image_url = '../images/categories/toysjpg.jpg'            WHERE slug='toys';         -- انتِ مسمّياه toysjpg.jpg
+-- UPDATE categories SET image_url = '../images/categories/deals.jpg'              WHERE slug='deals';
+-- UPDATE categories SET image_url = '../images/categories/collectionsjpg.jpg'     WHERE slug='collections';  -- انتِ مسمّياه collectionsjpg.jpg
+--
+-- /* ====== Baby children ====== */
+-- UPDATE categories SET image_url = '../images/categories/babygirl.jpg'           WHERE slug='baby-girl';
+-- UPDATE categories SET image_url = '../images/categories/babyboy.jpg'            WHERE slug='baby-boy';
+-- UPDATE categories SET image_url = '../images/categories/BabyGear.jpg'           WHERE slug='baby-gear';    -- لاحظي الحروف الكبيرة
+--
+-- /* ====== Toddler children ====== */
+-- UPDATE categories SET image_url = '../images/categories/toddlergirl.jpg'        WHERE slug='toddler-girl';
+--
+-- /* ====== Kids children ====== */
+-- UPDATE categories SET image_url = '../images/categories/kidsboy.jpg'            WHERE slug='kids-boys';
+--
+-- /* ====== Collections children ====== */
+-- UPDATE categories SET image_url = '../images/categories/familymatching.jpg'     WHERE slug='family-matching';
+--
+-- UPDATE categories SET image_url = '../images/categories/sales.jpg'              WHERE slug='flash-sale';
+--
+-- COMMIT;
 
+
+
+
+-- USE matchy_matchy;
+-- START TRANSACTION;
+--
+-- -- ========================
+-- -- Products
+-- -- ========================
+--
+-- -- 16) Boys Striped Long-Sleeve Tee (Grey)
+-- INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+-- SELECT 'Boys Striped LS Tee - Grey','boys-striped-ls-tee-grey','BOY-TEE-GRY-016',
+--        'About This Item: This classic striped long-sleeve tee is perfect for layering or wearing solo. Crafted in soft cotton, it keeps him comfy all day.
+--        Features: Relaxed fit, soft knit cotton, crew neck, striped pattern, long sleeves.',
+--        69.90,60,'../uploads/products/Boys StripedLong-SleeveTeeGrey.jpg'
+--     WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='boys-striped-ls-tee-grey');
+--
+-- -- 17) Construction Wooden Activity Toy Set
+-- INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+-- SELECT 'Construction Activity Toy Set','construction-activity-toy','TOY-BUILD-017',
+--        'About This Item: A wooden construction set that sparks creativity and problem-solving. Durable and safe pieces for endless play.
+--        Features: Eco-friendly wood, 50+ pieces, educational design, safe rounded edges.',
+--        159.90,35,'../uploads/products/Construction Wooden Activity Toy Set1.jpg'
+--     WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='construction-activity-toy');
+--
+-- -- 18) Kids Rainbow Heart Pajamas – Pink
+-- INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+-- SELECT 'Kids Rainbow Heart Pajamas – Pink','kids-rainbow-heart-pjs-pink','PJS-RAIN-018',
+--        'About This Item: A dreamy pajama set with rainbow heart graphics. Mix-and-match tops and bottoms keep bedtime fun and comfy.
+--        Features: 100% cotton, snug fit, short + long sleeve tops, 2 coordinating bottoms.',
+--        129.00,72,'../uploads/products/Kid-4pc-Rainbow-Heart-PJs1.jpg'
+--     WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='kids-rainbow-heart-pjs-pink');
+--
+-- -- 19) Girls Glow-in-the-Dark Disney Lilo & Stitch Tee (Purple)
+-- INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+-- SELECT 'Girls Glow Stitch Tee - Purple','girls-glow-stitch-tee','TEE-STITCH-019',
+--        'About This Item: A magical tee featuring Disney’s Stitch in glow-in-the-dark print. Fun for day and extra special at night.
+--        Features: Glow print, short sleeves, crew neck, soft cotton blend.',
+--        89.90,55,'../uploads/products/Girls Glow-In-The-Dark Halloween Disney© Lilo & Stitch Mummy Short-Sleeve Graphic TeePurple.jpg'
+--     WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='girls-glow-stitch-tee');
+--
+-- -- 20) Kids Baggy Butterfly Embroidered Jeans (Breeze Wash)
+-- INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+-- SELECT 'Kids Butterfly Baggy Jeans','kids-butterfly-baggy-jeans','JEANS-BFLY-020',
+--        'About This Item: Trendy baggy-fit jeans decorated with butterfly embroidery. A stylish must-have for any playful day.
+--        Features: 100% cotton denim, breeze wash, loose fit, embroidered butterflies.',
+--        149.90,40,'../uploads/products/KidBaggyButterflyEmbroideredJeansBreezeWash.jpg'
+--     WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='kids-butterfly-baggy-jeans');
+--
+-- -- ========================
+-- -- Categories
+-- -- ========================
+--
+-- -- Boys Tee → Kids Boys
+-- INSERT IGNORE INTO product_categories(product_id,category_id)
+-- SELECT p.id, c.id FROM products p, categories c
+-- WHERE p.slug='boys-striped-ls-tee-grey' AND c.slug='kids-boys';
+--
+-- -- Toy → Toys Learning
+-- INSERT IGNORE INTO product_categories(product_id,category_id)
+-- SELECT p.id, c.id FROM products p, categories c
+-- WHERE p.slug='construction-activity-toy' AND c.slug='toys-learning';
+--
+-- -- Pajamas → Kids Girls
+-- INSERT IGNORE INTO product_categories(product_id,category_id)
+-- SELECT p.id, c.id FROM products p, categories c
+-- WHERE p.slug='kids-rainbow-heart-pjs-pink' AND c.slug='kids-girls';
+--
+-- -- Glow Tee → Kids Girls
+-- INSERT IGNORE INTO product_categories(product_id,category_id)
+-- SELECT p.id, c.id FROM products p, categories c
+-- WHERE p.slug='girls-glow-stitch-tee' AND c.slug='kids-girls';
+--
+-- -- Jeans → Kids Girls
+-- INSERT IGNORE INTO product_categories(product_id,category_id)
+-- SELECT p.id, c.id FROM products p, categories c
+-- WHERE p.slug='kids-butterfly-baggy-jeans' AND c.slug='kids-girls';
+--
+-- -- ========================
+-- -- Sizes
+-- -- ========================
+--
+-- -- Boys Tee
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'5-6Y' FROM products WHERE slug='boys-striped-ls-tee-grey';
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'7-8Y' FROM products WHERE slug='boys-striped-ls-tee-grey';
+--
+-- -- Pajamas
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'4-5Y' FROM products WHERE slug='kids-rainbow-heart-pjs-pink';
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'5-6Y' FROM products WHERE slug='kids-rainbow-heart-pjs-pink';
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'7-8Y' FROM products WHERE slug='kids-rainbow-heart-pjs-pink';
+--
+-- -- Glow Tee
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'5-6Y' FROM products WHERE slug='girls-glow-stitch-tee';
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'7-8Y' FROM products WHERE slug='girls-glow-stitch-tee';
+--
+-- -- Jeans
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'7-8Y' FROM products WHERE slug='kids-butterfly-baggy-jeans';
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'9-10Y' FROM products WHERE slug='kids-butterfly-baggy-jeans';
+--
+-- -- Toy
+-- INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'One Size' FROM products WHERE slug='construction-activity-toy';
+--
+-- -- ========================
+-- -- Fabrics
+-- -- ========================
+--
+-- INSERT IGNORE INTO product_fabrics(product_id,fabric_id)
+-- SELECT p.id, f.id FROM products p JOIN fabric_options f ON f.name='Cotton'
+-- WHERE p.slug IN ('boys-striped-ls-tee-grey','kids-rainbow-heart-pjs-pink','girls-glow-stitch-tee','kids-butterfly-baggy-jeans');
+--
+-- -- ========================
+-- -- Colors
+-- -- ========================
+--
+-- INSERT IGNORE INTO product_colors(product_id,color_id)
+-- SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Blue'
+-- WHERE p.slug='boys-striped-ls-tee-grey';
+--
+-- INSERT IGNORE INTO product_colors(product_id,color_id)
+-- SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Pink'
+-- WHERE p.slug='kids-rainbow-heart-pjs-pink';
+--
+-- INSERT IGNORE INTO product_colors(product_id,color_id)
+-- SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Blue'
+-- WHERE p.slug='girls-glow-stitch-tee';
+--
+-- INSERT IGNORE INTO product_colors(product_id,color_id)
+-- SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='Blue'
+-- WHERE p.slug='kids-butterfly-baggy-jeans';
+--
+-- -- ========================
+-- -- Images
+-- -- ========================
+--
+-- -- Boys Tee
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Boys StripedLong-SleeveTeeGrey.jpg', 0, 'Front'
+-- FROM products WHERE slug='boys-striped-ls-tee-grey';
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Boys Striped Long-SleeveTeeGrey2.jpg', 1, 'Detail'
+-- FROM products WHERE slug='boys-striped-ls-tee-grey';
+--
+-- -- Toy
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Construction Wooden Activity Toy Set1.jpg', 0, 'Front'
+-- FROM products WHERE slug='construction-activity-toy';
+--
+-- -- Pajamas
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Kid-4pc-Rainbow-Heart-PJs1.jpg', 0, 'Front'
+-- FROM products WHERE slug='kids-rainbow-heart-pjs-pink';
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Kid-4pc-Rainbow-Heart-PJs2.jpg', 1, 'Back'
+-- FROM products WHERE slug='kids-rainbow-heart-pjs-pink';
+--
+-- -- Glow Tee
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Girls Glow-In-The-Dark Halloween Disney© Lilo & Stitch Mummy Short-Sleeve Graphic TeePurple.jpg', 0, 'Front'
+-- FROM products WHERE slug='girls-glow-stitch-tee';
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Girls Glow-In-The-Dark Halloween Disney© Lilo & Stitch Mummy Short-Sleeve Graphic TeePurple2.jpg', 1, 'Detail'
+-- FROM products WHERE slug='girls-glow-stitch-tee';
+--
+-- -- Jeans
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/KidBaggyButterflyEmbroideredJeansBreezeWash.jpg', 0, 'Front'
+-- FROM products WHERE slug='kids-butterfly-baggy-jeans';
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/KidBaggyButterflyEmbroideredJeansBreezeWash2.jpg', 1, 'Back'
+-- FROM products WHERE slug='kids-butterfly-baggy-jeans';
+--
+-- -- Sync main image with gallery first
+-- UPDATE products p
+--     JOIN product_images pi ON pi.product_id=p.id AND pi.sort_order=0
+--     SET p.image_main_url=pi.image_url
+-- WHERE p.slug IN ('boys-striped-ls-tee-grey','construction-activity-toy',
+--     'kids-rainbow-heart-pjs-pink','girls-glow-stitch-tee',
+--     'kids-butterfly-baggy-jeans');
+--
+-- COMMIT;
+--
+--
+
+
+
+
+-- USE matchy_matchy;
+-- START TRANSACTION;
+--
+-- -- 21) Bandana Buddies Baby Activity Toy - Llama
+-- INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+-- SELECT 'Bandana Buddies Llama Activity Toy','llama-activity-toy','TOY-LLAMA-021',
+--        'About This Item: A cuddly llama activity toy with textures, teether, and fun sounds. Keeps baby engaged at home or on the go.
+--        Features: Soft plush design, clip for stroller, teethers & crinkles, baby-safe materials.',
+--        89.90,50,'../uploads/products/Bandana Buddies Baby Activity Toy - Llama1.jpg'
+--     WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='llama-activity-toy');
+--
+-- -- Category → Toys ▸ Learning & Educational
+-- INSERT IGNORE INTO product_categories(product_id,category_id)
+-- SELECT p.id, c.id FROM products p, categories c
+-- WHERE p.slug='llama-activity-toy' AND c.slug='toys-learning';
+--
+-- -- Sizes → One Size
+-- INSERT IGNORE INTO product_sizes(product_id,size_label)
+-- SELECT id,'One Size' FROM products WHERE slug='llama-activity-toy';
+--
+-- -- Fabrics → Cotton (plush)
+-- INSERT IGNORE INTO product_fabrics(product_id,fabric_id)
+-- SELECT p.id, f.id FROM products p JOIN fabric_options f ON f.name='Cotton'
+-- WHERE p.slug='llama-activity-toy';
+--
+-- -- Colors → White
+-- INSERT IGNORE INTO product_colors(product_id,color_id)
+-- SELECT p.id, c.id FROM products p JOIN color_options c ON c.name='White'
+-- WHERE p.slug='llama-activity-toy';
+--
+-- -- Images
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Bandana Buddies Baby Activity Toy - Llama1.jpg', 0, 'Front'
+-- FROM products WHERE slug='llama-activity-toy';
+--
+-- INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+-- SELECT id, '/matchymatchy/uploads/products/Bandana Buddies Baby Activity Toy - Llama2.jpg', 1, 'In Use'
+-- FROM products WHERE slug='llama-activity-toy';
+--
+-- -- Sync main image with gallery first
+-- UPDATE products p
+--     JOIN product_images pi ON pi.product_id=p.id AND pi.sort_order=0
+--     SET p.image_main_url=pi.image_url
+-- WHERE p.slug='llama-activity-toy';
+--
+-- COMMIT;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+USE matchy_matchy;
 START TRANSACTION;
 
-/* ====== Parents ====== */
-UPDATE categories SET image_url = '../images/categories/baby.jpg'               WHERE slug='baby';
-UPDATE categories SET image_url = '../images/categories/toddler.jpg'            WHERE slug='toddler';
-UPDATE categories SET image_url = '../images/categories/kids.jpg'               WHERE slug='kids';
-UPDATE categories SET image_url = '../images/categories/toysjpg.jpg'            WHERE slug='toys';         -- انتِ مسمّياه toysjpg.jpg
-UPDATE categories SET image_url = '../images/categories/deals.jpg'              WHERE slug='deals';
-UPDATE categories SET image_url = '../images/categories/collectionsjpg.jpg'     WHERE slug='collections';  -- انتِ مسمّياه collectionsjpg.jpg
+-- 22) Baby Cotton Long-Sleeve Graphic Bodysuit (Orange)
+INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+SELECT 'Baby Cotton LS Graphic Bodysuit - Orange','baby-graphic-bodysuit-orange','BODYSUIT-022',
+       'About This Item: Soft cotton bodysuit with a playful Halloween-themed graphic print “Here For The Treats”. Perfect for layering and cozy comfort.
+       Features: 100% cotton, long sleeves, expandable shoulders, snaps at bottom for easy changes.',
+       49.90,100,'../uploads/products/Baby CottonLong-SleeveGraphicBodysuitOrange.jpg'
+    WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='baby-graphic-bodysuit-orange');
 
-/* ====== Baby children ====== */
-UPDATE categories SET image_url = '../images/categories/babygirl.jpg'           WHERE slug='baby-girl';
-UPDATE categories SET image_url = '../images/categories/babyboy.jpg'            WHERE slug='baby-boy';
-UPDATE categories SET image_url = '../images/categories/BabyGear.jpg'           WHERE slug='baby-gear';    -- لاحظي الحروف الكبيرة
+-- Category → Baby Boy
+INSERT IGNORE INTO product_categories(product_id,category_id)
+SELECT p.id, c.id FROM products p, categories c
+WHERE p.slug='baby-graphic-bodysuit-orange' AND c.slug='baby-boy';
 
-/* ====== Toddler children ====== */
-UPDATE categories SET image_url = '../images/categories/toddlergirl.jpg'        WHERE slug='toddler-girl';
+-- Sizes
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'0-3M' FROM products WHERE slug='baby-graphic-bodysuit-orange';
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'3-6M' FROM products WHERE slug='baby-graphic-bodysuit-orange';
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'6-9M' FROM products WHERE slug='baby-graphic-bodysuit-orange';
 
-/* ====== Kids children ====== */
-UPDATE categories SET image_url = '../images/categories/kidsboy.jpg'            WHERE slug='kids-boys';
+-- Images
+INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+SELECT id, '/matchymatchy/uploads/products/Baby CottonLong-SleeveGraphicBodysuitOrange.jpg', 0, 'Front'
+FROM products WHERE slug='baby-graphic-bodysuit-orange';
+INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+SELECT id, '/matchymatchy/uploads/products/Baby CottonLong-SleeveGraphicBodysuitOrange2.jpg', 1, 'Detail'
+FROM products WHERE slug='baby-graphic-bodysuit-orange';
 
-/* ====== Collections children ====== */
-UPDATE categories SET image_url = '../images/categories/familymatching.jpg'     WHERE slug='family-matching';
+-- 23) Girls Wildflower Short-Sleeve Graphic Tee (Grey)
+INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+SELECT 'Girls Wildflower Graphic Tee - Grey','girls-wildflower-tee-grey','TEE-WFLOWER-023',
+       'About This Item: A short-sleeve tee with “Forever Inspired” wildflower print. Comfortable cotton fabric for all-day wear.
+       Features: 100% cotton, short sleeves, crew neck, floral graphic.',
+       59.90,80,'../uploads/products/GirlsWildflowerShort-SleeveGraphicTeeGrey.jpg'
+    WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='girls-wildflower-tee-grey');
 
-UPDATE categories SET image_url = '../images/categories/sales.jpg'              WHERE slug='flash-sale';
+-- Category → Kids Girls
+INSERT IGNORE INTO product_categories(product_id,category_id)
+SELECT p.id, c.id FROM products p, categories c
+WHERE p.slug='girls-wildflower-tee-grey' AND c.slug='girls';
+
+-- Sizes
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'5-6Y' FROM products WHERE slug='girls-wildflower-tee-grey';
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'7-8Y' FROM products WHERE slug='girls-wildflower-tee-grey';
+
+-- Images
+INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+SELECT id, '/matchymatchy/uploads/products/GirlsWildflowerShort-SleeveGraphicTeeGrey.jpg', 0, 'Front'
+FROM products WHERE slug='girls-wildflower-tee-grey';
+INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+SELECT id, '/matchymatchy/uploads/products/GirlsWildflowerShort-SleeveGraphicTeeGrey2.jpg', 1, 'Detail'
+FROM products WHERE slug='girls-wildflower-tee-grey';
+
+-- 24) Baby 4-Pack Side-Snap Tees (White)
+INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+SELECT 'Baby 4-Pack Side-Snap Tees - White','baby-4pack-sidesnap-tees','TEE-SNAP-024',
+       'About This Item: Essential 4-pack side-snap tees made of pure cotton. Easy to put on, gentle on baby skin.
+       Features: 100% cotton, side-snap design, long sleeves, machine washable.',
+       119.90,60,'../uploads/products/Baby4-Pack Side-SnapTeesWhite.jpg'
+    WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='baby-4pack-sidesnap-tees');
+
+-- Category → Baby Neutral
+INSERT IGNORE INTO product_categories(product_id,category_id)
+SELECT p.id, c.id FROM products p, categories c
+WHERE p.slug='baby-4pack-sidesnap-tees' AND c.slug='baby-neutral';
+
+-- Sizes
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'0-3M' FROM products WHERE slug='baby-4pack-sidesnap-tees';
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'3-6M' FROM products WHERE slug='baby-4pack-sidesnap-tees';
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'6-9M' FROM products WHERE slug='baby-4pack-sidesnap-tees';
+
+-- Images
+INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+SELECT id, '/matchymatchy/uploads/products/Baby4-Pack Side-SnapTeesWhite.jpg', 0, 'Front'
+FROM products WHERE slug='baby-4pack-sidesnap-tees';
+INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+SELECT id, '/matchymatchy/uploads/products/Baby4-Pack Side-SnapTeesWhite2.jpg', 1, 'Detail'
+FROM products WHERE slug='baby-4pack-sidesnap-tees';
+
+-- 25) Discoverosity Montessori-Inspired Activity Center
+INSERT INTO products (name, slug, sku, description, price, stock, image_main_url)
+SELECT 'Discoverosity Montessori Activity Center','discoverosity-activity-center','TOY-CENTER-025',
+       'About This Item: Montessori-inspired 3-stage activity center and play table. Designed for motor skills and exploration.
+       Features: 3-in-1 design (sit, spin, play), removable toys, converts to play table.',
+       399.00,20,'../uploads/products/DiscoverosityMontessori-Inspired3-StageActivityCenter&PlayTable.jpg'
+    WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug='discoverosity-activity-center');
+
+-- Category → Toys Learning
+INSERT IGNORE INTO product_categories(product_id,category_id)
+SELECT p.id, c.id FROM products p, categories c
+WHERE p.slug='discoverosity-activity-center' AND c.slug='toys-learning';
+
+-- Sizes
+INSERT IGNORE INTO product_sizes(product_id,size_label) SELECT id,'One Size' FROM products WHERE slug='discoverosity-activity-center';
+
+-- Images
+INSERT INTO product_images (product_id, image_url, sort_order, alt_text)
+SELECT id, '/matchymatchy/uploads/products/DiscoverosityMontessori-Inspired3-StageActivityCenter&PlayTable.jpg', 0, 'Front'
+FROM products WHERE slug='discoverosity-activity-center';
+
+-- Sync main images with gallery
+UPDATE products p
+    JOIN product_images pi ON pi.product_id=p.id AND pi.sort_order=0
+    SET p.image_main_url=pi.image_url
+WHERE p.slug IN ('baby-graphic-bodysuit-orange','girls-wildflower-tee-grey',
+    'baby-4pack-sidesnap-tees','discoverosity-activity-center');
 
 COMMIT;

@@ -1,166 +1,154 @@
 <?php
+// /matchymatchy/backend/settings.php
 declare(strict_types=1);
 
 require_once __DIR__ . '/../PHP/db.php';
-require_once __DIR__ . '/util.php';
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 header('Content-Type: application/json; charset=utf-8');
 
-// تمكين التعامل مع طلبات CORS إذا لزم الأمر
-header('Access-Control-Allow-Origin: *');
+/* ===== CORS (اختياري للتطوير). لو موقعك same-origin، إحذفي هذا القسم. ===== */
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowed = [
+    'http://localhost',
+    'http://127.0.0.1',
+    // أضيفي دومينك الفعلي هنا عند النشر
+    //'https://your-domain.com',
+];
+if ($origin && in_array($origin, $allowed, true)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header("Access-Control-Allow-Credentials: true");
+    header("Vary: Origin");
+}
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
-
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
+/* ===== نهاية CORS ===== */
 
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'PDO not initialized (check PHP/db.php include)']);
+    echo json_encode(['ok' => false, 'error' => 'pdo_init_failed']);
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $user_id = $_GET['user_id'] ?? null;
-    if (!$user_id) {
-        echo json_encode(['ok' => false, 'error' => 'missing user_id']);
-        exit;
-    }
+/* ===== Require login (SESSION only) ===== */
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'error' => 'unauthorized']);
+    exit;
+}
+$userId = (int)$_SESSION['user_id'];
 
-    try {
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt = $pdo->prepare("SELECT id, first_name, last_name, email, avatar FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($result) {
-            echo json_encode($result);
-        } else {
-            echo json_encode(['ok' => false, 'error' => 'User not found']);
-        }
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['ok' => false, 'error' => 'Database error: ' . $e->getMessage()]);
-    }
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id         = $_POST['id'] ?? null;
-    $first_name = trim($_POST['first_name'] ?? '');
-    $last_name  = trim($_POST['last_name'] ?? '');
-    $avatar     = trim($_POST['avatar'] ?? '');
-    $password   = $_POST['password'] ?? '';
-
-    if (!$id) {
-        echo json_encode(['ok' => false, 'message' => 'Missing id']);
-        exit;
-    }
-
-    // التحقق من صحة المدخلات
-    if (empty($first_name) ){
-        echo json_encode(['ok' => false, 'message' => 'First name is required']);
-        exit;
-    }
-
-    if (empty($last_name)) {
-        echo json_encode(['ok' => false, 'message' => 'Last name is required']);
-        exit;
-    }
-
-    try {
-        // 1) احضر البيانات الحالية من قاعدة البيانات
-        $stmt = $pdo->prepare("SELECT avatar FROM users WHERE id = ?");
-        $stmt->execute([$id]);
+        $stmt->execute([$userId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $currentAvatar = $row['avatar'] ?? '';
 
-        // 2) معالجة رفع ملف صورة (إذا تم رفع ملف)
+        if ($row) {
+            echo json_encode($row);
+        } else {
+            echo json_encode(['ok' => false, 'error' => 'not_found']);
+        }
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $first_name = trim((string)($_POST['first_name'] ?? ''));
+        $last_name  = trim((string)($_POST['last_name'] ?? ''));
+        $avatarUrl  = trim((string)($_POST['avatar'] ?? '')); // رابط اختياري
+        $password   = (string)($_POST['password'] ?? '');
+
+        if ($first_name === '') {
+            echo json_encode(['ok' => false, 'message' => 'First name is required']);
+            exit;
+        }
+        if ($last_name === '') {
+            echo json_encode(['ok' => false, 'message' => 'Last name is required']);
+            exit;
+        }
+
+        // احضر الصورة الحالية
+        $stmt = $pdo->prepare("SELECT avatar FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $currentAvatar = (string)($stmt->fetchColumn() ?: '');
+
         $finalAvatar = $currentAvatar;
 
+        // رفع صورة جديدة إن وُجدت
         if (!empty($_FILES['avatar_file']['name'])) {
             $targetDir = __DIR__ . "/uploads/";
-            if (!is_dir($targetDir)) {
-                if (!mkdir($targetDir, 0777, true)) {
-                    echo json_encode(['ok' => false, 'message' => 'Failed to create upload directory']);
-                    exit;
-                }
-            }
-
-            // تحقق من النوع والحجم
-            $allowedExt = ['jpg', 'jpeg', 'png', 'webp'];
-            $maxSize = 2 * 1024 * 1024; // 2MB
-            $fname = $_FILES['avatar_file']['name'];
-            $size  = $_FILES['avatar_file']['size'];
-            $tmp   = $_FILES['avatar_file']['tmp_name'];
-
-            $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
-            if (!in_array($ext, $allowedExt)) {
-                echo json_encode(['ok' => false, 'message' => 'Only JPG, PNG, and WebP images are allowed']);
+            if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true)) {
+                echo json_encode(['ok' => false, 'message' => 'Failed to create upload directory']);
                 exit;
             }
 
+            $allowedExt = ['jpg','jpeg','png','webp'];
+            $maxSize = 2 * 1024 * 1024; // 2MB
+            $fname = (string)$_FILES['avatar_file']['name'];
+            $size  = (int)$_FILES['avatar_file']['size'];
+            $tmp   = (string)$_FILES['avatar_file']['tmp_name'];
+            $ext   = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
+
+            if (!in_array($ext, $allowedExt, true)) {
+                echo json_encode(['ok' => false, 'message' => 'Only JPG, PNG, and WebP images are allowed']);
+                exit;
+            }
             if ($size > $maxSize) {
                 echo json_encode(['ok' => false, 'message' => 'Image too large (max 2MB)']);
                 exit;
             }
 
-            // اسم ملف آمن وفريد
             $safeBase = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', pathinfo($fname, PATHINFO_FILENAME));
             $fileName = time() . '_' . $safeBase . '.' . $ext;
             $targetFile = $targetDir . $fileName;
 
-            if (move_uploaded_file($tmp, $targetFile)) {
-                $finalAvatar = "uploads/" . $fileName;
-
-                // حذف الصورة القديمة إذا كانت موجودة وليست الصورة الافتراضية
-                if (!empty($currentAvatar) && $currentAvatar !== $finalAvatar &&
-                    strpos($currentAvatar, 'uploads/') === 0 &&
-                    file_exists(__DIR__ . '/' . $currentAvatar)) {
-                    unlink(__DIR__ . '/' . $currentAvatar);
-                }
-            } else {
+            if (!is_uploaded_file($tmp) || !move_uploaded_file($tmp, $targetFile)) {
                 echo json_encode(['ok' => false, 'message' => 'Upload failed']);
                 exit;
             }
-        } elseif (!empty($avatar)) {
-            // إذا تم تقديم رابط صورة مباشرة
-            $finalAvatar = $avatar;
+
+            $finalAvatar = "uploads/" . $fileName;
+
+            // حذف القديمة إذا كانت ضمن uploads/
+            $oldPath = $currentAvatar && str_starts_with($currentAvatar, 'uploads/') ? (__DIR__ . '/' . $currentAvatar) : '';
+            if ($oldPath && is_file($oldPath) && $currentAvatar !== $finalAvatar) {
+                @unlink($oldPath);
+            }
+        } elseif ($avatarUrl !== '') {
+            // لو تم تزويد رابط صورة مباشرة
+            $finalAvatar = $avatarUrl;
         }
 
-        // 3) تحديث البيانات في قاعدة البيانات
-        if (!empty($password)) {
-            // التحقق من قوة كلمة المرور إذا تم تقديمها
+        // تحديث البيانات
+        if ($password !== '') {
             if (strlen($password) < 6) {
                 echo json_encode(['ok' => false, 'message' => 'Password must be at least 6 characters long']);
                 exit;
             }
-
             $hashed = password_hash($password, PASSWORD_BCRYPT);
             $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, avatar = ?, password = ? WHERE id = ?");
-            $success = $stmt->execute([$first_name, $last_name, $finalAvatar, $hashed, $id]);
+            $ok = $stmt->execute([$first_name, $last_name, $finalAvatar, $hashed, $userId]);
         } else {
             $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, avatar = ? WHERE id = ?");
-            $success = $stmt->execute([$first_name, $last_name, $finalAvatar, $id]);
+            $ok = $stmt->execute([$first_name, $last_name, $finalAvatar, $userId]);
         }
 
-        if ($success) {
-            echo json_encode([
-                "ok" => true,
-                "message" => "Profile updated successfully.",
-                "avatar"  => $finalAvatar
-            ]);
-        } else {
-            echo json_encode([
-                "ok" => false,
-                "message" => "Error updating profile."
-            ]);
-        }
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['ok' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        echo json_encode($ok
+            ? ['ok' => true,  'message' => 'Profile updated successfully.', 'avatar' => $finalAvatar]
+            : ['ok' => false, 'message' => 'Error updating profile.']
+        );
+        exit;
     }
-    exit;
-}
 
-http_response_code(405);
-echo json_encode(['ok' => false, 'error' => 'Method not allowed']);
+    http_response_code(405);
+    echo json_encode(['ok' => false, 'error' => 'method_not_allowed']);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'db_error', 'message' => $e->getMessage()]);
+}

@@ -1,75 +1,42 @@
-<header class="topbar">
+<header class="topbar" style="--line:#e5e7eb; --teal:#008080;">
+        <div class="top-actions" style="display:flex; align-items:center; gap:12px;">
+            <button class="icon-btn notify-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notify-menu" title="Notifications">
+                <i class="fa-regular fa-bell"></i>
+                <span class="badge-dot" aria-hidden="true"></span>
+            </button>
 
-
-    <div class="top-actions">
-        <!-- Notifications -->
-        <button class="icon-btn notify-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notify-menu">
-            <i class="fa-regular fa-bell"></i>
-            <span class="badge-dot" aria-hidden="true"></span>
-        </button>
-
-        <!-- Notifications popover (NEW) -->
-        <div id="notify-menu" class="popover notify-popover" role="menu" aria-label="Notifications">
-            <div class="notify-head" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);">
-                <strong>Notifications</strong>
-                <div class="notify-actions" style="display:flex;gap:8px;">
-                    <button type="button" class="link-btn" id="markAllRead" style="background:none;border:0;color:var(--teal);cursor:pointer;">Mark all as read</button>
-                    <button type="button" class="link-btn" id="clearAll" style="background:none;border:0;color:#b94a48;cursor:pointer;">Clear all</button>
+            <div id="notify-menu" class="popover notify-popover" role="menu" aria-label="Notifications" hidden>
+                <div class="notify-head" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);">
+                    <strong>Notifications</strong>
+                    <div class="notify-actions" style="display:flex;gap:8px;">
+                        <button type="button" class="link-btn" id="markAllRead" style="background:none;border:0;color:var(--teal);cursor:pointer;">Mark all as read</button>
+                        <button type="button" class="link-btn" id="clearAll" style="background:none;border:0;color:#b94a48;cursor:pointer;">Clear all</button>
+                    </div>
+                </div>
+                <ul class="notify-list" id="notifyList" style="list-style:none;margin:0;padding:8px;"></ul>
+                <div class="notify-foot" style="padding:10px 12px;border-top:1px solid var(--line);">
+                    <a href="notifications.html" class="link-btn" style="text-decoration:none;color:var(--teal);">View all</a>
                 </div>
             </div>
 
-            <ul class="notify-list" id="notifyList" style="list-style:none;margin:0;padding:8px;"></ul>
+            <div id="user-mini" style="display:flex; align-items:center; gap:10px;">
+                <img id="user-avatar" src="" alt="avatar" style="width:34px;height:34px;border-radius:50%;object-fit:cover;display:none;">
+                <div id="user-meta" style="display:none;">
+                    <strong id="user-name" style="font-size:13px;"></strong>
+                    <small id="user-role" style="font-size:11px;color:#6b7280;display:block;"></small>
+                </div>
 
-            <div class="notify-foot" style="padding:10px 12px;border-top:1px solid var(--line);">
-                <a href="notifications.html" class="link-btn" style="text-decoration:none;color:var(--teal);">View all</a>
-            </div>
-        </div>
-
-        <!-- Profile trigger -->
-        <button class="profile-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu">
-      <span class="pf-avatar">
-        <img src="../images/raghad.jpg" alt="Raghad Shaar">
-      </span>
-            <span class="pf-meta">
-        <strong>Raghad Shaar</strong>
-        <small>Administrator</small>
-      </span>
-            <i class="fa-solid fa-chevron-down"></i>
-        </button>
-
-        <!-- Profile popover -->
-        <div id="profile-menu" class="popover profile-popover" role="menu" aria-label="Profile menu">
-            <div class="pf-sec pf-signed">
-                <span class="pf-sec-title">Signed in as</span>
-                <a href="mailto:raghadshaar20@gmail.com" class="pf-email">raghadshaar20@gmail.com</a>
-            </div>
-
-            <div class="pf-divider"></div>
-
-            <div class="pf-sec">
-                <span class="pf-sec-title">Switch account</span>
-
-                <button class="pf-account" data-email="afnan.hasan@company.com">
-                    <span class="pf-acc-avatar"><img src="https://i.pravatar.cc/80?img=31" alt="Afnan Hasan"></span>
-                    <span class="pf-acc-meta">
-            <strong>Afnan Hasan</strong>
-            <small>Administrator</small>
-          </span>
-                </button>
-            </div>
-
-            <div class="pf-divider"></div>
-
-            <div class="pf-sec pf-actions">
-                <button class="pf-action">
+                <a id="btn-settings" href="adminSettings.php" class="icon-btn" title="Settings" style="display:none;">
                     <i class="fa-solid fa-gear"></i>
-                    <span>Settings</span>
-                </button>
-                <button class="pf-action">
+                </a>
+
+                <button id="btn-logout" class="icon-btn" title="Sign out" style="display:none; background:none;border:none;cursor:pointer;">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    <span>Sign out</span>
                 </button>
+
+                <a id="btn-login" href="/sign-in.php" class="icon-btn" title="Login" style="display:none;">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                </a>
             </div>
         </div>
-    </div>
 </header>

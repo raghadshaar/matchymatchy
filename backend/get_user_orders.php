@@ -1,40 +1,75 @@
 <?php
-// /backend/get_user_orders.php
+// /matchymatchy/backend/get_user_orders.php
+declare(strict_types=1);
+
 require_once __DIR__ . '/../PHP/db.php';
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 header('Content-Type: application/json; charset=utf-8');
+
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowed = [
+    'http://localhost',
+    'http://127.0.0.1',
+    // 'https://your-domain.com',
+];
+if ($origin && in_array($origin, $allowed, true)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header("Access-Control-Allow-Credentials: true");
+    header("Vary: Origin");
+}
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+/* ===== نهاية CORS ===== */
 
 try {
     if (!isset($pdo) || !($pdo instanceof PDO)) {
         http_response_code(500);
-        echo json_encode(['ok' => false, 'error' => 'PDO not initialized']);
+        echo json_encode(['ok' => false, 'error' => 'pdo_init_failed']);
         exit;
     }
 
-    // إما user_id أو email (يفضّل واحد منهم)
-    $user_id = isset($_GET['user_id']) ? trim((string)$_GET['user_id']) : null;
-    $email   = isset($_GET['email'])   ? trim((string)$_GET['email'])   : null;
+    // ==== حدد الإيميل من السيشن ====
+    $email = null;
 
-    if ($email === '' && $user_id === '') $user_id = null;
-    if ($email === '') $email = null;
-
-    if (!$email && !$user_id) {
-        echo json_encode(['ok' => false, 'error' => 'Missing user_id or email']);
-        exit;
-    }
-
-    // لو عندي user_id فقط، استخرج الإيميل من users
-    if (!$email && $user_id) {
+    // 1) لو عندك user_id بالسيشن
+    if (!empty($_SESSION['user_id'])) {
+        $userId = (int)$_SESSION['user_id'];
         $stmt = $pdo->prepare("SELECT email FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row || empty($row['email'])) {
-            echo json_encode(['ok' => false, 'error' => 'User not found or email missing']);
-            exit;
+        $stmt->execute([$userId]);
+        $email = $stmt->fetchColumn() ?: null;
+        if ($email) {
+            $email = trim((string)$email);
         }
-        $email = $row['email'];
     }
 
-    // اجلب الطلبات حسب البريد
+    // 2) إن ما توفر user_id أو ما لقينا إيميل، جرّبي user_email من السيشن
+    if (!$email && !empty($_SESSION['user_email'])) {
+        $email = trim((string)$_SESSION['user_email']);
+    }
+
+    // 3) ما في إيميل => غير مسجل دخول
+    if (!$email) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'error' => 'unauthorized']);
+        exit;
+    }
+
+    // Pagination (ثابت وآمن)
+    $limit  = isset($_GET['limit'])  ? max(1, min(200, (int)$_GET['limit'])) : 100;
+    $offset = isset($_GET['offset']) ? max(0, (int)$_GET['offset']) : 0;
+
+    // خليه أرقام صافية وادخله مباشرة لتجنّب مشاكل bind مع LIMIT
+    $limitSql  = (string)$limit;
+    $offsetSql = (string)$offset;
+
+    // === اجلب الطلبات حسب بريد المستخدم ===
     $sql = "
         SELECT
             o.id,
@@ -52,32 +87,42 @@ try {
             o.order_status
         FROM orders o
         WHERE o.customer_email = ?
-        ORDER BY o.order_date DESC
+        ORDER BY COALESCE(o.order_date, o.id * 1) DESC, o.id DESC
+        LIMIT $limitSql OFFSET $offsetSql
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$email]);
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // عناصر كل طلب
-    $itemSql = "
+    $itemStmt = $pdo->prepare("
         SELECT product_id, product_name, unit_price, quantity, line_total
         FROM order_items
         WHERE order_id = ?
         ORDER BY id ASC
-    ";
-    $itemStmt = $pdo->prepare($itemSql);
+    ");
 
     foreach ($orders as &$order) {
         $itemStmt->execute([$order['id']]);
         $order['items'] = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $order['date'] = date('F j, Y', strtotime($order['order_date'] ?? 'now'));
+        $ts = !empty($order['order_date']) ? strtotime((string)$order['order_date']) : false;
+        $order['date'] = $ts ? date('F j, Y, g:i a', $ts) : '';
     }
     unset($order);
 
-    echo json_encode(['ok' => true, 'orders' => $orders], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        'ok'      => true,
+        'orders'  => $orders,
+        'limit'   => $limit,
+        'offset'  => $offset
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Server error', 'detail' => $e->getMessage()]);
+    echo json_encode([
+        'ok'    => false,
+        'error' => 'server_error',
+        'detail'=> $e->getMessage()
+    ]);
 }

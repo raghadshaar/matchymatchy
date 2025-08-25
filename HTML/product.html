@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Matchy Matchy • Product</title>
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
     <script>
         tailwind.config = {
             theme: {
@@ -104,6 +106,7 @@
         // // change main image
         function changeImage(src,el){document.getElementById('main-product-image').src=src;document.querySelectorAll('.image-thumbnail').forEach(t=>t.classList.remove('active'));el?.classList.add('active')}
     </script>
+    <link rel="stylesheet" href="../styles/responsive.css">
 
 
 </head>

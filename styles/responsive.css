@@ -1,0 +1,416 @@
+/****************************************************
+ * Matchy Matchy • responsive.css  (Mobile/Tablet only)
+ * لا يغيّر أي شيء على اللابتوب/الدِسكتوب (≥1024px)
+ ****************************************************/
+
+/* ============ موبايل + تابلت (أصغر من 1024px) ============ */
+@media (max-width: 1023.98px){
+
+    /* أساسيات */
+    html, body { max-width: 100%; overflow-x: hidden; }
+    img, video { max-width: 100%; height: auto; display: block; }
+    picture, canvas, svg { max-width: 100%; display: block; }
+    table { width: 100%; border-collapse: collapse; }
+
+    /* حاويات */
+    .container, .max-w-6xl, main.main, .content {
+        max-width: 100%;
+        margin-inline: auto;
+        padding-inline: clamp(12px, 4vw, 20px);
+    }
+
+    /* تايبوجرافي مرنة للمقاسات الصغيرة فقط */
+    :root{
+        --fs-h1: clamp(18px, 5vw, 24px);
+        --fs-h2: clamp(16px, 4.2vw, 20px);
+        --fs-p : clamp(14px, 3.8vw, 16px);
+    }
+    h1{ font-size: var(--fs-h1); }
+    h2{ font-size: var(--fs-h2); }
+    p, li, span{ font-size: var(--fs-p); }
+
+    /* هيدر/نـاف تلفّ تلقائيًا */
+    .nav, .main-nav, .top-actions { display:flex; flex-wrap:wrap; gap:10px; }
+
+    /* السلايدر/الهيرو يعرض بالكامل */
+    .slide img, .hero img, .hero video { width:100%; height:auto; object-fit: cover; }
+
+    /* ====== category.html: شبكة المنتجات ====== */
+    #products-grid{
+        display:grid;
+        gap: 16px;
+        grid-template-columns: 1fr; /* موبايل: عمود واحد */
+    }
+    /* تابلت (≥640px) عمودين */
+    @media (min-width: 640px) and (max-width: 1023.98px){
+        #products-grid{ grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* بطاقة المنتج */
+    .product-card{ display:flex; flex-direction:column; background:#fff; border-radius:14px; }
+
+    /* الصور: لا تقص على الشاشات الصغيرة */
+    .product-card .image-wrap{
+        height: auto !important;
+        max-height: none !important;
+        aspect-ratio: auto !important;
+    }
+    .product-card .image-wrap img{
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;   /* تظهر كاملة */
+        object-position: center center;
+        background:#fff;
+        display:block;
+    }
+
+    /* صف الميتا والفلاتر */
+    .meta-row, .add-row { display:flex; align-items:center; justify-content:space-between; }
+    .filter-bar, .filters, .search-row, .breadcrumb, .flex { flex-wrap: wrap; }
+
+    /* ====== صفحة المنتج ذات عمودين → عمود واحد على الصغير ====== */
+    .product-page, .product-detail, .product-wrap {
+        display:grid; gap:20px; grid-template-columns: 1fr;
+    }
+
+    /* صور مصغرة */
+    .thumb-strip { display:flex; gap:8px; flex-wrap:wrap; }
+    .thumb-strip img{ width:64px; height:64px; border-radius:10px; object-fit:cover; }
+
+    /* ====== جداول (سلة/طلبات/أدمن): كاردات قابلة للطي ====== */
+    .table .t-head{ display:none; }
+    .table .t-row{
+        display:grid; grid-template-columns: 1fr;
+        gap:8px; padding:12px 10px; border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .table .t-row > span{ display:flex; justify-content:space-between; gap:12px; }
+    .table .t-row > span::before{
+        content: attr(data-label);
+        color:#666; font-size:12px; margin-inline-end:10px;
+    }
+
+    /* ====== لوحة الأدمن ====== */
+    .stats{ display:grid; gap:12px; grid-template-columns: repeat(2, 1fr); }
+    .panels{ display:grid; gap:16px; grid-template-columns: 1fr; }
+
+    /* Top Selling */
+    .product-list{ display:grid; gap:10px; }
+    .product-item{
+        display:grid; grid-template-columns:64px 1fr auto;
+        gap:10px; align-items:center; background:#fff; border-radius:12px; padding:10px;
+    }
+    .product-item img{ width:64px; height:64px; object-fit:cover; border-radius:10px; }
+
+    /* نماذج */
+    form { width:100%; }
+    .form-row, .form-grid { display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media (min-width: 640px) and (max-width: 1023.98px){
+        .form-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* فوتر */
+    .footer .cols { display:grid; gap:14px; grid-template-columns: 1fr; }
+    @media (min-width: 640px) and (max-width: 1023.98px){
+        .footer .cols { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* مساعدات */
+    .stack-sm > * { margin-block: 8px; }
+    .stack-md > * { margin-block: 12px; }
+    .stack-lg > * { margin-block: 16px; }
+    *, *::before, *::after { word-wrap: break-word; overflow-wrap: anywhere; }
+}
+
+/* ============ هواتف فقط (<768px) — تحسينات إضافية اختيارية ============ */
+@media (max-width: 767.98px){
+    .category-grid{ display:grid; grid-template-columns: 1fr; gap:14px; }
+    .page-title{ font-size: calc(var(--fs-h1) * 0.95); }
+}
+
+
+
+/* ====== Hero images ====== */
+
+/* اللابتوب وفوق: خليها نفس التصميم (cover) */
+@media (min-width: 1024px){
+    .slider .slide img{
+        width: 100%;
+        height: auto;
+        object-fit: cover;   /* يملأ ويحافظ على الشكل */
+        object-position: center;
+    }
+}
+
+/* التابلت والموبايل: خليها مبينة كاملة */
+@media (max-width: 1023.98px){
+    .slider, .slider .slide {
+        width: 100vw;
+    }
+
+    .slider .slide img{
+        display:block;
+        width:100%;
+        height:auto !important;
+        object-fit: contain !important;
+        object-position: center center;
+        background: #F9F8F3;
+    }
+}
+
+
+/* ===== HERO FIX ===== */
+
+/* موبايل + تابلت فقط */
+@media (max-width: 1023.98px){
+    .slider, .slider .slide{
+        width: 100vw;
+        height: 60vh;              /* خليها 60% من ارتفاع الشاشة */
+        max-height: 500px;         /* سقف لارتفاعها */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #F9F8F3;       /* لون خلفية للفاضي */
+    }
+
+    .slider .slide img{
+        width: 100%;
+        height: 100%;
+        object-fit: contain;       /* الصورة كاملة */
+        object-position: center;
+    }
+
+
+    .slider .overlay{
+        position: absolute;
+        inset: 50% auto auto 50%;
+        transform: translate(-50%, -50%);
+        text-align: left;
+        width: min(92vw, 640px);
+    }
+}
+
+
+/* ==== Header nav fix — فقط للشاشات < 1024px ==== */
+@media (max-width: 1023.98px){
+
+    /* ممنوع تكسير الكلمات داخل الهيدر */
+    #header, #header-slot, .main-header,
+    #header *, #header-slot *, .main-header *{
+        overflow-wrap: normal !important;
+        word-break: keep-all !important;
+        white-space: nowrap !important;   /* صف واحد */
+        line-height: 1.2;
+    }
+
+    /* شريط الأيقونات */
+    .main-header .icons{
+        display:flex; align-items:center;
+        gap: clamp(6px, 2vw, 12px);
+        flex-wrap: nowrap !important;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .main-header .icons::-webkit-scrollbar{ display:none; }
+    .main-header .icons a{
+        min-width: max-content;
+        font-size: clamp(11px, 2.6vw, 14px); /* يصغّر الخط عند الضيق */
+        padding: 4px 6px;
+        display:inline-flex; align-items:center; gap:6px;
+    }
+
+    /* القائمة الرئيسية: صف واحد من اليسار + سكرول أفقي عند الحاجة */
+    .nav-menu{
+        overflow-x: auto !important; -webkit-overflow-scrolling: touch;
+        overflow-y: visible !important;
+        scrollbar-width: none;
+    }
+    .nav-menu::-webkit-scrollbar{ display:none; }
+
+    .nav-menu ul#main-category-list{
+        display:flex !important;
+        justify-content:flex-start !important;    /* ما تكون center/space-between */
+        align-items:center;
+        flex-wrap: nowrap !important;
+        gap: clamp(8px, 2vw, 14px);
+        padding: 6px clamp(8px, 3vw, 16px);
+        min-width: max-content;                    /* يمنع سحق العناصر والبدايات تختفي */
+    }
+    .nav-menu li{ flex:0 0 auto; }
+    .nav-menu a{
+        white-space: nowrap !important;
+        min-width: max-content;
+        font-size: clamp(12px, 2.6vw, 14px);       /* تصغير تدريجي بدل الإخفاء */
+        padding: 6px 8px;
+    }
+
+    /* تأكد ما في parent بخنق السطر */
+    .main-header, .top-header, .nav-menu{ overflow: visible !important; }
+}
+
+
+
+/* ==== Header nav: صغّر الخط + لا تكسير + اضمن أول/آخر عنصر واضح ==== */
+@media (max-width: 1023.98px){
+
+    .main-header, .main-header *{
+        overflow-wrap: normal !important;
+        word-break: keep-all !important;
+        white-space: nowrap !important;
+        line-height: 1.2;
+    }
+
+    .nav-menu{
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        padding-inline: 12px;
+    }
+    .nav-menu::-webkit-scrollbar{ }
+
+    .nav-menu ul#main-category-list{
+        display:flex !important;
+        justify-content:flex-start !important;
+        align-items:center;
+        flex-wrap: nowrap !important;
+        gap: clamp(8px, 2vw, 14px);
+        min-width: max-content;             /* يمنع سحق العناصر */
+    }
+
+    .nav-menu li:first-child{ margin-left: 0; }
+    .nav-menu li:last-child{ padding-right: 12px; }
+
+    .nav-menu a{
+        display:block;
+        min-width: max-content;
+        white-space: nowrap !important;
+        font-size: clamp(12px, 2.6vw, 14px);  /* يصغر الخط بدل ما يختفي */
+        padding: 6px 8px;
+    }
+
+    .main-header .icons{
+        display:flex; align-items:center;
+        gap: clamp(6px, 2vw, 12px);
+        flex-wrap: nowrap !important;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .main-header .icons a{ min-width:max-content; }
+}
+
+@media (max-width: 1023.98px){
+    /* القوائم لازم تضل overflow-x: auto */
+    .nav-menu,
+    .main-header .icons{
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        /* خلّي مكان ثابت للسكروول + مساحة صغيرة تحته */
+        scrollbar-gutter: stable both-edges;
+        padding-bottom: 6px;
+    }
+
+    /* Chrome/Safari/Edge (WebKit/Blink) – أظهر الشريط ونسّقه */
+    .nav-menu::-webkit-scrollbar,
+    .main-header .icons::-webkit-scrollbar{
+        display: initial !important;   /* يلغي أي display:none قديم */
+        height: 8px;                   /* شريط أفقي ظاهر */
+    }
+    .nav-menu::-webkit-scrollbar-thumb,
+    .main-header .icons::-webkit-scrollbar-thumb{
+        background: #E4CFC3;           /* لون الشريط */
+        border-radius: 8px;
+    }
+    .nav-menu::-webkit-scrollbar-track,
+    .main-header .icons::-webkit-scrollbar-track{
+        background: #F9F8F3;           /* تراك خفيف */
+    }
+}
+@media (max-width: 1023.98px){
+    /* 1) لا تقصّوا الشريط من الأهالي */
+    .main-header, .top-header, .nav-menu{
+        overflow: visible !important;
+    }
+
+    /* 2) الشريط: ثابت دائمًا (scroll بدلاً من auto) + مساحة تحته */
+    .nav-menu,
+    .main-header .icons{
+        overflow-x: scroll !important;          /* <— الأهم */
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-gutter: stable both-edges;
+        padding-bottom: 8px;
+    }
+
+    /* 3) تأكد في Overflow فعلي */
+    .nav-menu ul#main-category-list{
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        gap: clamp(8px, 2vw, 14px);
+        width: max-content;                      /* <— مو min-width */
+    }
+    .nav-menu a{
+        white-space: nowrap !important;
+        min-width: max-content;
+        font-size: clamp(12px, 2.6vw, 14px);
+        padding: 6px 8px;
+    }
+
+    /* 4) تنسيق شريط كروم (WebKit/Blink) */
+    .nav-menu::-webkit-scrollbar,
+    .main-header .icons::-webkit-scrollbar{
+        height: 8px;                             /* أظهر الشريط */
+    }
+    .nav-menu::-webkit-scrollbar-thumb,
+    .main-header .icons::-webkit-scrollbar-thumb{
+        background: #E4CFC3;
+        border-radius: 8px;
+    }
+    .nav-menu::-webkit-scrollbar-track,
+    .main-header .icons::-webkit-scrollbar-track{
+        background: #F9F8F3;
+    }
+}
+@media (max-width: 1023.98px){
+    .product-detail .container{
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-inline: clamp(12px, 4vw, 20px) !important;
+    }
+
+    .product-wrapper{
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    .main-image-container, .main-image{
+        width: 100% !important;
+    }
+    .main-image{
+        height: auto !important;
+        object-fit: contain !important;
+    }
+
+    .image-thumbnails{
+        display:flex; gap:10px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    }
+    .add-to-cart{
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+
+        padding: 12px 16px;
+        min-height: 44px;
+        width: 100%;
+        max-width: 320px;
+
+        white-space: nowrap !important;
+        overflow-wrap: normal !important;
+        word-break: keep-all !important;
+        writing-mode: horizontal-tb !important;
+
+        font-size: clamp(14px, 4.2vw, 16px);
+        font-weight: 700;
+    }
+
+}

@@ -1,3 +1,14 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../backend/auth_db.php';
+
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'pdo_init_failed']);
+    exit;
+}
+$me = require_admin_page_db($pdo, '/matchymatchy/sign-in.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +19,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Styles -->
-    <link rel="stylesheet" href="../styles/admin.css" />
     <link rel="stylesheet" href="../styles/topbarAdmin.css" />
+    <link rel="stylesheet" href="../styles/admin.css" />
+
 </head>
 <body>
 <!-- SIDEBAR -->
@@ -69,7 +81,7 @@
             <div class="panel">
                 <div class="panel-head">
                     <h2>Recent Orders</h2>
-                    <a href="./orders.html" class="view-all">View All</a>
+                    <a href="orders.php" class="view-all">View All</a>
                 </div>
 
                 <div class="table" id="recent-orders">
@@ -86,7 +98,7 @@
             <div class="panel">
                 <div class="panel-head">
                     <h2>Top Selling Products</h2>
-                    <a href="./products.html" class="view-all">View All</a>
+                    <a href="products.php" class="view-all">View All</a>
                 </div>
 
                 <ul class="product-list" id="top-products">

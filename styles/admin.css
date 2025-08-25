@@ -293,10 +293,28 @@ img{ max-width:100%; height:auto; display:block } /* يسمح بحجم صور أ
 /* ===================== 11) BRAND LOGO ===================== */
 @font-face{
     font-family:'Pacifico';
-    src:url('fonts/Pacifico-Regular.ttf') format('truetype');
+    src:url('../fonts/Pacifico-Regular.ttf') format('truetype');
     font-weight:normal; font-style:normal;
 }
 .logo{
     font-family:'Pacifico', cursive;
     font-size:1.8rem; font-weight:600; color:var(--teal);
+}
+
+#btn-settings,
+#btn-logout,
+#btn-login {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+.topbar .icon-btn i {
+    color: var(--jet); /* jet = #383838 */
 }

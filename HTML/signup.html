@@ -19,12 +19,17 @@
       --umber: #715E51;
       --white: #ffffff;
     }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url('../images/cover.jpg') center/cover no-repeat;
+      filter: blur(3px);
+      opacity: 0.6;
+      z-index: -1;
+    }
     .pattern-bg {
-      background-image: radial-gradient(circle at 20% 20%, var(--pink) 0%, transparent 20%),
-      radial-gradient(circle at 80% 80%, var(--pink) 0%, transparent 20%),
-      radial-gradient(circle at 40% 60%, var(--pink) 0%, transparent 20%);
-      background-size: 100px 100px, 120px 120px, 80px 80px;
-      background-position: 0 0, 40px 40px, 80px 20px;
+
     }
     .strength-bar {
       transition: all 0.3s ease;
