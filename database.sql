@@ -287,3 +287,24 @@ ALTER TABLE orders
 -- Prevent duplicate rows on retries (idempotency at DB layer)
 CREATE UNIQUE INDEX uniq_orders_pp_capture ON orders (paypal_capture_id);
 
+ALTER TABLE carts ADD COLUMN coupon_code VARCHAR(32) NULL;
+
+
+
+
+-- KIDS10: 10% off (percentage stored as a fraction 0.10)
+-- SAVE20: ₪20 off (fixed ILS amount)
+-- WELCOME15: 15% off (0.15)
+
+INSERT INTO coupons (code, type, amount, min_subtotal, starts_at, ends_at, active, max_uses, used_count)
+VALUES
+    ('KIDS10',    'percentage', 0.10, 0.00, NULL, NULL, 1, NULL, 0),
+    ('SAVE20',    'fixed',      20.00, 0.00, NULL, NULL, 1, NULL, 0),
+    ('WELCOME15', 'percentage', 0.15, 0.00, NULL, NULL, 1, NULL, 0)
+    ON DUPLICATE KEY UPDATE
+                         type=VALUES(type),
+                         amount=VALUES(amount),
+                         min_subtotal=VALUES(min_subtotal),
+                         starts_at=VALUES(starts_at),
+                         ends_at=VALUES(ends_at),
+                         active=VALUES(active);

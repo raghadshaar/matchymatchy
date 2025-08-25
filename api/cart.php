@@ -104,6 +104,30 @@ function get_cart_id(PDO $pdo, int $userId): int {
     return (int)$pdo->lastInsertId();
 }
 
+
+function load_coupon(PDO $pdo, string $code): ?array {
+    $st = $pdo->prepare("
+        SELECT code, type, amount, min_subtotal, starts_at, ends_at, active, max_uses, used_count
+        FROM coupons
+        WHERE code=? AND active=1
+          AND (starts_at IS NULL OR starts_at <= NOW())
+          AND (ends_at   IS NULL OR ends_at   >= NOW())
+        LIMIT 1
+    ");
+    $st->execute([$code]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
+}
+
+function normalize_coupon_for_summary(array $row, float $subtotal): array {
+    // Convert your DB row to what compute_summary() expects
+    // DB: type in ('percentage','fixed'); amount = (0.10 for 10%) or 20.00 for fixed.
+    $disc = 0.0;
+    if ($row['type'] === 'percentage') $disc = (float)$row['amount'];
+    else                               $disc = (float)$row['amount'];
+    return ['type' => $row['type'], 'discount' => $disc, 'code' => $row['code']];
+}
+
 function fetch_items(PDO $pdo, int $cartId): array {
     // join products to fetch name + image
     $sql = "SELECT ci.id, ci.product_id, ci.size, ci.quantity, ci.unit_price,
@@ -176,11 +200,27 @@ try {
             $cid   = get_cart_id($pdo, $uid);
             $items = fetch_items($pdo, $cid);
             $sum   = compute_summary($items);
+            $sumCoupon = null;
+            $cs = $pdo->prepare("SELECT coupon_code FROM carts WHERE id=? LIMIT 1");
+            $cs->execute([$cid]);
+            $cCode = trim((string)$cs->fetchColumn());
+            if ($cCode !== '') {
+                $row = load_coupon($pdo, $cCode);
+                if ($row) {
+                    // Check min_subtotal
+                    $subtotal = 0.0; foreach ($items as $it) { $subtotal += (float)$it['unit_price'] * (int)$it['quantity']; }
+                    if ($subtotal >= (float)$row['min_subtotal']) {
+                        $sumCoupon = normalize_coupon_for_summary($row, $subtotal);
+                    }
+                }
+            }
+            $sum = compute_summary($items, $sumCoupon);
             json_out([
-                'ok'     => true,
-                'csrf'   => csrf_token(),
-                'items'  => $items,
-                'summary'=> $sum,
+                'ok'=>true,
+                'csrf'=>csrf_token(),
+                'items'=>$items,
+                'summary'=>$sum,
+                'coupon'=> $sumCoupon ? ['code'=>$sumCoupon['code']] : null
             ]);
         }
 
@@ -265,19 +305,34 @@ try {
             json_out(['ok'=>true, 'items'=>$items, 'summary'=>$sum]);
         }
 
-        case 'applycoupon': { // optional
+        case 'applycoupon': {
             need_login();
-            $data  = body_json();
-            $code  = strtoupper(trim((string)($data['code'] ?? '')));
-            global $COUPONS;
-            if ($code === '' || !isset($COUPONS[$code])) {
-                json_out(['ok'=>false, 'error'=>'invalid coupon'], 400);
-            }
+            $data = body_json();
+            $code = strtoupper(trim((string)($data['code'] ?? '')));
+            if ($code === '') json_out(['ok'=>false,'error'=>'invalid coupon'], 400);
+
             $cid   = get_cart_id($pdo, get_user_id());
             $items = fetch_items($pdo, $cid);
-            $sum   = compute_summary($items, $COUPONS[$code]);
-            json_out(['ok'=>true, 'coupon'=>$COUPONS[$code], 'items'=>$items, 'summary'=>$sum]);
+
+            if (!count($items)) json_out(['ok'=>false,'error'=>'empty_cart'], 400);
+
+            // Validate coupon against DB rules
+            $row = load_coupon($pdo, $code);
+            if (!$row) json_out(['ok'=>false,'error'=>'invalid_or_inactive_coupon'], 400);
+
+            // compute subtotal to check min_subtotal
+            $subtotal = 0.0; foreach ($items as $it) { $subtotal += (float)$it['unit_price'] * (int)$it['quantity']; }
+            if ($subtotal < (float)$row['min_subtotal']) {
+                json_out(['ok'=>false,'error'=>'subtotal_below_min'], 400);
+            }
+
+            // Persist choice on the cart (no decrement yet — do it on capture)
+            $pdo->prepare("UPDATE carts SET coupon_code=? WHERE id=?")->execute([$code, $cid]);
+
+            $sum = compute_summary($items, normalize_coupon_for_summary($row, $subtotal));
+            json_out(['ok'=>true, 'coupon'=>['code'=>$code], 'items'=>$items, 'summary'=>$sum]);
         }
+
 
         default:
             json_out(['ok'=>false, 'error'=>'unknown action'], 400);

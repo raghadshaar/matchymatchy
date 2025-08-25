@@ -334,6 +334,162 @@
   Orders v2 API (Create/Amount breakdown/Capture):
   https://developer.paypal.com/docs/api/orders/v2/
 -->
+<!--<script src="https://www.paypal.com/sdk/js?client-id=AeNRbUtyWFnhdgD_OhFSyJJlz1qg8M3pVz54kkxwK97qK8YyBJTRTL4_1JMImxb8TTvRDqHp3kYVCcW2&currency=ILS&intent=capture&enable-funding=card"></script>-->
+
+<!--<script>-->
+<!--    const showPayErr = (msg) => {-->
+<!--        let box = document.getElementById('paypal-errors');-->
+<!--        if (!box) {-->
+<!--            box = document.createElement('div');-->
+<!--            box.id = 'paypal-errors';-->
+<!--            box.className = 'mt-3 text-sm text-red-600';-->
+<!--            document.getElementById('paypal-row').prepend(box);-->
+<!--        }-->
+<!--        box.textContent = msg;-->
+<!--    };-->
+
+<!--    let paypalRendered = false;-->
+
+<!--    // Show PayPal buttons-->
+<!--    document.getElementById('checkout-btn').addEventListener('click', async function () {-->
+<!--        // Sync cart from server first-->
+<!--        await loadCart();-->
+<!--        if (!cartData.items.length) { showToast('Your cart is empty'); return; }-->
+
+<!--        document.getElementById('checkout-row').classList.add('hidden');-->
+<!--        document.getElementById('paypal-row').classList.remove('hidden');-->
+<!--        showToast('Choose a payment method');-->
+
+<!--        if (!paypalRendered) {-->
+<!--            await renderPayPalButtons();-->
+<!--            paypalRendered = true;-->
+<!--        }-->
+<!--    });-->
+
+<!--    async function waitForPayPal(maxMs = 5000) {-->
+<!--        const start = Date.now();-->
+<!--        while (!window.paypal) {-->
+<!--            await new Promise(r => setTimeout(r, 50));-->
+<!--            if (Date.now() - start > maxMs) throw new Error('PayPal SDK did not load. Check client-id or ad-blocker.');-->
+<!--        }-->
+<!--        return window.paypal;-->
+<!--    }-->
+
+<!--    async function renderPayPalButtons() {-->
+<!--        try {-->
+<!--            const paypal = await waitForPayPal();-->
+
+<!--            paypal.Buttons({-->
+<!--                // Validate before create (ensure client/server totals match)-->
+<!--                onClick: async (data, actions) => {-->
+<!--                    try {-->
+<!--                        const r = await fetch('/matchymatchy/api/cart.php?action=list', { headers: { 'Accept':'application/json' }});-->
+<!--                        const server = await r.json();-->
+<!--                        if (!server || !server.summary) return actions.reject();-->
+
+<!--                        const clientTotal = Number((cartData.summary?.total ?? 0).toFixed(2));-->
+<!--                        const serverTotal = Number((server.summary.total ?? 0).toFixed(2));-->
+
+<!--                        if (clientTotal !== serverTotal) {-->
+<!--                            cartData = server;-->
+<!--                            renderCartFromApi();-->
+<!--                            showPayErr('Your cart changed. Please review the new total and try again.');-->
+<!--                            return actions.reject();-->
+<!--                        }-->
+<!--                        return actions.resolve();-->
+<!--                    } catch (e) {-->
+<!--                        console.error(e);-->
+<!--                        showPayErr('Could not validate cart. Please try again.');-->
+<!--                        return actions.reject();-->
+<!--                    }-->
+<!--                },-->
+
+<!--                // Create order on the server (server computes exact totals)-->
+<!--                createOrder: () => {-->
+<!--                    return fetch('/matchymatchy/api/paypal/create-order.php', {-->
+<!--                        method: 'POST'-->
+<!--                    }).then(async r => {-->
+<!--                        const txt = await r.text();-->
+<!--                        try {-->
+<!--                            const d = JSON.parse(txt);-->
+<!--                            if (!d.ok || !d.id) throw new Error(d.error || 'create-order failed');-->
+<!--                            return d.id;-->
+<!--                        } catch (e) {-->
+<!--                            console.error('create-order raw:', txt);-->
+<!--                            throw e;-->
+<!--                        }-->
+<!--                    });-->
+<!--                },-->
+
+
+
+
+
+<!--                onApprove: async function (data, actions) {-->
+<!--                    try {-->
+<!--                        const r   = await fetch('/matchymatchy/api/paypal/capture-order.php?orderID=' + encodeURIComponent(data.orderID), { method: 'POST' });-->
+<!--                        const txt = await r.text();-->
+<!--                        let details;-->
+<!--                        try { details = JSON.parse(txt); } catch(e){ console.error('capture raw:', txt); throw e; }-->
+
+<!--                        console.log('capture details:', details);-->
+
+<!--                        if ((details.ok && details.status === 'COMPLETED') || details.status === 'COMPLETED') {-->
+<!--                            // 1) clear cart on the server-->
+<!--                            await fetch('/matchymatchy/api/cart.php?action=clear', { method: 'POST', headers: { 'Accept':'application/json' } });-->
+
+<!--                            // 2) refresh UI from API (will show the empty-cart block)-->
+<!--                            await loadCart();-->
+
+<!--                            // 3) hide PayPal row, show the initial row again (optional)-->
+<!--                            document.getElementById('paypal-row').classList.add('hidden');-->
+<!--                            document.getElementById('checkout-row').classList.remove('hidden');-->
+
+<!--                            // 4) friendly toast (optional)-->
+<!--                            showToast('Payment successful! Your cart is now empty.');-->
+
+<!--                            // (optional) redirect to a success page:-->
+<!--                            // window.location.href = 'success.html?order=' + encodeURIComponent(data.orderID);-->
+<!--                            return;-->
+<!--                        }-->
+
+<!--                        // common sandbox statuses:-->
+<!--                        if (details.status === 'PAYER_ACTION_REQUIRED') {-->
+<!--                            showPayErr('Payment requires a new approval. Please try again.');-->
+<!--                            return;-->
+<!--                        }-->
+<!--                        if (details.status === 'INSTRUMENT_DECLINED') {-->
+<!--                            showPayErr('Payment method was declined. Try another card or method.');-->
+<!--                            try { if (actions && actions.restart) return actions.restart(); } catch(_) {}-->
+<!--                            return;-->
+<!--                        }-->
+
+<!--                        throw new Error('Payment not completed: ' + (details.status || details.error || ''));-->
+<!--                    } catch (err) {-->
+<!--                        console.error(err);-->
+<!--                        showPayErr('An error occurred during payment.');-->
+<!--                    }-->
+<!--                },-->
+
+
+
+
+
+
+<!--                onCancel: () => { /* optional */ },-->
+<!--                onError : (err) => { console.error(err); showPayErr('Failed to load payment gateway.'); },-->
+<!--                style   : { layout: 'vertical' }-->
+<!--            }).render('#paypal-button-container');-->
+
+<!--        } catch (e) {-->
+<!--            console.error(e);-->
+<!--            showPayErr(e.message || 'Failed to initialize PayPal.');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // We render PayPal only after user clicks Proceed-->
+<!--    document.addEventListener('DOMContentLoaded', () => {});-->
+<!--</script>-->
 <script src="https://www.paypal.com/sdk/js?client-id=AeNRbUtyWFnhdgD_OhFSyJJlz1qg8M3pVz54kkxwK97qK8YyBJTRTL4_1JMImxb8TTvRDqHp3kYVCcW2&currency=ILS&intent=capture&enable-funding=card"></script>
 
 <script>
@@ -350,10 +506,9 @@
 
     let paypalRendered = false;
 
-    // Show PayPal buttons
-    document.getElementById('checkout-btn').addEventListener('click', async function () {
-        // Sync cart from server first
-        await loadCart();
+    // Proceed / Checkout button
+    document.getElementById('checkout-btn').addEventListener('click', async () => {
+        await loadCart(); // your existing function that fills cartData
         if (!cartData.items.length) { showToast('Your cart is empty'); return; }
 
         document.getElementById('checkout-row').classList.add('hidden');
@@ -380,10 +535,15 @@
             const paypal = await waitForPayPal();
 
             paypal.Buttons({
-                // Validate before create (ensure client/server totals match)
+                style: { layout: 'vertical' },
+
+                // Optional: validate totals before creating order
                 onClick: async (data, actions) => {
                     try {
-                        const r = await fetch('/matchymatchy/api/cart.php?action=list', { headers: { 'Accept':'application/json' }});
+                        const r = await fetch('/matchymatchy/api/cart.php?action=list', {
+                            headers: { 'Accept': 'application/json' },
+                            credentials: 'include'
+                        });
                         const server = await r.json();
                         if (!server || !server.summary) return actions.reject();
 
@@ -392,7 +552,7 @@
 
                         if (clientTotal !== serverTotal) {
                             cartData = server;
-                            renderCartFromApi();
+                            renderCartFromApi(); // your function to refresh UI
                             showPayErr('Your cart changed. Please review the new total and try again.');
                             return actions.reject();
                         }
@@ -404,10 +564,11 @@
                     }
                 },
 
-                // Create order on the server (server computes exact totals)
+                // Create order on the SERVER
                 createOrder: () => {
                     return fetch('/matchymatchy/api/paypal/create-order.php', {
-                        method: 'POST'
+                        method: 'POST',
+                        credentials: 'include'
                     }).then(async r => {
                         const txt = await r.text();
                         try {
@@ -421,81 +582,37 @@
                     });
                 },
 
-                // Capture on server, then persist order
-                // onApprove: function (data, actions) {
-                //     return fetch('/matchymatchy/api/paypal/capture-order.php?orderID=' + encodeURIComponent(data.orderID), {
-                //         method: 'POST'
-                //     })
-                //         .then(async r => {
-                //             const txt = await r.text();
-                //             let details;
-                //             try { details = JSON.parse(txt); }
-                //             catch (e) { console.error('capture raw:', txt); throw e; }
-                //
-                //             console.log('capture details:', details);
-                //
-                //             // Success
-                //             if ((details.ok && details.status === 'COMPLETED') || details.status === 'COMPLETED') {
-                //                 alert('Payment successful! Order: ' + data.orderID);
-                //                 // Optional: window.location.href = '/matchymatchy/HTML/success.html?order=' + encodeURIComponent(data.orderID);
-                //                 return;
-                //             }
-                //
-                //             // Common sandbox statuses
-                //             if (details.status === 'PAYER_ACTION_REQUIRED') {
-                //                 showPayErr('Payment requires new approval (amount changed or extra verification). Please try again.');
-                //                 return;
-                //             }
-                //             if (details.status === 'INSTRUMENT_DECLINED') {
-                //                 showPayErr('Payment method was declined. Try another card or method.');
-                //                 try { if (actions && actions.restart) return actions.restart(); } catch (_) {}
-                //                 return;
-                //             }
-                //
-                //             throw new Error('Payment not completed: ' + (details.status || details.error || ''));
-                //         })
-                //         .catch(err => { console.error(err); showPayErr('An error occurred during payment.'); });
-                // },
-
-
-
-
-                onApprove: async function (data, actions) {
+                // Capture on the SERVER (no client-side capture, no client cart clear)
+                onApprove: async (data) => {
                     try {
-                        const r   = await fetch('/matchymatchy/api/paypal/capture-order.php?orderID=' + encodeURIComponent(data.orderID), { method: 'POST' });
+                        const r = await fetch(
+                            '/matchymatchy/api/paypal/capture-order.php?orderID=' + encodeURIComponent(data.orderID),
+                            { method: 'POST', credentials: 'include' }
+                        );
                         const txt = await r.text();
                         let details;
                         try { details = JSON.parse(txt); } catch(e){ console.error('capture raw:', txt); throw e; }
 
-                        console.log('capture details:', details);
+                        console.log('server capture response:', details);
 
-                        if ((details.ok && details.status === 'COMPLETED') || details.status === 'COMPLETED') {
-                            // 1) clear cart on the server
-                            await fetch('/matchymatchy/api/cart.php?action=clear', { method: 'POST', headers: { 'Accept':'application/json' } });
-
-                            // 2) refresh UI from API (will show the empty-cart block)
-                            await loadCart();
-
-                            // 3) hide PayPal row, show the initial row again (optional)
+                        if (details.ok && details.status === 'COMPLETED') {
+                            // Server already: captured, inserted order+items, cleared cart inside a transaction
+                            await loadCart(); // refresh UI (should show empty cart)
                             document.getElementById('paypal-row').classList.add('hidden');
                             document.getElementById('checkout-row').classList.remove('hidden');
-
-                            // 4) friendly toast (optional)
-                            showToast('Payment successful! Your cart is now empty.');
-
-                            // (optional) redirect to a success page:
-                            // window.location.href = 'success.html?order=' + encodeURIComponent(data.orderID);
+                            showToast('Order ' + details.public_id + ' placed successfully!');
+                            // Optional redirect:
+                            // window.location.href = '/HTML/success.html?order=' + encodeURIComponent(details.public_id);
                             return;
                         }
 
-                        // common sandbox statuses:
+                        // Some sandbox flows:
                         if (details.status === 'PAYER_ACTION_REQUIRED') {
                             showPayErr('Payment requires a new approval. Please try again.');
                             return;
                         }
                         if (details.status === 'INSTRUMENT_DECLINED') {
-                            showPayErr('Payment method was declined. Try another card or method.');
-                            try { if (actions && actions.restart) return actions.restart(); } catch(_) {}
+                            showPayErr('Payment method was declined. Try another method.');
                             return;
                         }
 
@@ -506,14 +623,8 @@
                     }
                 },
 
-
-
-
-
-
                 onCancel: () => { /* optional */ },
-                onError : (err) => { console.error(err); showPayErr('Failed to load payment gateway.'); },
-                style   : { layout: 'vertical' }
+                onError: (err) => { console.error(err); showPayErr('Failed to load payment gateway.'); }
             }).render('#paypal-button-container');
 
         } catch (e) {
@@ -522,9 +633,10 @@
         }
     }
 
-    // We render PayPal only after user clicks Proceed
+    // Render buttons only after user clicks Proceed (kept as your design)
     document.addEventListener('DOMContentLoaded', () => {});
 </script>
+
 
 </body>
 </html>
