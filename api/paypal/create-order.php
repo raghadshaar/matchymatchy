@@ -35,15 +35,30 @@ function get_token(): string {
     return $json['access_token'];
 }
 
+// ⚠️ ADD THIS: coupon loader (same logic you used server-side elsewhere)
+function load_coupon(PDO $pdo, string $code): ?array {
+    $st = $pdo->prepare("
+        SELECT code, type, amount, min_subtotal, starts_at, ends_at, active, max_uses, used_count
+        FROM coupons
+        WHERE code=? AND active=1
+          AND (starts_at IS NULL OR starts_at <= NOW())
+          AND (ends_at   IS NULL OR ends_at   >= NOW())
+        LIMIT 1
+    ");
+    $st->execute([$code]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
+}
+
 try {
-    // 1) Read the user’s current cart from DB and compute totals
     if (!isset($pdo) || !($pdo instanceof PDO)) {
         throw new RuntimeException('PDO not initialized');
     }
 
     // fetch cart + items
     $stmt = $pdo->prepare("
-        SELECT ci.id, ci.product_id, ci.size, ci.quantity, ci.unit_price, p.name, p.image_main_url AS image
+        SELECT ci.id, ci.product_id, ci.size, ci.quantity, ci.unit_price,
+               p.name, p.image_main_url AS image
         FROM carts c
         JOIN cart_items ci ON ci.cart_id = c.id
         JOIN products p ON p.id = ci.product_id
@@ -58,57 +73,41 @@ try {
         exit;
     }
 
-    $subtotal = 0.0;
-    foreach ($items as $it) {
-        $subtotal += ((float)$it['unit_price']) * ((int)$it['quantity']);
-    }
-//    $shipping = 15.00;   // adjust to your rules
-//    $tax      = 0.17;    // adjust to your rules
-//    $total    = round($subtotal + $shipping + $tax, 2);
-//
-//    // 2) Build the PayPal order (ILS currency, CAPTURE intent)
-//    $order = [
-//        'intent' => 'CAPTURE',
-//        'purchase_units' => [[
-//            'amount' => [
-//                'currency_code' => 'ILS',
-//                'value' => number_format($total, 2, '.', ''),
-//                'breakdown' => [
-//                    'item_total' => [ 'currency_code'=>'ILS', 'value'=> number_format($subtotal, 2, '.', '') ],
-//                    'shipping'   => [ 'currency_code'=>'ILS', 'value'=> number_format($shipping, 2, '.', '') ],
-//                    'tax_total'  => [ 'currency_code'=>'ILS', 'value'=> number_format($tax, 2, '.', '') ],
-//                ]
-//            ],
-//            'items' => array_map(function($it){
-//                return [
-//                    'name'        => $it['name'] ?: 'Product',
-//                    'quantity'    => (string)((int)$it['quantity']),
-//                    'unit_amount' => [
-//                        'currency_code' => 'ILS',
-//                        'value' => number_format((float)$it['unit_price'], 2, '.', '')
-//                    ]
-//                ];
-//            }, $items),
-//        ]],
-//        'application_context' => [
-//            'shipping_preference' => 'NO_SHIPPING' // change if you collect addresses
-//        ]
-//    ];
+    // ⚠️ READ coupon only once
+    $cartRow = $pdo->prepare("SELECT id, coupon_code FROM carts WHERE user_id=? LIMIT 1");
+    $cartRow->execute([$userId]);
+    $cart = $cartRow->fetch(PDO::FETCH_ASSOC) ?: ['id'=>null,'coupon_code'=>null];
+    $cartId = (int)($cart['id'] ?? 0);
+    $couponCode = $cart['coupon_code'] ?? null;
 
-    $shipping = 15.00;               // حسب قواعدك
-    $vatRate  = 0.17;                // 17% VAT
-    $tax      = round($subtotal * $vatRate, 2);
-
-// احرص أن يكون item_total = مجموع (unit_price * quantity) بدقتين عشريتين
+    // Compute itemTotal using per-line rounding (align with capture)
     $itemTotal = 0.0;
     foreach ($items as $it) {
         $itemTotal += round((float)$it['unit_price'] * (int)$it['quantity'], 2);
     }
     $itemTotal = round($itemTotal, 2);
 
-// المجموع النهائي يجب أن يطابق تمامًا breakdown
-    $total = round($itemTotal + $shipping + $tax, 2);
+    // ⚠️ Apply coupon (same formula you will use in capture)
+    $discount = 0.0;
+    if ($couponCode) {
+        $c = load_coupon($pdo, $couponCode);
+        if ($c && $itemTotal >= (float)$c['min_subtotal']) {
+            if ($c['type'] === 'percentage') $discount = round($itemTotal * (float)$c['amount'], 2); // amount is fraction (e.g., 0.10)
+            else                              $discount = round((float)$c['amount'], 2);             // fixed currency amount
+            $discount = min($discount, $itemTotal);
+        }
+    }
 
+    $shipping = 15.00;
+    $vatRate  = 0.17;
+    $taxBase  = max(0.0, $itemTotal - $discount);
+    $tax      = round($taxBase * $vatRate, 2);
+    $total    = round($taxBase + $shipping + $tax, 2);
+
+    // ⚠️ REMOVE this from create-order (ppAmount only exists after capture)
+    // if (abs($ppAmount - $total) > 0.01) { ... }
+
+    // Build PayPal order with discount in breakdown
     $order = [
         'intent' => 'CAPTURE',
         'purchase_units' => [[
@@ -119,24 +118,26 @@ try {
                     'item_total' => ['currency_code'=>'ILS','value'=>number_format($itemTotal, 2, '.', '')],
                     'shipping'   => ['currency_code'=>'ILS','value'=>number_format($shipping,   2, '.', '')],
                     'tax_total'  => ['currency_code'=>'ILS','value'=>number_format($tax,        2, '.', '')],
+                    'discount'   => ['currency_code'=>'ILS','value'=>number_format($discount,   2, '.', '')],
                 ]
             ],
             'items' => array_map(function($it){
                 return [
-                    'name'        => $it['name'] ?: 'Product',
+                    'name'        => ($it['name'] ?? 'Product') ?: 'Product',
                     'quantity'    => (string)((int)$it['quantity']),
                     'unit_amount' => [
-                        'currency_code' => 'ILS',
-                        'value' => number_format((float)$it['unit_price'], 2, '.', '')
+                        'currency_code'=>'ILS',
+                        'value'=> number_format((float)$it['unit_price'], 2, '.', '')
                     ]
                 ];
             }, $items),
         ]],
         'application_context' => [
-            'user_action' => 'PAY_NOW',          // (اختياري) زر "Pay now"
+            'user_action' => 'PAY_NOW',
             'shipping_preference' => 'NO_SHIPPING'
         ]
     ];
+
     $token = get_token();
 
     $ch = curl_init(pp_base().'/v2/checkout/orders');
@@ -156,14 +157,13 @@ try {
 
     $json = json_decode($resp, true);
     if ($code !== 201 || empty($json['id'])) {
-        // expose PayPal diagnostic details for easier debugging
         error_log('PP create-order failed: HTTP '.$code.'; body='.$resp);
         http_response_code(200);
         echo json_encode(['ok'=>false,'error'=>'paypal_create_failed','details'=>$json]);
         exit;
     }
 
-    echo json_encode(['ok'=>true, 'id'=>$json['id']]); // returned to your JS createOrder
+    echo json_encode(['ok'=>true, 'id'=>$json['id']]);
 } catch (Throwable $e) {
     error_log('[create-order.php] '.$e->getMessage());
     http_response_code(200);
