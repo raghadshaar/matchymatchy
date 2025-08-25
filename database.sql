@@ -93,47 +93,47 @@ ALTER TABLE users
 
 
 -- matchy_matchy schema (add to your DB init)
-CREATE TABLE IF NOT EXISTS orders (
-                                      id              INT AUTO_INCREMENT PRIMARY KEY,
-                                      public_id       VARCHAR(32) NOT NULL UNIQUE,              -- e.g., ORD-2025-001
-    order_date      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    customer_name   VARCHAR(100) NOT NULL,
-    customer_email  VARCHAR(255) NOT NULL,
-    customer_phone  VARCHAR(30)  NULL,
-    customer_address TEXT        NULL,
-
-    subtotal        DECIMAL(10,2) NOT NULL DEFAULT 0.00,      -- exact money math
-    shipping        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    tax             DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    total           DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-
-    payment_status  ENUM('Paid','Pending','Failed','Refunded','COD') NOT NULL DEFAULT 'Pending',
-    order_status    ENUM('Pending','Processing','Shipped','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
-
-    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    KEY idx_date (order_date),
-    KEY idx_status (order_status),
-    KEY idx_payment (payment_status)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS order_items (
-                                           id           INT AUTO_INCREMENT PRIMARY KEY,
-                                           order_id     INT NOT NULL,
-                                           product_id   INT NULL,                       -- optional (if you later link to products table)
-                                           product_name VARCHAR(255) NOT NULL,
-    unit_price   DECIMAL(10,2) NOT NULL,
-    quantity     INT NOT NULL,
-    -- keep line_total explicit to avoid surprises if price later changes
-    line_total   DECIMAL(10,2) NOT NULL,
-
-    CONSTRAINT fk_items_order
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    KEY idx_order (order_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
+-- CREATE TABLE IF NOT EXISTS orders (
+--                                       id              INT AUTO_INCREMENT PRIMARY KEY,
+--                                       public_id       VARCHAR(32) NOT NULL UNIQUE,              -- e.g., ORD-2025-001
+--     order_date      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     customer_name   VARCHAR(100) NOT NULL,
+--     customer_email  VARCHAR(255) NOT NULL,
+--     customer_phone  VARCHAR(30)  NULL,
+--     customer_address TEXT        NULL,
+--
+--     subtotal        DECIMAL(10,2) NOT NULL DEFAULT 0.00,      -- exact money math
+--     shipping        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+--     tax             DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+--     total           DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+--
+--     payment_status  ENUM('Paid','Pending','Failed','Refunded','COD') NOT NULL DEFAULT 'Pending',
+--     order_status    ENUM('Pending','Processing','Shipped','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
+--
+--     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--
+--     KEY idx_date (order_date),
+--     KEY idx_status (order_status),
+--     KEY idx_payment (payment_status)
+--     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+-- CREATE TABLE IF NOT EXISTS order_items (
+--                                            id           INT AUTO_INCREMENT PRIMARY KEY,
+--                                            order_id     INT NOT NULL,
+--                                            product_id   INT NULL,                       -- optional (if you later link to products table)
+--                                            product_name VARCHAR(255) NOT NULL,
+--     unit_price   DECIMAL(10,2) NOT NULL,
+--     quantity     INT NOT NULL,
+--     -- keep line_total explicit to avoid surprises if price later changes
+--     line_total   DECIMAL(10,2) NOT NULL,
+--
+--     CONSTRAINT fk_items_order
+--     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+--     KEY idx_order (order_id)
+--     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+--
 
 
 
@@ -270,4 +270,20 @@ CREATE TABLE IF NOT EXISTS product_embeddings (
 
 ALTER TABLE products
     ADD FULLTEXT ft_products_name_desc_sku (name, description, sku);
+
+
+
+-- Persist PayPal + currency + discounts on the order
+ALTER TABLE orders
+    ADD COLUMN currency_code      CHAR(3)         NOT NULL DEFAULT 'ILS',
+  ADD COLUMN discount           DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
+  ADD COLUMN coupon_code        VARCHAR(32)     NULL,
+  ADD COLUMN paypal_order_id    VARCHAR(64)     NULL,
+  ADD COLUMN paypal_capture_id  VARCHAR(64)     NULL,
+  ADD COLUMN paypal_status      VARCHAR(32)     NULL,
+  ADD COLUMN paypal_payer_email VARCHAR(255)    NULL,
+  ADD COLUMN paypal_raw         JSON            NULL;
+
+-- Prevent duplicate rows on retries (idempotency at DB layer)
+CREATE UNIQUE INDEX uniq_orders_pp_capture ON orders (paypal_capture_id);
 
