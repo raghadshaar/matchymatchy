@@ -135,52 +135,52 @@ ALTER TABLE users
 --
 --
 
-
-
-
--- Coupons: percentage = fraction (e.g., 0.10); fixed = NIS amount
-CREATE TABLE IF NOT EXISTS coupons (
-                                       id            INT AUTO_INCREMENT PRIMARY KEY,
-                                       code          VARCHAR(32) NOT NULL UNIQUE,
-    type          ENUM('percentage','fixed') NOT NULL,
-    amount        DECIMAL(10,2) NOT NULL,     -- ex: 0.10 for 10% OR 20.00 fixed
-    min_subtotal  DECIMAL(10,2) NOT NULL DEFAULT 0,
-    starts_at     DATETIME NULL,
-    ends_at       DATETIME NULL,
-    active        TINYINT(1) NOT NULL DEFAULT 1,
-    max_uses      INT NULL,
-    used_count    INT NOT NULL DEFAULT 0
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
--- Carts are per session (works for anonymous users; attach user_id if you have login)
-SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS cart_items;
-DROP TABLE IF EXISTS carts;
-SET FOREIGN_KEY_CHECKS = 1;
-
-CREATE TABLE carts (
-                       id INT AUTO_INCREMENT PRIMARY KEY,
-                       user_id INT NOT NULL UNIQUE,  -- must match users.id type/sign
-                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                       CONSTRAINT fk_carts_user
-                           FOREIGN KEY (user_id) REFERENCES users(id)
-                               ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE cart_items (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            cart_id INT NOT NULL,
-                            product_id INT NOT NULL,
-                            size VARCHAR(64) NOT NULL DEFAULT '',
-                            quantity INT NOT NULL,
-                            unit_price DECIMAL(10,2) NOT NULL,
-                            added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            UNIQUE KEY uniq_cart_product (cart_id, product_id, size),
-                            CONSTRAINT fk_items_cart
-                                FOREIGN KEY (cart_id) REFERENCES carts(id)
-                                    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+--
+--
+-- -- Coupons: percentage = fraction (e.g., 0.10); fixed = NIS amount
+-- CREATE TABLE IF NOT EXISTS coupons (
+--                                        id            INT AUTO_INCREMENT PRIMARY KEY,
+--                                        code          VARCHAR(32) NOT NULL UNIQUE,
+--     type          ENUM('percentage','fixed') NOT NULL,
+--     amount        DECIMAL(10,2) NOT NULL,     -- ex: 0.10 for 10% OR 20.00 fixed
+--     min_subtotal  DECIMAL(10,2) NOT NULL DEFAULT 0,
+--     starts_at     DATETIME NULL,
+--     ends_at       DATETIME NULL,
+--     active        TINYINT(1) NOT NULL DEFAULT 1,
+--     max_uses      INT NULL,
+--     used_count    INT NOT NULL DEFAULT 0
+--     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+--
+-- -- Carts are per session (works for anonymous users; attach user_id if you have login)
+-- SET FOREIGN_KEY_CHECKS = 0;
+-- DROP TABLE IF EXISTS cart_items;
+-- DROP TABLE IF EXISTS carts;
+-- SET FOREIGN_KEY_CHECKS = 1;
+--
+-- CREATE TABLE carts (
+--                        id INT AUTO_INCREMENT PRIMARY KEY,
+--                        user_id INT NOT NULL UNIQUE,  -- must match users.id type/sign
+--                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--                        CONSTRAINT fk_carts_user
+--                            FOREIGN KEY (user_id) REFERENCES users(id)
+--                                ON DELETE CASCADE ON UPDATE CASCADE
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--
+-- CREATE TABLE cart_items (
+--                             id INT AUTO_INCREMENT PRIMARY KEY,
+--                             cart_id INT NOT NULL,
+--                             product_id INT NOT NULL,
+--                             size VARCHAR(64) NOT NULL DEFAULT '',
+--                             quantity INT NOT NULL,
+--                             unit_price DECIMAL(10,2) NOT NULL,
+--                             added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--                             UNIQUE KEY uniq_cart_product (cart_id, product_id, size),
+--                             CONSTRAINT fk_items_cart
+--                                 FOREIGN KEY (cart_id) REFERENCES carts(id)
+--                                     ON DELETE CASCADE ON UPDATE CASCADE
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- ORDERS: رأس الطلب
@@ -215,7 +215,6 @@ CREATE TABLE IF NOT EXISTS orders (
                                                                  ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ORDER ITEMS: تفاصيل العناصر
 CREATE TABLE IF NOT EXISTS order_items (
                                            id           INT AUTO_INCREMENT PRIMARY KEY,
                                            order_id     INT NOT NULL,
@@ -232,45 +231,45 @@ CREATE TABLE IF NOT EXISTS order_items (
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
-
-ALTER TABLE product_reviews
-    ADD COLUMN hidden TINYINT(1) NOT NULL DEFAULT 0 AFTER comment,
-  ADD COLUMN hidden_by INT UNSIGNED NULL AFTER hidden,
-  ADD COLUMN hidden_at DATETIME NULL AFTER hidden_by,
-  ADD COLUMN updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP AFTER created_at;
-
-CREATE INDEX idx_reviews_hidden  ON product_reviews(hidden);
-CREATE INDEX idx_reviews_created ON product_reviews(created_at);
-CREATE INDEX idx_reviews_product ON product_reviews(product_id);
-
-
-ALTER TABLE product_reviews
-    ADD COLUMN flagged TINYINT(1) NOT NULL DEFAULT 0 AFTER hidden,
-  ADD COLUMN flag_reason VARCHAR(255) NULL AFTER flagged,
-  ADD COLUMN flagged_by INT UNSIGNED NULL AFTER flag_reason,
-  ADD COLUMN flagged_at DATETIME NULL AFTER flagged_by;
-
-
-
-ALTER TABLE products
-    ADD FULLTEXT ft_products_name_desc (name, description),
-  ADD FULLTEXT ft_products_sku (sku);
+--
+-- ALTER TABLE product_reviews
+--     ADD COLUMN hidden TINYINT(1) NOT NULL DEFAULT 0 AFTER comment,
+--   ADD COLUMN hidden_by INT UNSIGNED NULL AFTER hidden,
+--   ADD COLUMN hidden_at DATETIME NULL AFTER hidden_by,
+--   ADD COLUMN updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP AFTER created_at;
+--
+-- CREATE INDEX idx_reviews_hidden  ON product_reviews(hidden);
+-- CREATE INDEX idx_reviews_created ON product_reviews(created_at);
+-- CREATE INDEX idx_reviews_product ON product_reviews(product_id);
+--
+--
+-- ALTER TABLE product_reviews
+--     ADD COLUMN flagged TINYINT(1) NOT NULL DEFAULT 0 AFTER hidden,
+--   ADD COLUMN flag_reason VARCHAR(255) NULL AFTER flagged,
+--   ADD COLUMN flagged_by INT UNSIGNED NULL AFTER flag_reason,
+--   ADD COLUMN flagged_at DATETIME NULL AFTER flagged_by;
 
 
+--
+-- ALTER TABLE products
+--     ADD FULLTEXT ft_products_name_desc (name, description),
+--   ADD FULLTEXT ft_products_sku (sku);
+--
+--
+--
+-- CREATE TABLE IF NOT EXISTS product_embeddings (
+--                                                   product_id INT PRIMARY KEY,
+--                                                   model VARCHAR(64) NOT NULL,
+--     embedding_json MEDIUMTEXT NOT NULL,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     CONSTRAINT fk_prod_emb_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+--     );
 
-CREATE TABLE IF NOT EXISTS product_embeddings (
-                                                  product_id INT PRIMARY KEY,
-                                                  model VARCHAR(64) NOT NULL,
-    embedding_json MEDIUMTEXT NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_prod_emb_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-    );
 
 
-
-ALTER TABLE products
-    ADD FULLTEXT ft_products_name_desc_sku (name, description, sku);
-
+-- ALTER TABLE products
+--    ADD FULLTEXT ft_products_name_desc_sku (name, description, sku);
+--
 
 
 -- Persist PayPal + currency + discounts on the order

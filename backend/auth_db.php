@@ -65,7 +65,6 @@ function require_admin_page_db(PDO $pdo, string $loginUrl='/matchymatchy/sign-in
     return $u;
 }
 
-/** حماية APIs (JSON) */
 function require_login_api_db(PDO $pdo): array {
     $u = auth_current_user($pdo);
     if (!$u) auth_json_unauthorized();
