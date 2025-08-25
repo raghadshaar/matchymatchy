@@ -17,16 +17,33 @@
 
 
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+
+
+
+
+
+
+
+
+
+
+    <link rel="stylesheet" href="../styles/productStyle.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
     <!-- Styles -->
     <link rel="stylesheet" href="../styles/style.css"/>
-    <link rel="stylesheet" href="../styles/productStyle.css"/>
+
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script>
@@ -69,9 +86,8 @@
 <body>
 
 <!-- Header include (جرّبي المسارات بالتسلسل) -->
-<div id="header-slot"
-     data-include="/matchymatchy/header.html"
-     data-include-alt="../header.html, ./header.html, /matchymatchy/HTML/header.html"></div>
+<div id="header-slot">
+     </div>
 
 <!-- HERO -->
 <section class="hero" id="hero">
@@ -176,5 +192,21 @@
 
 <script src="../js/indexscript.js"></script>
 <script defer src="../js/header.js"></script>
+
+
+<script>
+    (async () => {
+        try {
+            const r = await fetch('/matchymatchy/api/cart.php?action=count', {
+                credentials: 'include',
+                headers: {'Accept': 'application/json'}
+            });
+            const text = await r.text();
+            console.log('[cart count] status:', r.status, 'body:', text);
+        } catch (e) {
+            console.error('[cart count] failed:', e);
+        }
+    })();
+</script>
 </body>
 </html>

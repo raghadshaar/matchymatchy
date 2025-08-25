@@ -223,6 +223,22 @@ try {
                 'coupon'=> $sumCoupon ? ['code'=>$sumCoupon['code']] : null
             ]);
         }
+        case 'count': {
+            need_login();
+            $uid = get_user_id();
+
+            // ensure cart exists, then count items
+            $cid = get_cart_id($pdo, $uid);
+            $st  = $pdo->prepare("
+        SELECT COALESCE(SUM(ci.quantity), 0)
+        FROM cart_items ci
+        WHERE ci.cart_id = ?
+    ");
+            $st->execute([$cid]);
+            $count = (int) $st->fetchColumn();
+
+            json_out(['ok' => true, 'count' => $count]);
+        }
 
         case 'add': {
             need_login();
