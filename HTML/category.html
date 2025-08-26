@@ -463,81 +463,88 @@
         }
     }
 
-    async function renderPLP(){
+        async function renderPLP() {
         const params = new URLSearchParams(location.search);
+
         const slug   = params.get('slug') || 'baby-girl';
         const q      = params.get('q') || '';
         const page   = Math.max(1, +(params.get('page') || 1));
-        const pgSize = Math.max(1, +(params.get('size') || 24)); // ← هذا حجم الصفحة (pagination)
+        const pgSize = Math.max(1, +(params.get('per_page') || 24));
 
+        const gridEl = document.getElementById('products-grid');
         gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Loading…</div>`;
 
-        // 1) حددي الـ endpoint
+
+
         let url;
         if (slug === 'new-arrivals') {
-            url = `/matchymatchy/backend/new_arrivals.php?page=${page}&size=${pgSize}`;
+                url = `/matchymatchy/backend/new_arrivals.php?page=${page}&per_page=${pgSize}`;
         } else {
-            url = `/matchymatchy/backend/products.php?page=${page}&size=${pgSize}`;
-            if (!q && slug && slug !== 'all-products') {
-                url += `&category_slug=${encodeURIComponent(slug)}`;
-            }
+                url = `/matchymatchy/backend/products.php?page=${page}&per_page=${pgSize}`;
         }
+        if (!q && slug && slug !== 'all-products') {
+        url += `&category_slug=${encodeURIComponent(slug)}`;
+    }
 
-        // 2) بحث
+
         if (q) url += `&q=${encodeURIComponent(q)}`;
 
-        // 3) فلاتر
-        const filters = {
-            type:   params.get('type'),
-            fabric: params.get('fabric'),
-            color:  params.get('color'),
-            pickup: params.get('pickup'),
-            size_label: params.get('size') || params.get('size_label'), // ← اقرأ أي واحد موجود
-        };
+        // === فلاتر ===
+        // مفاتيح بقيمة واحدة
+        ['type','pickup'].forEach(k => {
+        const v = params.get(k);
+        if (v) url += `&${k}=${encodeURIComponent(v)}`;
+    });
 
-        for (const [key, value] of Object.entries(filters)) {
-            if (!value) continue;
-            // fabric/color/size_label تدعم تعدد القيم، فنبعتها كمصفوفات
-            if (['fabric','color','size_label'].includes(key)) {
-                // لو عندك قيم متعددة بفاصلة
-                const arr = String(value).split(',').map(v => v.trim()).filter(Boolean);
-                for (const v of arr) url += `&${key}[]=${encodeURIComponent(v)}`;
-            } else {
-                url += `&${key}=${encodeURIComponent(value)}`;
-            }
-        }
+        // مفاتيح متعددة القيم (ندعم فاصلة)
+        function appendMulti(keyParamName, urlParamName = keyParamName) {
+        const raw = params.get(urlParamName);
+        if (!raw) return;
+        String(raw)
+        .split(',')
+        .map(v => v.trim())
+        .filter(Boolean)
+        .forEach(v => { url += `&${keyParamName}[]=${encodeURIComponent(v)}`; });
+    }
+        appendMulti('fabric');
+        appendMulti('color');
+        appendMulti('size', 'size');            // نرسلها كـ size[]=…
+        appendMulti('size_label', 'size');      // وبعض الـ backend عندك يقرأ size_label[]
 
-        // 4) Fetch
+        // === جلب البيانات ===
         let ok=false, data=[], total=0;
-        try{
-            const res = await fetch(url, { headers: { 'Accept':'application/json' } });
-            if (!res.ok) throw new Error(`API ${res.status}`);
-            const json = await res.json();
-            ok    = !!json.ok;
-            data  = json.data  || [];
-            total = json.total || 0;
-        }catch(err){
-            console.error('Fetch failed:', err);
-        }
+        try {
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error(`API ${res.status}`);
+        const json = await res.json();
+        ok    = !!json.ok;
+        data  = json.data  || [];
+        total = json.total || 0;
+    } catch (err) {
+        console.error('Fetch failed:', err);
+    }
 
-        if (!ok){
-            gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Error loading products</div>`;
-            return;
-        }
+        if (!ok) {
+        gridEl.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Error loading products</div>`;
+        return;
+    }
 
+        // عنوان & breadcrumb
         const pretty = q ? `Results for “${q}”` : slug.replace(/-/g,' ').replace(/\b\w/g, s => s.toUpperCase());
         const titleEl = document.getElementById('page-title');
         if (titleEl) titleEl.innerHTML = `${pretty} <span class="text-lg font-normal text-gray-600">(${total} items)</span>`;
         const bc = document.getElementById('breadcrumb');
         if (bc) bc.innerHTML = `<a href="index.html" class="hover:underline">Home</a> / <span class="text-gray-800">${pretty}</span>`;
 
-
+        // كارد المنتج (كما عندك)
         gridEl.innerHTML = data.length
-            ? data.map(card).join('')
-            : `<div class="col-span-full text-center py-10 text-gray-500">No products found</div>`;
+        ? data.map(card).join('')
+        : `<div class="col-span-full text-center py-10 text-gray-500">No products found</div>`;
 
         updateActiveFiltersCount();
     }
+
+
 
 
 
@@ -583,17 +590,14 @@
             });
         }
 
-        // زر كل الفلاتر
         const allFiltersBtn = document.getElementById('all-filters-btn');
         if (allFiltersBtn) {
             allFiltersBtn.addEventListener('click', function() {
-                // يمكنك إضافة منطق لعرض/إخفاء قائمة الفلاتر هنا
                 alert('عرض كل خيارات الفلترة');
             });
         }
     }
 
-    // تطبيق الفلاتر
     function applyFilters() {
         const sizeSelect = document.getElementById('flt-size');
         const typeSelect = document.getElementById('flt-type');

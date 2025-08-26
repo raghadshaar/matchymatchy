@@ -22,14 +22,16 @@ $q            = trim($_GET['q'] ?? '');
 $categoryId   = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
 $categorySlug = trim($_GET['category_slug'] ?? '');
 $status       = trim($_GET['status'] ?? '');  // in_stock | low_stock | out_of_stock | draft | archived | auto
-$page         = max(1, (int)($_GET['page'] ?? 1));
-$size         = max(1, min(50, (int)($_GET['size'] ?? 24)));
-$off          = ($page - 1) * $size;
 $sort         = trim($_GET['sort'] ?? '');    // price_asc | price_desc | name_asc | name_desc
 $type     = trim($_GET['type'] ?? '');            // مثال: Dress
 $fabrics  = isset($_GET['fabric']) ? (array)$_GET['fabric'] : []; // fabric[]=Cotton&fabric[]=Modal
 $colors   = isset($_GET['color'])  ? (array)$_GET['color']  : []; // color[]=Pink&color[]=Ivory
 
+$pageSize = max(1, min(50, (int)($_GET['per_page'] ?? 24)));
+$page       = max(1, (int)($_GET['page'] ?? 1));
+$limitParam = $_GET['limit'] ?? $_GET['page_size'] ?? $_GET['per_page'] ?? 24;
+if (is_array($limitParam)) { $limitParam = 24; } // لا تأخذ مقاسات على أنها حجم صفحة
+$off        = ($page - 1) * $pageSize;
 function makeIn(string $prefix, array $vals, array &$args): string {
     $ph = [];
     foreach ($vals as $i => $v) {
@@ -89,7 +91,6 @@ if (isset($_GET['id']) || isset($_GET['product_id'])) {
     $catStmt->execute([$id]);
     $c = $catStmt->fetch(PDO::FETCH_ASSOC);
 
-    // قيَم افتراضية لو ما في تصنيف
     $categoryName = null; $categorySlug = null;
     $subcategoryName = null; $subcategorySlug = null;
     if ($c) {
@@ -216,7 +217,6 @@ if ($categorySlug !== '') {
             $categoryIds = array_merge($categoryIds, $children);
         }
 
-        // إنشاء named placeholders للـ IN clause
         $inPlaceholders = [];
         foreach ($categoryIds as $index => $catId) {
             $placeholder = ':cat_id_' . $index;
@@ -276,9 +276,21 @@ if (!empty($colors)) {
         WHERE pc.product_id = p.id AND co.name IN ($in)
     )";
 }
-$sizes = isset($_GET['size']) ? (array)$_GET['size'] : [];
 
-if ($type !== '') {
+$sizeParam = $_GET['size'] ?? $_GET['size_label'] ?? null;
+$sizes = [];
+
+if ($sizeParam !== null && $sizeParam !== '') {
+    if (is_array($sizeParam)) {
+        $sizes = $sizeParam;
+    } else {
+        $sizes = preg_split('/\s*,\s*/', (string)$sizeParam, -1, PREG_SPLIT_NO_EMPTY);
+    }
+    $sizes = array_values(array_filter(array_map('trim', $sizes), fn($v) => $v !== ''));
+}
+
+// ====== فلترة المقاسات ======
+if (!empty($sizes)) {
     $in = makeIn('size_', $sizes, $args);
     $sqlBase .= " AND EXISTS (
         SELECT 1 FROM product_sizes ps
@@ -336,8 +348,7 @@ $sql = "SELECT
         ORDER BY $orderBy
         LIMIT :limit OFFSET :offset";
 
-
-$args[':limit'] = $size;
+$args[':limit'] = $pageSize;
 $args[':offset'] = $off;
 
 $stmt = $pdo->prepare($sql);
@@ -349,7 +360,7 @@ $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-echo json_encode(['ok' => true, 'data' => $list, 'page' => $page, 'size' => $size, 'total' => $total], JSON_UNESCAPED_UNICODE);
+echo json_encode(['ok' => true, 'data' => $list, 'page' => $page, 'limit' => $pageSize, 'total' => $total], JSON_UNESCAPED_UNICODE);
 exit;
 
 
