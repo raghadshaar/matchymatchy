@@ -10,6 +10,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 header('Content-Type: application/json; charset=utf-8');
 
+/* ===== CORS (optional for local dev) ===== */
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowed = [
     'http://localhost',
@@ -26,7 +27,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
-/* ===== نهاية CORS ===== */
+/* ===== end CORS ===== */
 
 try {
     if (!isset($pdo) || !($pdo instanceof PDO)) {
@@ -35,45 +36,27 @@ try {
         exit;
     }
 
-    // ==== حدد الإيميل من السيشن ====
-    $email = null;
-
-    // 1) لو عندك user_id بالسيشن
-    if (!empty($_SESSION['user_id'])) {
-        $userId = (int)$_SESSION['user_id'];
-        $stmt = $pdo->prepare("SELECT email FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        $email = $stmt->fetchColumn() ?: null;
-        if ($email) {
-            $email = trim((string)$email);
-        }
-    }
-
-    // 2) إن ما توفر user_id أو ما لقينا إيميل، جرّبي user_email من السيشن
-    if (!$email && !empty($_SESSION['user_email'])) {
-        $email = trim((string)$_SESSION['user_email']);
-    }
-
-    // 3) ما في إيميل => غير مسجل دخول
-    if (!$email) {
+    // ==== Require login and get user id from session ====
+    if (empty($_SESSION['user_id'])) {
         http_response_code(401);
         echo json_encode(['ok' => false, 'error' => 'unauthorized']);
         exit;
     }
+    $userId = (int)$_SESSION['user_id'];
 
-    // Pagination (ثابت وآمن)
+    // Pagination (validated ints to safely inject into SQL)
     $limit  = isset($_GET['limit'])  ? max(1, min(200, (int)$_GET['limit'])) : 100;
     $offset = isset($_GET['offset']) ? max(0, (int)$_GET['offset']) : 0;
 
-    // خليه أرقام صافية وادخله مباشرة لتجنّب مشاكل bind مع LIMIT
     $limitSql  = (string)$limit;
     $offsetSql = (string)$offset;
 
-    // === اجلب الطلبات حسب بريد المستخدم ===
+    // === Fetch orders by user_id ===
     $sql = "
         SELECT
             o.id,
             o.public_id,
+            o.user_id,
             o.order_date,
             o.customer_name,
             o.customer_email,
@@ -86,15 +69,15 @@ try {
             o.payment_status,
             o.order_status
         FROM orders o
-        WHERE o.customer_email = ?
+        WHERE o.user_id = ?
         ORDER BY COALESCE(o.order_date, o.id * 1) DESC, o.id DESC
         LIMIT $limitSql OFFSET $offsetSql
     ";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$email]);
+    $stmt->execute([$userId]);
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // عناصر كل طلب
+    // Fetch items for each order
     $itemStmt = $pdo->prepare("
         SELECT product_id, product_name, unit_price, quantity, line_total
         FROM order_items
@@ -103,7 +86,7 @@ try {
     ");
 
     foreach ($orders as &$order) {
-        $itemStmt->execute([$order['id']]);
+        $itemStmt->execute([(int)$order['id']]);
         $order['items'] = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
 
         $ts = !empty($order['order_date']) ? strtotime((string)$order['order_date']) : false;
