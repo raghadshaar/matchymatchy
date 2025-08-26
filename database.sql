@@ -273,46 +273,46 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 
 -- Persist PayPal + currency + discounts on the order
-ALTER TABLE orders
-    ADD COLUMN currency_code      CHAR(3)         NOT NULL DEFAULT 'ILS',
-  ADD COLUMN discount           DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
-  ADD COLUMN coupon_code        VARCHAR(32)     NULL,
-  ADD COLUMN paypal_order_id    VARCHAR(64)     NULL,
-  ADD COLUMN paypal_capture_id  VARCHAR(64)     NULL,
-  ADD COLUMN paypal_status      VARCHAR(32)     NULL,
-  ADD COLUMN paypal_payer_email VARCHAR(255)    NULL,
-  ADD COLUMN paypal_raw         JSON            NULL;
+-- ALTER TABLE orders
+--     ADD COLUMN currency_code      CHAR(3)         NOT NULL DEFAULT 'ILS',
+--   ADD COLUMN discount           DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
+--   ADD COLUMN coupon_code        VARCHAR(32)     NULL,
+--   ADD COLUMN paypal_order_id    VARCHAR(64)     NULL,
+--   ADD COLUMN paypal_capture_id  VARCHAR(64)     NULL,
+--   ADD COLUMN paypal_status      VARCHAR(32)     NULL,
+--   ADD COLUMN paypal_payer_email VARCHAR(255)    NULL,
+--   ADD COLUMN paypal_raw         JSON            NULL;
+--
+-- -- Prevent duplicate rows on retries (idempotency at DB layer)
+-- CREATE UNIQUE INDEX uniq_orders_pp_capture ON orders (paypal_capture_id);
+--
+-- ALTER TABLE carts ADD COLUMN coupon_code VARCHAR(32) NULL;
+--
+--
+--
+--
+-- -- KIDS10: 10% off (percentage stored as a fraction 0.10)
+-- -- SAVE20: ₪20 off (fixed ILS amount)
+-- -- WELCOME15: 15% off (0.15)
+--
+-- INSERT INTO coupons (code, type, amount, min_subtotal, starts_at, ends_at, active, max_uses, used_count)
+-- VALUES
+--     ('KIDS10',    'percentage', 0.10, 0.00, NULL, NULL, 1, NULL, 0),
+--     ('SAVE20',    'fixed',      20.00, 0.00, NULL, NULL, 1, NULL, 0),
+--     ('WELCOME15', 'percentage', 0.15, 0.00, NULL, NULL, 1, NULL, 0)
+--     ON DUPLICATE KEY UPDATE
+--                          type=VALUES(type),
+--                          amount=VALUES(amount),
+--                          min_subtotal=VALUES(min_subtotal),
+--                          starts_at=VALUES(starts_at),
+--                          ends_at=VALUES(ends_at),
+--                          active=VALUES(active);
+--
+--
+-- ALTER TABLE products ADD FULLTEXT ft_products (name, description, sku);
 
--- Prevent duplicate rows on retries (idempotency at DB layer)
-CREATE UNIQUE INDEX uniq_orders_pp_capture ON orders (paypal_capture_id);
 
-ALTER TABLE carts ADD COLUMN coupon_code VARCHAR(32) NULL;
-
-
-
-
--- KIDS10: 10% off (percentage stored as a fraction 0.10)
--- SAVE20: ₪20 off (fixed ILS amount)
--- WELCOME15: 15% off (0.15)
-
-INSERT INTO coupons (code, type, amount, min_subtotal, starts_at, ends_at, active, max_uses, used_count)
-VALUES
-    ('KIDS10',    'percentage', 0.10, 0.00, NULL, NULL, 1, NULL, 0),
-    ('SAVE20',    'fixed',      20.00, 0.00, NULL, NULL, 1, NULL, 0),
-    ('WELCOME15', 'percentage', 0.15, 0.00, NULL, NULL, 1, NULL, 0)
-    ON DUPLICATE KEY UPDATE
-                         type=VALUES(type),
-                         amount=VALUES(amount),
-                         min_subtotal=VALUES(min_subtotal),
-                         starts_at=VALUES(starts_at),
-                         ends_at=VALUES(ends_at),
-                         active=VALUES(active);
-
-
-ALTER TABLE products ADD FULLTEXT ft_products (name, description, sku);
-
-
-
-ALTER TABLE users
-
-  ADD COLUMN address VARCHAR(255) NULL AFTER phone;
+--
+-- ALTER TABLE users
+--
+--   ADD COLUMN address VARCHAR(255) NULL AFTER phone;
