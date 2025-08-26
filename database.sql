@@ -307,3 +307,12 @@ VALUES
                          starts_at=VALUES(starts_at),
                          ends_at=VALUES(ends_at),
                          active=VALUES(active);
+
+
+ALTER TABLE products ADD FULLTEXT ft_products (name, description, sku);
+
+
+
+ALTER TABLE users
+
+  ADD COLUMN address VARCHAR(255) NULL AFTER phone;

@@ -16,14 +16,46 @@
     function getCartCount() {
         return getCart().reduce((n, it) => n + (Number(it.quantity) || 0), 0);
     }
-    function updateHeaderCartCount() {
-        const el =
-            document.querySelector('#header #cart-count') ||
+    async function fetchCartCountFromServer() {
+        try {
+            const r = await fetch('/matchymatchy/api/cart.php?action=count', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'                 // send PHP session cookie
+            });
+            if (!r.ok) return 0;
+            const j = await r.json();
+            return (j && j.ok && Number.isInteger(j.count)) ? j.count : 0;
+        } catch {
+            return 0;
+        }
+    }
+
+    async function updateHeaderCartCount() {
+        // find the badge inside the injected header
+        const findEl = () =>
             document.querySelector('#header-slot #cart-count') ||
+            document.querySelector('#header #cart-count') ||
             document.getElementById('cart-count') ||
             document.querySelector('.main-header .cart .badge');
-        if (el) el.textContent = getCartCount();
+
+        // wait up to ~1s for header.html to be injected
+        let el = findEl();
+        for (let i = 0; !el && i < 20; i++) {
+            await new Promise(r => setTimeout(r, 50));
+            el = findEl();
+        }
+        if (!el) {
+            console.warn('[header] cart-count element not found');
+            return;
+        }
+
+        const n = await fetchCartCountFromServer();
+        el.textContent = String(n);
+        el.setAttribute('data-count', String(n)); // optional: if you style via data attribute
     }
+
+
 
     // وظائف إدارة القوائم المنسدلة
     function toggleDropdown(dropdownId) {
@@ -212,6 +244,8 @@
 
                 updateHeaderCartCount();
                 buildMenuFromCategories();
+// add next to your other listeners (after mount.innerHTML = html)
+                window.addEventListener('cart:changed', updateHeaderCartCount);
 
                 window.addEventListener('storage', (e) => {
                     if (e.key === 'cart') updateHeaderCartCount();
@@ -231,7 +265,7 @@
                 if (cartBtn && cartBtn.tagName !== 'A') {
                     cartBtn.style.cursor = 'pointer';
                     cartBtn.addEventListener('click', () => {
-                        location.href = '/HTML/cart.html';
+                        location.href = '/HTML/Cart.html';
                     });
                 }
 

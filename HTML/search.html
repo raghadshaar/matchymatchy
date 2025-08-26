@@ -4,6 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Search • Matchy Matchy</title>
+
     <link rel="stylesheet" href="../styles/style.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -12,37 +13,63 @@
         :root{
             --baby:#F9F8F3; --jet:#383838; --teal:#008080; --pink:#E4CFC3; --umber:#715E51; --white:#ffffff;
         }
-        body{ background:var(--baby); color:var(--jet);}
-        .page-wrap{ max-width:1100px; margin:24px auto; padding:0 12px;}
-        .q-title{ font-size:18px; margin:8px 0 16px; color:var(--umber);}
+        body{ background:var(--baby); color:var(--jet); font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+        .page-wrap{ max-width:1100px; margin:24px auto; padding:0 12px; }
+        .q-title{ font-size:18px; margin:8px 0 16px; color:var(--umber); }
+
         .results-grid{
             display:grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
             gap:14px;
         }
         .card{
             background:#FCFAF6; border:1px solid var(--pink); border-radius:14px; overflow:hidden;
-            display:flex; flex-direction:column;
-            transition: transform .15s ease;
+            display:flex; flex-direction:column; transition: transform .15s ease;
         }
         .card:hover{ transform: translateY(-2px); }
-        .thumb{ width:100%; aspect-ratio:1/1; object-fit:cover; background:#eee; }
-        .item-body{ padding:10px 12px; display:flex; flex-direction:column; gap:6px;}
-        .name{ font-size:14px; line-height:1.3; min-height:36px;}
-        .price{ font-weight:600;}
-        .empty, .error, .loading{ padding:18px; background:#FFF7F0; border:1px dashed var(--pink); border-radius:12px;}
-        .toolbar{ display:flex; gap:8px; align-items:center; margin:10px 0 18px;}
-        .toolbar .badge{ background:#F2ECE6; border-radius:999px; padding:6px 10px; font-size:12px;}
+        .thumb{ width:100%; aspect-ratio:1/1; object-fit:cover; background:#eee; display:block; }
+        .item-body{ padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
+        .name{ font-size:14px; line-height:1.3; min-height:36px; }
+        .price{ font-weight:600; }
+
+        .meta-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; }
+        .star-rating { font-size:14px; display:flex; align-items:center; gap:2px; }
+        .star { border:0; background:none; cursor:pointer; font-size:16px; line-height:1; }
+        .star.text-yellow-400 { color:#facc15; }
+        .star.text-gray-300   { color:#d1d5db; }
+
+        .wish-btn { border:0; background:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+        .wish-btn .like-count { font-size:12px; color:#6b7280; }
+        .wish-btn.text-red-400{ color:#f87171; }
+
+        .empty, .error, .loading{
+            padding:18px; background:#FFF7F0; border:1px dashed var(--pink); border-radius:12px; text-align:center;
+        }
+        .toolbar{ display:flex; gap:8px; align-items:center; margin:10px 0 18px; }
+        .toolbar .badge{ background:#F2ECE6; border-radius:999px; padding:6px 10px; font-size:12px; }
         .toolbar .muted{ color:#7a6a5e; font-size:12px; }
-        .pagination{ display:flex; gap:8px; justify-content:center; margin:20px 0 40px;}
+        .pagination{ display:flex; gap:8px; justify-content:center; margin:20px 0 40px; }
         .btn{
             border:1px solid var(--pink); background:#fff; color:var(--jet);
             padding:8px 12px; border-radius:10px; cursor:pointer;
         }
-        .btn[disabled]{ opacity:.5; cursor:not-allowed;}
+        .btn[disabled]{ opacity:.5; cursor:not-allowed; }
     </style>
+
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary:'#008080', secondary:'#FADADD' },
+                    borderRadius: { 'button':'8px' }
+                }
+            }
+        }
+    </script>
 </head>
 <body>
-<!-- Header include -->
+
+<!-- Header mount (header.js will inject header.html here) -->
 <div id="header-slot"></div>
 
 <div class="page-wrap">
@@ -63,89 +90,234 @@
     </div>
 </div>
 
+<!-- ===== Product Card (shared) ===== -->
 <script>
-    /* ===== header include (لا نلمس header.html) ===== */
-    fetch('header.html').then(r=>r.text()).then(html=>{
-        document.getElementById('header-slot').innerHTML = html;
-    });
+    // Reusable product card with rating + wishlist hooks (UI only)
+    window.cardLikeCategory = function(p){
+        const id   = Number(p.id || 0);
+        const slug = String(p.slug || '');
+        const name = String(p.name || 'Product');
+        const img  = p.image_main_url || '../images/placeholder.jpg';
+        const price= (p.price != null && !Number.isNaN(Number(p.price))) ? Number(p.price).toFixed(2) : '0.00';
 
-    /* ===== helpers ===== */
-    const qs = new URLSearchParams(location.search);
-    const q  = (qs.get('q')||'').trim();
-    const pageFromUrl = Math.max(1, parseInt(qs.get('page')||'1',10));
-    const limit = 24;
+        // Ratings (avg/count/my_rating are optional)
+        const avg      = (p.rating_avg == null ? null : Number(p.rating_avg));
+        const cnt      = Number(p.rating_count || 0);
+        const myRating = (p.my_rating == null ? null : Number(p.my_rating));
+        const filledByAvg = (avg == null ? 0 : Math.round(avg));
+        const stars = Array.from({length:5}, (_,i) => {
+            const filled = (myRating != null ? (i < myRating) : (i < filledByAvg));
+            return `<button class="star ${filled ? 'text-yellow-400' : 'text-gray-300'}" data-rating="${i+1}" aria-label="Rate ${i+1} stars">★</button>`;
+        }).join('');
+        const ratingText = (cnt > 0)
+            ? `<span class="avg ml-1">${avg.toFixed(1)}</span><span class="count text-xs text-gray-500">(${cnt})</span>`
+            : `<span class="avg ml-1 text-gray-400">—</span>`;
 
-    document.getElementById('q-title').textContent =
-        q ? `Showing results for: “${q}”` : 'Please enter a search term';
+        // Wishlist (likes / my_like are optional)
+        const likes  = Number(p.likes || 0);
+        const myLike = Number(p.my_like || 0) === 1;
+        const likeIcon = myLike ? 'ri-heart-fill' : 'ri-heart-line';
 
-    const $state   = document.getElementById('state');
-    const $grid    = document.getElementById('results');
-    const $count   = document.getElementById('count-badge');
-    const $mode    = document.getElementById('mode-badge');
-    const $prevBtn = document.getElementById('prev');
-    const $nextBtn = document.getElementById('next');
+        // Product link preference: id first, fallback to slug
+        const productHref = id
+            ? `product.html?id=${id}`
+            : (slug ? `product.php?slug=${encodeURIComponent(slug)}` : '#');
 
-    if(!q){
-        $state.className='empty';
-        $state.textContent='Start by typing in the search bar above.';
-    }else{
-        load(pageFromUrl);
-    }
+        return `
+        <div class="card product-card" data-id="${id || ''}" data-slug="${slug}">
+          <a class="image-wrap" href="${productHref}" aria-label="${name}">
+            <img class="thumb" src="${img}" alt="${name}">
+          </a>
+          <div class="item-body">
+            <div class="name"><a href="${productHref}">${name}</a></div>
+            <div class="price">₪${price}</div>
+            <div class="meta-row">
+              <div class="star-rating">${stars} ${ratingText}</div>
+              <button type="button" class="like-btn wish-btn ${myLike ? 'text-red-400' : ''}" title="Wishlist" aria-label="Wishlist">
+                <i class="${likeIcon}"></i>
+                <span class="text-xs like-count">${likes}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+</script>
 
-    async function load(page=1){
-        $state.hidden=false;
-        $grid.hidden=true;
-        $state.className='loading';
-        $state.textContent='Loading results…';
+<!-- ===== Search Page Logic (single source of truth) ===== -->
+<script>
+    // Backends
+    const API_SEARCH   = '/matchymatchy/api/search.php';       // returns {success, meta:{page,limit,total,pages,mode}, products:[...]}
+    const API_WISHLIST = '/matchymatchy/backend/wishlist.php'; // optional
+    const API_RATINGS  = '/matchymatchy/backend/ratings.php';  // optional
 
-        try{
-            const url = `/matchymatchy/api/search.php?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`;
-            const res = await fetch(url);
-            const data = await res.json();
+    (function initSearch(){
+        const qs   = new URLSearchParams(location.search);
+        const q    = (qs.get('q') || '').trim();
+        const page = Math.max(1, parseInt(qs.get('page') || '1', 10));
+        const limit= 24;
 
-            if(!data.success){
-                throw new Error(data.error || 'Unknown error');
+        // UI refs
+        const $title  = document.getElementById('q-title');
+        const $state  = document.getElementById('state');
+        const $grid   = document.getElementById('results');
+        const $count  = document.getElementById('count-badge');
+        const $mode   = document.getElementById('mode-badge');
+        const $prev   = document.getElementById('prev');
+        const $next   = document.getElementById('next');
+
+        $title.textContent = q ? `Showing results for: “${q}”` : 'Please enter a search term';
+
+        if (!q){
+            $state.className = 'empty';
+            $state.textContent = 'Start by typing in the search bar above.';
+            $grid.hidden = true;
+            return;
+        }
+
+        load(page);
+
+        async function load(p){
+            $state.hidden = false;
+            $state.className = 'loading';
+            $state.textContent = 'Loading results…';
+            $grid.hidden = true;
+
+            try{
+                const url = `${API_SEARCH}?q=${encodeURIComponent(q)}&page=${p}&limit=${limit}`;
+                const res = await fetch(url, { headers: { 'Accept':'application/json' } });
+                const raw = await res.text();
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${raw}`);
+
+                let data;
+                try{ data = JSON.parse(raw); }
+                catch(parseErr){ throw new Error('Invalid JSON from server.'); }
+
+                if (!data.success) throw new Error(data.error || 'Search failed.');
+
+                render(data, p);
+            }catch(err){
+                console.error('[search] error:', err);
+                $state.className = 'error';
+                $state.textContent = 'Something went wrong while fetching results.';
+            }
+        }
+
+        function render(data, p){
+            const items = Array.isArray(data.products) ? data.products : [];
+            const meta  = data.meta || { total: 0, pages: 1, mode: '' };
+
+            $count.textContent = `${meta.total} result(s)`;
+            $mode.textContent  = meta.mode ? `Mode: ${meta.mode}` : '';
+
+            if (!items.length){
+                $state.className = 'empty';
+                $state.textContent = 'No results. Try different keywords.';
+                $grid.innerHTML = '';
+                $grid.hidden = true;
+            }else{
+                // Build cards using the shared builder
+                $grid.innerHTML = items.map(window.cardLikeCategory).join('');
+                $grid.hidden = false;
+                $state.hidden = true;
             }
 
-            render(data, page);
-        }catch(err){
-            console.error(err);
-            $state.className='error';
-            $state.textContent = 'Something went wrong while fetching results.';
-        }
-    }
+            // pager
+            const pages = Math.max(1, Number(meta.pages || 1));
+            $prev.disabled = p <= 1;
+            $next.disabled = p >= pages;
 
-    function render(data, page){
-        const items = data.products||[];
-        $count.textContent = `${data.meta.total} result(s)`;
-        $mode.textContent  = data.meta.mode==='fulltext' ? 'Mode: MySQL FULLTEXT' : 'Mode: LIKE fallback';
-
-        if(items.length === 0){
-            $state.className='empty';
-            $state.textContent='No results. Try different keywords.';
-            $grid.innerHTML='';
-            $grid.hidden=true;
-        }else{
-            $grid.innerHTML = items.map(p=>`
-          <a class="card" href="/matchymatchy/product.php?slug=${encodeURIComponent(p.slug)}" aria-label="${p.name}">
-            <img class="thumb" src="${p.image_main_url||'../images/placeholder.png'}" alt="${p.name}">
-            <div class="item-body">
-              <div class="name">${p.name}</div>
-              <div class="price">NIS ${Number(p.price).toFixed(2)}</div>
-            </div>
-          </a>
-        `).join('');
-            $grid.hidden=false;
-            $state.hidden=true;
+            $prev.onclick = () => { qs.set('page', String(p - 1)); location.search = qs.toString(); };
+            $next.onclick = () => { qs.set('page', String(p + 1)); location.search = qs.toString(); };
         }
 
-        const pages = Math.max(1, data.meta.pages||1);
-        $prevBtn.disabled = page<=1;
-        $nextBtn.disabled = page>=pages;
+        // Delegated interactions (wishlist + rating)
+        document.getElementById('results').addEventListener('click', async (e) => {
+            // Wishlist
+            const wish = e.target.closest('.wish-btn');
+            if (wish){
+                const card = wish.closest('.product-card');
+                const id = card?.dataset?.id;
+                if (!id || !API_WISHLIST) return;
 
-        $prevBtn.onclick = ()=>{ qs.set('page', String(page-1)); location.search = qs.toString(); };
-        $nextBtn.onclick = ()=>{ qs.set('page', String(page+1)); location.search = qs.toString(); };
-    }
+                try{
+                    const body = new URLSearchParams({ product_id: id });
+                    const r = await fetch(API_WISHLIST, {
+                        method: 'POST',
+                        headers: { 'Content-Type':'application/x-www-form-urlencoded', 'Accept':'application/json' },
+                        credentials: 'include',
+                        body: body.toString()
+                    });
+                    const txt = await r.text();
+                    let j = {};
+                    try{ j = JSON.parse(txt); }catch{}
+                    if (j && j.ok){
+                        const liked = !!j.liked;
+                        wish.classList.toggle('text-red-400', liked);
+                        const icon = wish.querySelector('i');
+                        const cnt  = wish.querySelector('.like-count');
+                        if (icon) icon.className = liked ? 'ri-heart-fill' : 'ri-heart-line';
+                        if (cnt && typeof j.likes === 'number') cnt.textContent = j.likes;
+                    }
+                }catch(ex){ console.warn('[wishlist] error:', ex); }
+                return;
+            }
+
+            // Rating
+            const star = e.target.closest('.star');
+            if (star){
+                const card   = star.closest('.product-card');
+                const id     = card?.dataset?.id;
+                const rating = Number(star.dataset.rating || 0);
+                if (!id || !rating || !API_RATINGS) return;
+
+                try{
+                    const body = new URLSearchParams({ product_id: id, rating: String(rating) });
+                    const r = await fetch(API_RATINGS, {
+                        method: 'POST',
+                        headers: { 'Content-Type':'application/x-www-form-urlencoded', 'Accept':'application/json' },
+                        credentials: 'include',
+                        body: body.toString()
+                    });
+                    const txt = await r.text();
+                    let j = {};
+                    try{ j = JSON.parse(txt); }catch{}
+
+                    // Update UI
+                    const stars = card.querySelectorAll('.star');
+                    stars.forEach((s, i) => s.classList.toggle('text-yellow-400', i < rating));
+
+                    // Update avg/count if provided
+                    const avgEl   = card.querySelector('.avg');
+                    const countEl = card.querySelector('.count');
+                    if (j && j.ok){
+                        if (avgEl && typeof j.avg === 'number')  avgEl.textContent = j.avg.toFixed(1);
+                        if (countEl && typeof j.count === 'number') countEl.textContent = `(${j.count})`;
+                    }
+                }catch(ex){ console.warn('[rating] error:', ex); }
+            }
+        });
+    })();
 </script>
+
+<!-- Your site scripts -->
+<script src="../js/indexscript.js"></script>
+<script defer src="../js/header.js"></script>
+<script>
+    // Optional: see cart API status in console (debug)
+    (async () => {
+        try {
+            const r = await fetch('/matchymatchy/api/cart.php?action=count', {
+                credentials: 'include',
+                headers: {'Accept': 'application/json'}
+            });
+            const text = await r.text();
+            console.log('[cart count] status:', r.status, 'body:', text);
+        } catch (e) {
+            console.error('[cart count] failed:', e);
+        }
+    })();
+</script>
+
 </body>
 </html>

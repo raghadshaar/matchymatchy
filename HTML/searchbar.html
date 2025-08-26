@@ -17,16 +17,33 @@
 
 
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+
+
+
+
+
+
+
+
+
+
+    <link rel="stylesheet" href="../styles/productStyle.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
     <!-- Styles -->
     <link rel="stylesheet" href="../styles/style.css"/>
-    <link rel="stylesheet" href="../styles/productStyle.css"/>
+
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script>
@@ -69,9 +86,8 @@
 <body>
 
 <!-- Header include (جرّبي المسارات بالتسلسل) -->
-<div id="header-slot"
-     data-include="/matchymatchy/header.html"
-     data-include-alt="../header.html, ./header.html, /matchymatchy/HTML/header.html"></div>
+<div id="header-slot">
+     </div>
 
 <!-- HERO -->
 <section class="hero" id="hero">
@@ -147,23 +163,54 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', async ()=>{
+
+        document.addEventListener('DOMContentLoaded', async ()=>{
         await loadIncludes(); requestAnimationFrame(adjustForStickyHeader);
 
-        // Search redirect
-        const input=document.getElementById('searchInput');
-        const btn=document.getElementById('searchButton');
-        const go=()=>{ const q=(input.value||'').trim(); if(q) location.href=`/search.html?q=${encodeURIComponent(q)}`; };
-        btn.addEventListener('click', go);
-        input.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+        // العناصر
+        const input = document.getElementById('searchInput');
+        const btn   = document.getElementById('searchButton');
 
-        // Soft fallback if video fails
+        // (اختياري) لو عندك فئة حالية مرسومة على الصفحة—احفظيها هنا
+        // مثلًا <body data-category-id="7"> ثم نقرأها:
+        const body = document.body;
+        const currentCategoryId = body?.dataset?.categoryId || null;
+
+        // ✅ دالة التوجيه إلى صفحة النتائج بالوضع الدلالي
+        const go = () => {
+        const q = (input.value || '').trim();
+        if (!q) { input.focus(); return; }
+
+        // صفحة النتائج (عدّلي المسار حسب مكان ملف search.html عندك)
+        const base = '/matchymatchy/HTML/search.html';
+
+        const params = new URLSearchParams({
+        q,
+        mode: 'semantic',   // 🔑 هذا يفعّل البحث بالـ AI
+        page: '1',
+        limit: '24'
+    });
+
+        if (currentCategoryId) params.set('category_id', currentCategoryId);
+
+        // (اختياري) خزّني آخر استعلام لعرضه لاحقًا
+        try { sessionStorage.setItem('last_search_q', q); } catch {}
+
+        location.href = `${base}?${params.toString()}`;
+    };
+
+        btn.addEventListener('click', go);
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+
+        // بقية الكود كما هو...
         const video=document.getElementById('bgVideo'), hero=document.getElementById('hero');
         const soft=()=>{ hero.style.background='linear-gradient(135deg, rgba(0,128,128,.15), rgba(228,207,195,.25))'; };
         let ok=false; const t=setTimeout(()=>{ if(!ok) soft(); }, 2500);
         video.addEventListener('loadeddata', ()=>{ ok=true; clearTimeout(t); });
         video.addEventListener('error', soft); video.addEventListener('stalled', soft);
     });
+
+
 </script>
 
 <script>
@@ -176,5 +223,21 @@
 
 <script src="../js/indexscript.js"></script>
 <script defer src="../js/header.js"></script>
+
+
+<script>
+    (async () => {
+        try {
+            const r = await fetch('/matchymatchy/api/cart.php?action=count', {
+                credentials: 'include',
+                headers: {'Accept': 'application/json'}
+            });
+            const text = await r.text();
+            console.log('[cart count] status:', r.status, 'body:', text);
+        } catch (e) {
+            console.error('[cart count] failed:', e);
+        }
+    })();
+</script>
 </body>
 </html>
