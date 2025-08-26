@@ -46,7 +46,8 @@ $userId = (int)$_SESSION['user_id'];
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $stmt = $pdo->prepare("SELECT id, first_name, last_name, email, avatar FROM users WHERE id = ?");
+        // ⬅︎ include phone & address
+        $stmt = $pdo->prepare("SELECT id, first_name, last_name, email, avatar, phone, address FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -64,12 +65,22 @@ try {
         $avatarUrl  = trim((string)($_POST['avatar'] ?? '')); // رابط اختياري
         $password   = (string)($_POST['password'] ?? '');
 
+        // ⬅︎ NEW fields
+        $phone      = trim((string)($_POST['phone'] ?? ''));
+        $address    = trim((string)($_POST['address'] ?? ''));
+
         if ($first_name === '') {
             echo json_encode(['ok' => false, 'message' => 'First name is required']);
             exit;
         }
         if ($last_name === '') {
             echo json_encode(['ok' => false, 'message' => 'Last name is required']);
+            exit;
+        }
+
+        // Optional: simple phone sanity check
+        if ($phone !== '' && !preg_match('/^[0-9+\-\s()]{6,20}$/', $phone)) {
+            echo json_encode(['ok' => false, 'message' => 'Invalid phone format']);
             exit;
         }
 
@@ -104,11 +115,16 @@ try {
                 exit;
             }
 
+            if (!is_uploaded_file($tmp)) {
+                echo json_encode(['ok' => false, 'message' => 'Upload failed (invalid temp file)']);
+                exit;
+            }
+
             $safeBase = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', pathinfo($fname, PATHINFO_FILENAME));
             $fileName = time() . '_' . $safeBase . '.' . $ext;
             $targetFile = $targetDir . $fileName;
 
-            if (!is_uploaded_file($tmp) || !move_uploaded_file($tmp, $targetFile)) {
+            if (!move_uploaded_file($tmp, $targetFile)) {
                 echo json_encode(['ok' => false, 'message' => 'Upload failed']);
                 exit;
             }
@@ -125,22 +141,42 @@ try {
             $finalAvatar = $avatarUrl;
         }
 
-        // تحديث البيانات
+        // تحديث البيانات (with or without password)
         if ($password !== '') {
             if (strlen($password) < 6) {
                 echo json_encode(['ok' => false, 'message' => 'Password must be at least 6 characters long']);
                 exit;
             }
             $hashed = password_hash($password, PASSWORD_BCRYPT);
-            $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, avatar = ?, password = ? WHERE id = ?");
-            $ok = $stmt->execute([$first_name, $last_name, $finalAvatar, $hashed, $userId]);
+
+            // ⬅︎ include phone & address
+            $stmt = $pdo->prepare("
+                UPDATE users
+                   SET first_name = ?,
+                       last_name  = ?,
+                       avatar     = ?,
+                       password   = ?,
+                       phone      = ?,
+                       address    = ?
+                 WHERE id = ?
+            ");
+            $ok = $stmt->execute([$first_name, $last_name, $finalAvatar, $hashed, $phone !== '' ? $phone : null, $address !== '' ? $address : null, $userId]);
         } else {
-            $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, avatar = ? WHERE id = ?");
-            $ok = $stmt->execute([$first_name, $last_name, $finalAvatar, $userId]);
+            // ⬅︎ include phone & address
+            $stmt = $pdo->prepare("
+                UPDATE users
+                   SET first_name = ?,
+                       last_name  = ?,
+                       avatar     = ?,
+                       phone      = ?,
+                       address    = ?
+                 WHERE id = ?
+            ");
+            $ok = $stmt->execute([$first_name, $last_name, $finalAvatar, $phone !== '' ? $phone : null, $address !== '' ? $address : null, $userId]);
         }
 
         echo json_encode($ok
-            ? ['ok' => true,  'message' => 'Profile updated successfully.', 'avatar' => $finalAvatar]
+            ? ['ok' => true, 'message' => 'Profile updated successfully.', 'avatar' => $finalAvatar, 'phone' => $phone, 'address' => $address]
             : ['ok' => false, 'message' => 'Error updating profile.']
         );
         exit;

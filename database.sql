@@ -310,3 +310,9 @@ VALUES
 
 
 ALTER TABLE products ADD FULLTEXT ft_products (name, description, sku);
+
+
+
+ALTER TABLE users
+
+  ADD COLUMN address VARCHAR(255) NULL AFTER phone;

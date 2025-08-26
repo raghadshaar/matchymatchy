@@ -79,6 +79,18 @@
                 <label>Avatar URL</label>
                 <input id="avatar_url" name="avatar" class="input">
             </div>
+            <div>
+                <label>Phone</label>
+                <input class="input" id="phone" name="phone" placeholder="+970 5X XXX XXXX"
+                       inputmode="tel" pattern="^[0-9+\-\s()]{6,20}$" />
+                <small class="text-xs text-gray-500">Use international format (e.g., +970…)</small>
+            </div>
+
+            <div>
+                <label>Address</label>
+                <input class="input" id="address" name="address" placeholder="City, Street, Building/Apartment" />
+            </div>
+
             <div class="sm:col-span-2">
                 <label>New Password (Optional)</label>
                 <input type="password" id="password" name="password" class="input">
