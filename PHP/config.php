@@ -6,7 +6,7 @@ require __DIR__ . '/../vendor/autoload.php';
 session_start();
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-/* DB */
+/* DB bbbbbbbbbbbbbbbbbbbbbbb*/
 const DB_HOST = '127.0.0.1';
 const DB_PORT = 3306;
 const DB_USER = 'root';
